@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36603.0 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QazaqGeoReports.Domain", "QazaqGeoReports\QazaqGeoReports.Domain.csproj", "{D4DDFBA8-7C69-4A4D-8CFB-EF5C1DD71A8B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QazaqGeoReports.Application", "QazaqGeoReports.Application\QazaqGeoReports.Application.csproj", "{263F39C9-6F36-4509-9A30-5DACF16A5DE6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{D4DDFBA8-7C69-4A4D-8CFB-EF5C1DD71A8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4DDFBA8-7C69-4A4D-8CFB-EF5C1DD71A8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4DDFBA8-7C69-4A4D-8CFB-EF5C1DD71A8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{263F39C9-6F36-4509-9A30-5DACF16A5DE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{263F39C9-6F36-4509-9A30-5DACF16A5DE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{263F39C9-6F36-4509-9A30-5DACF16A5DE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{263F39C9-6F36-4509-9A30-5DACF16A5DE6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

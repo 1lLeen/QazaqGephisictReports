@@ -3,4 +3,5 @@
 namespace QazaqGeoReports.Domain.Interfaces.Services;
 public interface IReportService : IAbstractService<Report>
 {
+    Task<IEnumerable<Report>> GetReportsByUserAsync(string userId);
 }

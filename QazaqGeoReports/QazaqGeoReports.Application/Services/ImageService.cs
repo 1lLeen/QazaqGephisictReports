@@ -18,4 +18,14 @@ public class ImageService : AbstractService<IImageRepository, Image>, IImageServ
 
         return await File.ReadAllBytesAsync(path);
     }
+
+    public Task<List<Image>> GetImagesByEquipmentId(int equipmentId)
+    {
+        return _repository.GetImagesByReportId(equipmentId);
+    }
+
+    public async Task<List<Image>> GetImagesByReportId(int reportId)
+    {
+        return await _repository.GetImagesByReportId(reportId);
+    }
 }
