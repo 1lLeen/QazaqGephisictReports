@@ -61,7 +61,6 @@ public class UserRepository : IUserRepository
 
     public async Task<User> GetUserByMiddleNameAsync(string middleName) => await _context.Users.FirstOrDefaultAsync(x => x.MiddleName== middleName);
 
-
     public async Task<User> GetUserByPhoneAsync(string phone) => await _context.Users.FirstOrDefaultAsync(x => x.PhoneNumber == phone);
 
 }
