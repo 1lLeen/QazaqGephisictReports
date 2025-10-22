@@ -12,11 +12,6 @@ public static class DependencyInjection
 {
     public static void AddInfrastructureServices(this IHostApplicationBuilder builder)
     {
-        IConfiguration configuration = builder.Configuration;
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-        builder.Services.AddDbContext<QazaqGeoReportContext>(options =>
-        options.UseNpgsql(configuration.GetConnectionString(InitializationDataBase.ConnectionString)));
-
         builder.Services.RegistrationAutoMapper();
         builder.Services.RegistrationRepositories();
         builder.Services.RegistrationServices();
