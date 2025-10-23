@@ -41,9 +41,11 @@ builder.Services.AddIdentityCore<User>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
-//builder.Services.AddSingleton<IEmailSender<User>, IdentityNoOpEmailSender>();
+builder.Services.AddSingleton<IEmailSender<User>, IdentityNoOpEmailSender>();
 
 var app = builder.Build();
+
+InitializationDataBase.Init(app);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
