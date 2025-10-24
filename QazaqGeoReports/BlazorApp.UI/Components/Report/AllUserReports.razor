@@ -45,6 +45,10 @@ else
         </tbody>
     </table>
 }
+<a href="/Report/Create" class="btn btn-lg btn-success d-flex align-items-center gap-2 shadow-sm px-4 py-2" style="font-weight: 600; font-size: 1.1rem; border-radius: 12px;">
+    <i class="bi bi-plus-circle-fill" style="font-size: 1.4rem;"></i>
+    <span>Создать отчёт</span>
+</a>
 
 @code {
     private List<Report> reports;
@@ -55,7 +59,7 @@ else
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-
+        reportViewModels = new List<ReportViewModel>();
         if (!user.Identity?.IsAuthenticated ?? true)
         {
             reports = new List<Report>();

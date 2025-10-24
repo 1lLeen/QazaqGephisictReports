@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using QazaqGeoReports.Infrastructure;
@@ -11,9 +12,11 @@ using QazaqGeoReports.Infrastructure;
 namespace QazaqGeoReports.Infrastructure.Migrations
 {
     [DbContext(typeof(QazaqGeoReportContext))]
-    partial class QazaqGeoReportContextModelSnapshot : ModelSnapshot
+    [Migration("20251024194207_DeleteRoleIdFromUsers")]
+    partial class DeleteRoleIdFromUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -206,8 +209,8 @@ namespace QazaqGeoReports.Infrastructure.Migrations
                     b.Property<DateTime>("UpdatedTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

@@ -1,0 +1,222 @@
+﻿@page "/Report/Create"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using QazaqGeoReports.Domain.Entities
+@using QazaqGeoReports.Domain.Interfaces.Services
+@using QazaqGeoReports.Infrastructure
+
+@inject UserManager<User> UserManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject QazaqGeoReportContext DbContext
+@inject NavigationManager NavigationManager
+@inject IReportService reportService
+@inject IImageService imageService
+<PageTitle>Создание отчёта</PageTitle>
+
+<h3>Создать отчёт</h3>
+
+@if (!string.IsNullOrEmpty(StatusMessage))
+{
+    <div class="alert alert-danger">@StatusMessage</div>
+}
+
+<EditForm Model="@Input" OnValidSubmit="CreateReportAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="text-danger" />
+
+    <!-- Title -->
+    <div class="form-floating mb-3">
+        <InputText @bind-Value="Input.Title" class="form-control" id="title" placeholder="Название" />
+        <label for="title">Название</label>
+        <ValidationMessage For="@(() => Input.Title)" />
+    </div>
+
+    <!-- Content -->
+    <div class="form-floating mb-3">
+        <InputTextArea @bind-Value="Input.Content" class="form-control" id="content" placeholder="Содержание" rows="3" />
+        <label for="content">Содержание</label>
+        <ValidationMessage For="@(() => Input.Content)" />
+    </div>
+
+    <!-- Comments -->
+    <div class="form-floating mb-3">
+        <InputTextArea @bind-Value="Input.Comments" class="form-control" id="comments" placeholder="Комментарии" rows="2" />
+        <label for="comments">Комментарии</label>
+        <ValidationMessage For="@(() => Input.Comments)" />
+    </div>
+
+    <!-- Route -->
+    <div class="form-floating mb-3">
+        <InputTextArea @bind-Value="Input.RouteDescription" class="form-control" id="route" placeholder="Маршрут" rows="2" />
+        <label for="route">Описание маршрута</label>
+        <ValidationMessage For="@(() => Input.RouteDescription)" />
+    </div>
+
+    <!-- Users Movement -->
+    <div class="form-floating mb-3">
+        <InputTextArea @bind-Value="Input.UsersMovement" class="form-control" id="users" placeholder="Перемещение пользователей" rows="2" />
+        <label for="users">Движение пользователей</label>
+        <ValidationMessage For="@(() => Input.UsersMovement)" />
+    </div>
+
+    <!-- Equipments Movement -->
+    <div class="form-floating mb-3">
+        <InputTextArea @bind-Value="Input.EquipmentsMovement" class="form-control" id="equipments" placeholder="Техника" rows="2" />
+        <label for="equipments">Движение техники</label>
+        <ValidationMessage For="@(() => Input.EquipmentsMovement)" />
+    </div>
+
+    <!-- Distance -->
+    <div class="form-floating mb-3">
+        <InputNumber @bind-Value="Input.DistanceKM" class="form-control" id="distance" />
+        <label for="distance">Расстояние (км)</label>
+        <ValidationMessage For="@(() => Input.DistanceKM)" />
+    </div>
+
+    <!-- Fuel -->
+    <div class="form-floating mb-3">
+        <InputNumber @bind-Value="Input.FuelUsedLiters" class="form-control" id="fuel" />
+        <label for="fuel">Топливо израсходовано (л)</label>
+        <ValidationMessage For="@(() => Input.FuelUsedLiters)" />
+    </div>
+
+    <!-- Departure Time -->
+    <div class="mb-3">
+        <label class="form-label">Время отправления</label>
+        <InputDate @bind-Value="Input.DepartureTime" class="form-control" />
+        <ValidationMessage For="@(() => Input.DepartureTime)" />
+    </div>
+
+    <!-- Arrival Time -->
+    <div class="mb-3">
+        <label class="form-label">Время прибытия</label>
+        <InputDate @bind-Value="Input.ArrivalTime" class="form-control" />
+        <ValidationMessage For="@(() => Input.ArrivalTime)" />
+    </div>
+
+    <!-- Images -->
+    <div class="mb-3">
+        <label class="form-label">Прикрепить изображения</label>
+        <InputFile OnChange="HandleImageUpload" multiple />
+        @if (uploadedImages.Count > 0)
+        {
+            <ul>
+                @foreach (var img in uploadedImages)
+                {
+                    <li>@img.Name (@(img.Size / 1024) KB)</li>
+                }
+            </ul>
+        }
+    </div>
+
+    <!-- Submit -->
+    <button type="submit" class="btn btn-success btn-lg shadow px-4 mt-3">
+        <i class="bi bi-check-circle-fill me-2"></i> Сохранить отчёт
+    </button>
+</EditForm>
+
+@code {
+    private ReportInputModel Input { get; set; } = new();
+    private string? StatusMessage;
+    private List<IBrowserFile> uploadedImages = new();
+
+    private async Task HandleImageUpload(InputFileChangeEventArgs e)
+    {
+        uploadedImages = e.GetMultipleFiles(10).ToList(); // до 10 файлов
+    }
+
+    private async Task CreateReportAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user?.Identity is not { IsAuthenticated: true })
+        {
+            StatusMessage = "Вы не авторизованы.";
+            return;
+        }
+
+        var userId = UserManager.GetUserId(user);
+        if (string.IsNullOrEmpty(userId))
+        {
+            StatusMessage = "Пользователь не определён.";
+            return;
+        }
+
+        var report = new Report
+        {
+            Title = Input.Title,
+            Content = Input.Content,
+            Comments = Input.Comments,
+            RouteDescription = Input.RouteDescription,
+            UsersMovement = Input.UsersMovement,
+            EquipmentsMovement = Input.EquipmentsMovement,
+            DistanceKM = Input.DistanceKM,
+            FuelUsedLiters = Input.FuelUsedLiters,
+            DepartureTime = ToUtcFromInput(Input.DepartureTime),
+            ArrivalTime = ToUtcFromInput(Input.ArrivalTime),
+            CreatedByUserId = userId, 
+        };
+
+
+        var result = await reportService.CreateAsync(report); // Сохраняем отчёт
+        if(result.Id > 0)
+        {
+            Console.WriteLine("рапорт создан");
+        }
+        // Сохраняем изображения
+        foreach (var file in uploadedImages)
+        {
+            using var stream = file.OpenReadStream(10 * 1024 * 1024); // 10MB макс
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            var imageData = ms.ToArray();
+
+            var image = new QazaqGeoReports.Domain.Entities.Image
+            {
+                Data = imageData,
+                ReportId = report.Id
+            };
+
+            var resultImage = await imageService.CreateAsync(image);// Сохраняем изображение
+            if(resultImage.Id > 0)
+            {
+                Console.WriteLine("изображение сохранено");
+            }
+        }
+
+        NavigationManager.NavigateTo("/Report/MyReports");
+    }
+    private static DateTime? ToUtcFromInput(DateTime? dt)
+    {
+        if (dt is null) return null;
+
+        // InputDate даёт Kind=Unspecified. Считаем это локальным временем сервера
+        var local = DateTime.SpecifyKind(dt.Value, DateTimeKind.Local);
+        return local.ToUniversalTime();
+    }
+    private class ReportInputModel
+    {
+        [Required]
+        public string Title { get; set; } = string.Empty;
+
+        public string? Content { get; set; }
+        public string? Comments { get; set; }
+        public string? RouteDescription { get; set; }
+        public string? UsersMovement { get; set; }
+        public string? EquipmentsMovement { get; set; }
+
+        [Range(0, 99999)]
+        public double? DistanceKM { get; set; }
+
+        [Range(0, 99999)]
+        public double? FuelUsedLiters { get; set; }
+        [DataType(DataType.Date)]
+        public DateTime? DepartureTime { get; set; }
+        [DataType(DataType.Date)]
+        public DateTime? ArrivalTime { get; set; }
+    }
+}
+

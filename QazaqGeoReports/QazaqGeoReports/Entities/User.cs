@@ -12,7 +12,7 @@ public class User : IdentityUser
             return $"{LastName} {FirstName} {MiddleName}".Trim();
         }
     }
-    public string RoleId { get; set; }
+
     public DateTime CreatedTime { get; set; }
     public DateTime UpdatedTime { get; set; }
 }

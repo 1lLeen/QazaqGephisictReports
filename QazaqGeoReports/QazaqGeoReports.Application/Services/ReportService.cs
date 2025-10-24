@@ -15,7 +15,7 @@ public class ReportService : AbstractService<IReportRepository, Report>, IReport
         _imageService = imageService;
         this.mapper = mapper;
     }
-    public async Task<IEnumerable<Report>> GetReportsByUserAsync(string userId)
+    public async Task<List<Report>> GetReportsByUserAsync(string userId)
     {
         var reports = await _repository.GetReportsByUserAsync(userId);
         return reports;

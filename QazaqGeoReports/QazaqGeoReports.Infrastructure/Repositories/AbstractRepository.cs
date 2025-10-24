@@ -18,7 +18,7 @@ public class AbstractRepository<TModel> : IAbstractRepository<TModel> where TMod
         model.CreatedTime = DateTime.UtcNow;
         model.UpdatedTime = DateTime.UtcNow;
 
-        await _dbSet.AddAsync(model);
+        await _dbSet.AddAsync(model);    
         await _context.SaveChangesAsync();
         return model;
     }

@@ -1,6 +1,65 @@
 ﻿@page "/Report/MyReports"
-<h3>UserReports</h3>
+
+@using QazaqGeoReports.Domain.Interfaces.Services
+@using QazaqGeoReports.Domain.Entities
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject IReportService ReportService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h3 class="mt-4 mb-3 text-center">📋 Мои Рапорты</h3>
+
+@if (reports == null)
+{
+    <div class="text-center mt-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+    </div>
+}
+else if (!reports.Any())
+{
+    <div class="alert alert-info text-center mt-4">
+        Пока нет ни одного рапорта. Создайте новый!
+    </div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var report in reports)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">@report.Title</h5>
+                        <p class="card-text text-muted small">@report.CreatedTime.ToString("dd MMM yyyy")</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 text-end">
+                        <a href="Report/Details/@report.Id" class="btn btn-sm btn-outline-primary">Подробнее</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
 
 @code {
+    private List<Report> reports;
 
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity is { IsAuthenticated: true })
+        {
+            string userId = user.FindFirst(c => c.Type == "sub")?.Value
+                         ?? user.FindFirst(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                reports = await ReportService.GetReportsByUserAsync(userId);
+            }
+        }
+    }
 }

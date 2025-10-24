@@ -6,7 +6,8 @@
 @attribute [Authorize(Roles="Admin,General,Supervisor")]
 
 @inject NavigationManager Nav
-@inject IReportRepository ReportRepo   
+@inject IReportRepository ReportRepo
+@inject IImageRepository ImageRepo          
 @inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Детали отчёта</PageTitle>
@@ -40,7 +41,6 @@ else
             </div>
         </div>
 
-        <!-- Ключевые метрики -->
         <div class="row g-3">
             <div class="col-12 col-lg-8">
                 <div class="card shadow-sm">
@@ -70,17 +70,39 @@ else
                 </div>
 
                 <div class="card mt-3 shadow-sm">
-                    <div class="card-header bg-white">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <strong>Содержимое отчёта</strong>
+                        @if (image is not null) { <span class="badge text-bg-light">Фото: 1</span> }
                     </div>
                     <div class="card-body">
                         @if (!string.IsNullOrWhiteSpace(report.Content))
                         {
-                            <pre class="mb-0" style="white-space:pre-wrap">@report.Content</pre>
+                            <pre class="mb-3" style="white-space:pre-wrap">@report.Content</pre>
                         }
                         else
                         {
                             <span class="text-muted">—</span>
+                        }
+
+                        @* ONE IMAGE: единое изображение, если есть *@
+                        @if (image is not null && image.Data?.Length > 0)
+                        {
+                            <hr />
+                            <div class="card shadow-sm">
+                                <img class="card-img-top"
+                                     src="@GetDataUrl(image)"
+                                     alt="Изображение отчёта @ReportId"
+                                     loading="lazy"
+                                     style="object-fit:cover; aspect-ratio: 4/3;" />
+                                <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">Image Id: @image.Id</small>
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       href="@GetDataUrl(image)"
+                                       download="report-@ReportId-image-@image.Id">
+                                        Скачать
+                                    </a>
+                                </div>
+                            </div>
                         }
                     </div>
                 </div>
@@ -137,6 +159,7 @@ else
     [Parameter] public int ReportId { get; set; }
 
     private Report? report;
+    private Image? image;                 // ONE IMAGE
     private bool isLoading = true;
 
     protected override async Task OnParametersSetAsync()
@@ -145,6 +168,7 @@ else
         try
         {
             report = await ReportRepo.GetByIdAsync(ReportId);
+            image  = await GetSingleImageByReportIdAsync(ReportId);   // ONE IMAGE
         }
         finally
         {
@@ -200,7 +224,7 @@ else
     }
 
     void GoBack()
-    { 
+    {
         if (Nav.Uri.Contains("/Report/Details/"))
             Nav.NavigateTo("/Report/AllReports");
         else
@@ -208,7 +232,7 @@ else
     }
 
     async Task ConfirmDelete()
-    { 
+    {
         var ok = await DeleteWithConfirmAsync();
         if (ok)
         {
@@ -216,10 +240,42 @@ else
             Nav.NavigateTo("/Report/AllReports");
         }
     }
-     
+
     async Task<bool> DeleteWithConfirmAsync()
     {
         await Task.Yield();
-        return true; // Поменяй на реальное подтверждение
+        return true; // Подключи реальное подтверждение (модалка/JS)
+    }
+
+    // ---------- IMAGE (ONE) ----------
+    async Task<Image?> GetSingleImageByReportIdAsync(int reportId)
+    {
+        try
+        {
+            var list = await ImageRepo.GetImagesByReportId(reportId); 
+            return list?.OrderBy(i => i.Id).FirstOrDefault();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    string GetDataUrl(Image img)
+    {
+        if (img?.Data is null || img.Data.Length == 0) return string.Empty;
+        var mime = GuessMime(img.Data);
+        var b64  = Convert.ToBase64String(img.Data);
+        return $"data:{mime};base64,{b64}";
+    }
+
+    string GuessMime(byte[] data)
+    {
+        if (data.Length > 3 && data[0] == 0xFF && data[1] == 0xD8 && data[2] == 0xFF) return "image/jpeg";
+        if (data.Length > 8 && data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47) return "image/png";
+        if (data.Length > 4 && data[0] == 0x47 && data[1] == 0x49 && data[2] == 0x46 && data[3] == 0x38) return "image/gif";
+        if (data.Length > 12 && data[0] == 0x52 && data[1] == 0x49 && data[2] == 0x46 && data[3] == 0x46 &&
+            data[8] == 0x57 && data[9] == 0x45 && data[10] == 0x42 && data[11] == 0x50) return "image/webp";
+        return "image/jpeg";
     }
 }
