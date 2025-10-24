@@ -1,0 +1,80 @@
+﻿@page "/Report/AllReports"
+@attribute [Authorize(Roles = "Admin,Supervisor,General")]
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using QazaqGeoReports.Domain.Entities
+@using QazaqGeoReports.Domain.Interfaces.Services
+
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IReportService ReportService
+@inject IUserService UserService
+<h3>Все отчеты</h3>
+
+@if (reports == null)
+{
+    <p>Загрузка...</p>
+}
+else if (!reports.Any())
+{
+    <p>Отчеты не найдены.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Дата</th>
+                <th>Автор</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var report in reportViewModels)
+            {
+                <tr>
+                    <td>@report.Report.Title</td>
+                    <td>@report.Report.CreatedTime</td>
+                    <td>@report.UserName</td>
+                    <td>
+                        <a class="btn btn-primary" href="/Report/Details/@report.Report.Id">Подробнее</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Report> reports;
+    private List<User> users;
+    private List<ReportViewModel> reportViewModels;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity?.IsAuthenticated ?? true)
+        {
+            reports = new List<Report>();
+            return;
+        }    
+        reports = await ReportService.GetAllAsync();
+        foreach(var report in reports)
+        {
+            var reportUser = await UserService.GetUserByIdAsync(report.CreatedByUserId);
+            reportViewModels.Add(new ReportViewModel
+            {
+                Report = report,
+                UserName = $"{reportUser.FirstName} {reportUser.LastName} {reportUser.MiddleName}"
+            });
+        }
+    }
+    public class ReportViewModel
+    {
+        public Report Report { get; set; }
+        public string UserName { get; set; }
+    }
+}

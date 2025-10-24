@@ -1,0 +1,225 @@
+﻿@page "/Report/Details/{ReportId:int}"
+@using Microsoft.AspNetCore.Authorization
+@using QazaqGeoReports.Domain.Entities
+@using QazaqGeoReports.Domain.Interfaces.Repositories
+
+@attribute [Authorize(Roles="Admin,General,Supervisor")]
+
+@inject NavigationManager Nav
+@inject IReportRepository ReportRepo   
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Детали отчёта</PageTitle>
+
+@if (isLoading)
+{
+    <div class="d-flex align-items-center justify-content-center py-5">
+        <div class="spinner-border" role="status" aria-hidden="true"></div>
+        <span class="ms-3">Загружаем отчёт…</span>
+    </div>
+}
+else if (report is null)
+{
+    <div class="alert alert-warning mt-4" role="alert">
+        Отчёт с ID <strong>@ReportId</strong> не найден.
+    </div>
+    <button class="btn btn-outline-secondary mt-2" @onclick="GoBack">Назад</button>
+}
+else
+{
+    <div class="container py-3">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+            <h2 class="mb-0">@DisplayOrDash(report.Title)</h2>
+            <div class="d-flex gap-2">
+                <span class="badge text-bg-light">ID: @ReportId</span>
+                @if (!string.IsNullOrWhiteSpace(report.CreatedByUserId))
+                {
+                    <span class="badge text-bg-primary">Автор: @report.CreatedByUserId</span>
+                }
+                <span class="badge @GetTripBadgeClass()">@TripBadgeText()</span>
+            </div>
+        </div>
+
+        <!-- Ключевые метрики -->
+        <div class="row g-3">
+            <div class="col-12 col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <strong>Маршрут и движение</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="row row-cols-1 row-cols-md-2 g-3">
+                            <div>
+                                <div class="text-muted small">Описание маршрута</div>
+                                <div class="fw-semibold">@MultilineOrDash(report.RouteDescription)</div>
+                            </div>
+                            <div>
+                                <div class="text-muted small">Перемещения людей</div>
+                                <div>@MultilineOrMuted(report.UsersMovement)</div>
+                            </div>
+                            <div>
+                                <div class="text-muted small">Перемещения техники</div>
+                                <div>@MultilineOrMuted(report.EquipmentsMovement)</div>
+                            </div>
+                            <div>
+                                <div class="text-muted small">Комментарий</div>
+                                <div>@MultilineOrMuted(report.Comments)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-3 shadow-sm">
+                    <div class="card-header bg-white">
+                        <strong>Содержимое отчёта</strong>
+                    </div>
+                    <div class="card-body">
+                        @if (!string.IsNullOrWhiteSpace(report.Content))
+                        {
+                            <pre class="mb-0" style="white-space:pre-wrap">@report.Content</pre>
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <strong>Время и расстояние</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Выезд:</span>
+                                <span class="fw-semibold">@FormatDateTime(report.DepartureTime)</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Прибытие:</span>
+                                <span class="fw-semibold">@FormatDateTime(report.ArrivalTime)</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Длительность:</span>
+                                <span class="fw-semibold">@TripDuration()</span>
+                            </div>
+                            <hr />
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Дистанция (км):</span>
+                                <span class="fw-semibold">@FormatNumber(report.DistanceKM)</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Топливо (л):</span>
+                                <span class="fw-semibold">@FormatNumber(report.FuelUsedLiters)</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Расход (л / 100 км):</span>
+                                <span class="fw-semibold">@FuelPer100()</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-3 flex-wrap">
+                    <button class="btn btn-outline-secondary" @onclick="GoBack">Назад</button>
+                    <button class="btn btn-primary" @onclick="@(() => Nav.NavigateTo($"/Report/Edit/{ReportId}"))">Редактировать</button>
+                    <button class="btn btn-danger" @onclick="ConfirmDelete">Удалить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code
+{
+    [Parameter] public int ReportId { get; set; }
+
+    private Report? report;
+    private bool isLoading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        try
+        {
+            report = await ReportRepo.GetByIdAsync(ReportId);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    // ---------- UI helpers ----------
+    string DisplayOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value!;
+    MarkupString MultilineOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? new MarkupString("<span class='text-muted'>—</span>")
+                                         : new MarkupString(System.Net.WebUtility.HtmlEncode(value).Replace("\n", "<br />"));
+    MarkupString MultilineOrMuted(string? value) => MultilineOrDash(value);
+
+    string FormatDateTime(DateTime? dt)
+        => dt.HasValue ? dt.Value.ToString("dd.MM.yyyy HH:mm") : "—";
+
+    string FormatNumber(double? n)
+        => n.HasValue ? n.Value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) : "—";
+
+    string TripDuration()
+    {
+        if (report?.DepartureTime is DateTime dep && report?.ArrivalTime is DateTime arr && arr > dep)
+        {
+            var ts = arr - dep;
+            return $"{(int)ts.TotalHours} ч {ts.Minutes:D2} мин";
+        }
+        return "—";
+    }
+
+    string FuelPer100()
+    {
+        if (report?.FuelUsedLiters is double fuel && report?.DistanceKM is double km && km > 0)
+        {
+            var v = fuel / km * 100.0;
+            return v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+        }
+        return "—";
+    }
+
+    string GetTripBadgeClass()
+    {
+        if (report?.DepartureTime is null || report?.ArrivalTime is null) return "text-bg-secondary";
+        if (report!.ArrivalTime <= report!.DepartureTime) return "text-bg-warning";
+        return "text-bg-success";
+    }
+
+    string TripBadgeText()
+    {
+        if (report?.DepartureTime is null || report?.ArrivalTime is null) return "время не указано";
+        if (report!.ArrivalTime <= report!.DepartureTime) return "проверь время";
+        return "данные корректны";
+    }
+
+    void GoBack()
+    { 
+        if (Nav.Uri.Contains("/Report/Details/"))
+            Nav.NavigateTo("/Report/AllReports");
+        else
+            Nav.NavigateTo("/", true);
+    }
+
+    async Task ConfirmDelete()
+    { 
+        var ok = await DeleteWithConfirmAsync();
+        if (ok)
+        {
+            await ReportRepo.DeleteAsync(ReportId);
+            Nav.NavigateTo("/Report/AllReports");
+        }
+    }
+     
+    async Task<bool> DeleteWithConfirmAsync()
+    {
+        await Task.Yield();
+        return true; // Поменяй на реальное подтверждение
+    }
+}

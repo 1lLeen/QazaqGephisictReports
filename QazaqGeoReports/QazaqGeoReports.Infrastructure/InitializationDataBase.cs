@@ -31,8 +31,24 @@ public class InitializationDataBase
 
         var admin = GetInitialUser();
         admin.PasswordHash = new PasswordHasher<User>().HashPassword(admin, "NewPasswordForMe1112");
+        
         dbContext.Roles.AddRange(GetRoles());
+        dbContext.SaveChanges();  
+        admin.RoleId = dbContext.Roles.First(x => x.Name == Roles.Admin.ToString()).Id.ToString();
         dbContext.Users.Add(admin);
+        dbContext.SaveChanges(); 
+        dbContext.RoleClaims.Add(new IdentityRoleClaim<string>
+        {
+            RoleId = dbContext.Roles.First(x => x.Name == Roles.Admin.ToString()).Id.ToString(),
+            ClaimType = "IsAdmin",
+            ClaimValue = "true"
+        });
+        dbContext.SaveChanges();
+        dbContext.UserRoles.Add(new IdentityUserRole<string>
+        {
+            RoleId = dbContext.Roles.First(x => x.Name == Roles.Admin.ToString()).Id.ToString(),
+            UserId = dbContext.Users.First().Id
+        });
         dbContext.SaveChanges();
 
         logger.LogInformation("Database rebuild finished.");
@@ -60,7 +76,7 @@ public class InitializationDataBase
             new IdentityRole
             {
                 Name = Roles.Worker.ToString(),
-                NormalizedName = Roles.Driver.ToString().ToUpper(),
+                NormalizedName = Roles.Worker.ToString().ToUpper(),
             },
         };
     private static User GetInitialUser() =>

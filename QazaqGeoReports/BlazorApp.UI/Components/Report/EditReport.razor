@@ -1,0 +1,324 @@
+﻿@page "/Report/Edit/{ReportId:int}"
+@using System.ComponentModel.DataAnnotations
+@using QazaqGeoReports.Domain.Entities
+@using QazaqGeoReports.Domain.Interfaces.Repositories
+
+@inject NavigationManager Nav
+@inject IReportRepository ReportRepo
+
+<PageTitle>Редактирование отчёта</PageTitle>
+
+<h3 class="mb-3">EditReport</h3>
+
+@if (isLoading)
+{
+    <div class="d-flex align-items-center justify-content-center py-5">
+        <div class="spinner-border" role="status"></div>
+        <span class="ms-3">Загружаем данные…</span>
+    </div>
+}
+else if (loadError is not null)
+{
+    <div class="alert alert-danger" role="alert">@loadError</div>
+    <button class="btn btn-outline-secondary" @onclick="GoBack">Назад</button>
+}
+else
+{
+    <EditForm Model="edit" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row g-3">
+            <div class="col-12 col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <strong>Основное</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Заголовок *</label>
+                            <InputText class="form-control" @bind-Value="edit.Title" />
+                            <ValidationMessage For="@(() => edit.Title)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Содержимое</label>
+                            <InputTextArea class="form-control" rows="6" @bind-Value="edit.Content" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Комментарий</label>
+                            <InputTextArea class="form-control" rows="4" @bind-Value="edit.Comments" />
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Описание маршрута</label>
+                                <InputTextArea class="form-control" rows="3" @bind-Value="edit.RouteDescription" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Перемещения людей</label>
+                                <InputTextArea class="form-control" rows="3" @bind-Value="edit.UsersMovement" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Перемещения техники</label>
+                                <InputTextArea class="form-control" rows="3" @bind-Value="edit.EquipmentsMovement" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mt-3">
+                    <div class="card-header bg-white">
+                        <strong>Показатели</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Дистанция (км)</label>
+                                <InputNumber class="form-control" @bind-Value="edit.DistanceKM" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Топливо (л)</label>
+                                <InputNumber class="form-control" @bind-Value="edit.FuelUsedLiters" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Расход (л/100 км)</label>
+                                <input class="form-control" value="@FuelPer100Display" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-3 flex-wrap">
+                    <button type="submit" class="btn btn-primary" disabled="@saving">
+                        @if (saving)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        }
+                        Сохранить
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" @onclick="GoBack" disabled="@saving">Отмена</button>
+                    @if (ReportId != 0)
+                    {
+                        <button type="button" class="btn btn-danger" @onclick="DeleteAsync" disabled="@saving">Удалить</button>
+                    }
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <strong>Время</strong>
+                    </div>
+                    <div class="card-body">
+                        <!-- datetime-local удобно для даты+времени -->
+                        <div class="mb-3">
+                            <label class="form-label">Выезд</label>
+                            <input class="form-control" type="datetime-local"
+                                   @bind="departureLocal"
+                                   @bind:format="yyyy-MM-ddTHH:mm" />
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label">Прибытие</label>
+                            <input class="form-control" type="datetime-local"
+                                   @bind="arrivalLocal"
+                                   @bind:format="yyyy-MM-ddTHH:mm" />
+                        </div>
+                        <div class="form-text">
+                            Длительность: <strong>@TripDurationDisplay</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mt-3">
+                    <div class="card-header bg-white">
+                        <strong>Служебное</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">ID автора</label>
+                            <InputText class="form-control" @bind-Value="edit.CreatedByUserId" />
+                        </div>
+                        <div>
+                            <span class="badge text-bg-light">ID отчёта: @ReportId</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+@code {
+    [Parameter] public int ReportId { get; set; }
+
+    private ReportEditDto edit = new();
+    private bool isLoading = true;
+    private bool saving = false;
+    private string? loadError;
+
+    // Поля для ввода datetime-local (локальное время)
+    private DateTime? departureLocal;
+    private DateTime? arrivalLocal;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        loadError = null;
+        try
+        {
+            if (ReportId == 0)
+            {
+                // Новый отчёт
+                edit = new ReportEditDto();
+                departureLocal = null;
+                arrivalLocal = null;
+            }
+            else
+            {
+                var r = await ReportRepo.GetByIdAsync(ReportId);
+                if (r is null)
+                {
+                    loadError = $"Отчёт с ID {ReportId} не найден.";
+                }
+                else
+                {
+                    edit = new ReportEditDto
+                    {
+                        Title = r.Title,
+                        Content = r.Content,
+                        Comments = r.Comments,
+                        DistanceKM = r.DistanceKM,
+                        FuelUsedLiters = r.FuelUsedLiters,
+                        RouteDescription = r.RouteDescription,
+                        UsersMovement = r.UsersMovement,
+                        EquipmentsMovement = r.EquipmentsMovement,
+                        CreatedByUserId = r.CreatedByUserId,
+                        DepartureTime = r.DepartureTime,
+                        ArrivalTime = r.ArrivalTime
+                    };
+
+                    departureLocal = r.DepartureTime?.ToLocalTime();
+                    arrivalLocal = r.ArrivalTime?.ToLocalTime();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            loadError = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        saving = true;
+        try
+        {
+            // Переносим локальные значения обратно в UTC (или оставь Local, если так храните)
+            edit.DepartureTime = departureLocal?.ToUniversalTime();
+            edit.ArrivalTime = arrivalLocal?.ToUniversalTime();
+
+            if (ReportId == 0)
+            {
+                var entity = ToEntity(new Report());
+                var created = await ReportRepo.CreateAsync(entity); // нужен метод CreateAsync
+                Nav.NavigateTo($"/Report/Details/{created.Id}");
+            }
+            else
+            {
+                var existing = await ReportRepo.GetByIdAsync(ReportId);
+                if (existing is null)
+                {
+                    loadError = $"Отчёт с ID {ReportId} не найден.";
+                    return;
+                }
+
+                var updated = ToEntity(existing);
+                await ReportRepo.UpdateAsync(updated); // нужен метод UpdateAsync
+                Nav.NavigateTo($"/Report/Details/{ReportId}");
+            }
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (ReportId == 0) return;
+        saving = true;
+        try
+        {
+            await ReportRepo.DeleteAsync(ReportId);
+            Nav.NavigateTo("/Report/AllReports");
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private void GoBack() => Nav.NavigateTo("/Report/AllReports");
+
+    private Report ToEntity(Report target)
+    {
+        target.Title = edit.Title?.Trim();
+        target.Content = edit.Content;
+        target.Comments = edit.Comments;
+        target.DistanceKM = edit.DistanceKM;
+        target.FuelUsedLiters = edit.FuelUsedLiters;
+        target.RouteDescription = edit.RouteDescription;
+        target.UsersMovement = edit.UsersMovement;
+        target.EquipmentsMovement = edit.EquipmentsMovement;
+        target.CreatedByUserId = edit.CreatedByUserId;
+        target.DepartureTime = edit.DepartureTime;
+        target.ArrivalTime = edit.ArrivalTime;
+        return target;
+    }
+
+    // --------- Display helpers ---------
+    private string FuelPer100Display
+        => (edit.FuelUsedLiters is double f && edit.DistanceKM is double km && km > 0)
+            ? (f / km * 100.0).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)
+            : "—";
+
+    private string TripDurationDisplay
+    {
+        get
+        {
+            if (departureLocal is DateTime dep && arrivalLocal is DateTime arr && arr > dep)
+            {
+                var ts = arr - dep;
+                return $"{(int)ts.TotalHours} ч {ts.Minutes:D2} мин";
+            }
+            return "—";
+        }
+    }
+
+    // --------- DTO с валидацией ---------
+    private class ReportEditDto
+    {
+        [Required(ErrorMessage = "Заголовок обязателен")]
+        [StringLength(200, ErrorMessage = "Максимум 200 символов")]
+        public string? Title { get; set; }
+
+        public string? Content { get; set; }
+        public string? Comments { get; set; }
+        [Range(0, double.MaxValue, ErrorMessage = "Не может быть меньше 0")]
+        public double? DistanceKM { get; set; }
+        [Range(0, double.MaxValue, ErrorMessage = "Не может быть меньше 0")]
+        public double? FuelUsedLiters { get; set; }
+        public string? RouteDescription { get; set; }
+        public string? UsersMovement { get; set; }
+        public string? EquipmentsMovement { get; set; }
+        public string? CreatedByUserId { get; set; }
+
+        public DateTime? DepartureTime { get; set; }
+        public DateTime? ArrivalTime { get; set; }
+    }
+}

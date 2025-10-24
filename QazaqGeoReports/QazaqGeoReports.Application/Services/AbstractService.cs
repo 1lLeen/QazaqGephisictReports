@@ -11,6 +11,7 @@ public class AbstractService<TRepository, TEntity>
     {
         _repository = repository;
     }
+    public virtual async Task<List<TEntity>> GetAllAsync() => await _repository.GetAllAsync();
     public virtual async Task<TEntity> GetByIdAsync(int id) => await _repository.GetByIdAsync(id);
     public virtual async Task<TEntity> CreateAsync(TEntity entity) => await _repository.CreateAsync(entity);
     public virtual async Task<TEntity> UpdateAsync(TEntity entity) => await _repository.UpdateAsync(entity);

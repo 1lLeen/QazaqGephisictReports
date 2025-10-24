@@ -31,5 +31,9 @@ public class ReportService : AbstractService<IReportRepository, Report>, IReport
         
         return dto;
     }
+    public async Task<User> GetUserByReportIdAsync(int reportId)
+    {
+        return await _repository.GetUserByReportId(reportId);
+    }
 
 }
