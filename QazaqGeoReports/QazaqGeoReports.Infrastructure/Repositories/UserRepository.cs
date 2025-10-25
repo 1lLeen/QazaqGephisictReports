@@ -14,6 +14,11 @@ public class UserRepository : IUserRepository
         _context = context;
         _dbSet = _context.Set<User>();
     }
+    public async Task<List<User>> GetAllAsync()
+    {
+        var res = await _dbSet.ToListAsync();
+        return res;
+    }
     public async Task<User> CreateAsync(User model)
     {
         model.CreatedTime = DateTime.UtcNow;
@@ -46,8 +51,7 @@ public class UserRepository : IUserRepository
         await _context.SaveChangesAsync();
         return model;
 
-    }
-    public async Task<List<User>> GetAllAsync() => await _dbSet.ToListAsync();
+    } 
 
     public async Task<User> GetByFullNameAsync(string fullname) => await _dbSet.FirstOrDefaultAsync(x => x.FullName == fullname);
     

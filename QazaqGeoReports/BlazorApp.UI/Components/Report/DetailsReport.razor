@@ -1,4 +1,6 @@
 ﻿@page "/Report/Details/{ReportId:int}"
+@attribute [Authorize]
+
 @using Microsoft.AspNetCore.Authorization
 @using QazaqGeoReports.Domain.Entities
 @using QazaqGeoReports.Domain.Interfaces.Repositories

@@ -3,6 +3,7 @@
 namespace QazaqGeoReports.Domain.Interfaces.Repositories;
 public interface IUserRepository
 {
+    Task<List<User>> GetAllAsync();
     Task<User> GetUserByIdAsync(string id);
     Task<User> GetUserByEmailAsync(string email);
     Task<User> GetByFullNameAsync(string fullName);

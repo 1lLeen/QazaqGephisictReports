@@ -1,7 +1,77 @@
-﻿@page "/"
+﻿@page "/" 
 
-<PageTitle>Home</PageTitle>
+@using QazaqGeoReports.Domain.Entities
+@using QazaqGeoReports.Domain.Interfaces.Services
+@using QazaqGeoReports.Domain.Common
+@using System.Security.Claims
 
-<h1>Hello, world!</h1>
+@inject IUserService UserService
+@inject IReportService ReportService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
-Welcome to your new app.
+<PageTitle>Главная</PageTitle>
+
+<h2 class="text-center mt-4 mb-4">👨‍💼 Сотрудники компании</h2>
+
+@if (users == null)
+{
+    <div class="text-center mt-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+    </div>
+}
+else if (!users.Any())
+{
+    <div class="alert alert-warning text-center">
+        Сотрудников пока нет.
+    </div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @foreach (var users in userViews)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">@users.User.FullName</h5> 
+                        <p class="card-text mb-1"><strong>Почта:</strong> @users.User.Email</p>
+                        <p class="card-text mb-1"><strong>Номер:</strong> @users.User.PhoneNumber</p>
+                        <p class="card-text mb-0">
+                            <strong>Email:</strong> <a href="@users.User.Email">@users.User.Email</a>
+                        </p>
+                        <p class="card-text mb-1"><strong>Количество отчетов:</strong> @users.ReportCount</p>
+
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<User> users;
+    private int countReports;
+    private List<UserViewModel> userViews; 
+    protected  override async Task OnInitializedAsync()
+    {
+        userViews = new List<UserViewModel>();
+        users = await UserService.GetAllAsync();
+        foreach(var item in users)
+        {
+           userViews.Add(new UserViewModel
+           {
+               User = item,
+
+               ReportCount = (await ReportService.GetReportsByUserAsync(item.Id)).Count
+            });
+        }
+    }
+    public class UserViewModel
+    {
+        public User User { get; set; }
+        public string Role { get; set; }
+        public int ReportCount { get; set; }
+    }
+}

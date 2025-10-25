@@ -1,5 +1,7 @@
 ﻿@page "/Report/MyReports"
+@attribute [Authorize]
 
+@using Microsoft.AspNetCore.Authorization
 @using QazaqGeoReports.Domain.Interfaces.Services
 @using QazaqGeoReports.Domain.Entities
 @using Microsoft.AspNetCore.Components.Authorization
@@ -8,6 +10,10 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 <h3 class="mt-4 mb-3 text-center">📋 Мои Рапорты</h3>
+<a href="/Report/Create" class="btn btn-lg btn-success" style="font-weight: 600; font-size: 1.1rem; border-radius: 12px; margin:15px;">
+    <i class="bi bi-plus-circle-fill" style="font-size: 1.4rem;"></i>
+    <span>Создать отчёт</span>
+</a>
 
 @if (reports == null)
 {

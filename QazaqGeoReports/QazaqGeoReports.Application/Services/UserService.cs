@@ -10,7 +10,7 @@ public class UserService : IUserService
     {
         _repository = repository;
     }
-    
+    public virtual async Task<List<User>> GetAllAsync() => await _repository.GetAllAsync();
     public virtual async Task<User> GetByFullNameAsync(string fullName) => await _repository.GetByFullNameAsync(fullName);
     public virtual async Task<User> GetUserByIdAsync(string id) => await _repository.GetUserByIdAsync(id);
     public virtual async Task<User> GetUserByEmailAsync(string email) => await _repository.GetUserByEmailAsync(email);
