@@ -1,6 +1,160 @@
 ﻿@page "/About"
-<h3>About</h3>
 
-@code {
+<PageTitle>О компании — QazaqGeophysics</PageTitle>
 
-}
+<div class="about container-xxl py-4">
+    <!-- Hero -->
+    <section class="hero shadow-sm rounded-3 p-4 p-md-5 mb-4 d-flex align-items-center gap-3">
+        <div>
+            <h1 class="mb-2">QazaqGeophysics</h1>
+            <p class="lead mb-0">Цифровая экосистема для геофизики и полевых работ в Казахстане: отчёты, оборудование, трассы и аналитика — в одном месте.</p>
+        </div>
+    </section>
+
+    <!-- Коротко о миссии -->
+    <section class="mb-4">
+        <h2 class="h4 mb-3">Миссия</h2>
+        <p class="mb-0">
+            Мы помогаем геологам и полевым командам собирать, структурировать и анализировать данные быстрее,
+            снижая ручную работу и ошибки. Цель — превратить полевые данные в управленческие решения в один клик.
+        </p>
+    </section>
+
+    <!-- Что делает платформа -->
+    <section class="mb-4">
+        <h2 class="h4 mb-3">Что умеет платформа</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card feature h-100">
+                    <div class="card-body">
+                        <h3 class="h6">Ежедневные отчёты</h3>
+                        <p class="mb-2">Создание и ведение отчётов с маршрутами, расходом топлива, комментариями, временем выезда/прибытия.</p>
+                        <ul class="small mb-0">
+                            <li>Ролевой доступ: Admin, Supervisor, General, Driver, Worker</li>
+                            <li>Встроенная валидация и статус</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card feature h-100">
+                    <div class="card-body">
+                        <h3 class="h6">Медиа и документы</h3>
+                        <p class="mb-2">Привязка фотографий и файлов к отчётам и оборудованию.</p>
+                        <ul class="small mb-0">
+                            <li>Хранение изображений в базе</li>
+                            <li>Безопасные ссылки для просмотра</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card feature h-100">
+                    <div class="card-body">
+                        <h3 class="h6">Учёт оборудования</h3>
+                        <p class="mb-2">Движение приборов и материалов: кто, когда и куда перевёз.</p>
+                        <ul class="small mb-0">
+                            <li>История по инвентарным единицам</li>
+                            <li>Связь с отчётами смен</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card feature h-100">
+                    <div class="card-body">
+                        <h3 class="h6">Аналитика</h3>
+                        <p class="mb-2">Сводки по маршрутам, пробегу и топливу. В планах — карты и профили.</p>
+                        <ul class="small mb-0">
+                            <li>Экспорт в Excel/CSV (roadmap)</li>
+                            <li>Интеграция с GIS/PostGIS (roadmap)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Технологии -->
+    <section class="mb-4">
+        <h2 class="h4 mb-3">Технологии</h2>
+        <div class="tech d-flex flex-wrap gap-2">
+            <span class="badge rounded-pill">.NET / ASP.NET Core</span>
+            <span class="badge rounded-pill">Blazor</span>
+            <span class="badge rounded-pill">EF Core</span>
+            <span class="badge rounded-pill">PostgreSQL</span>
+            <span class="badge rounded-pill">Npgsql</span>
+            <span class="badge rounded-pill">Clean Architecture</span>
+        </div>
+    </section>
+
+    <!-- Роли и доступ -->
+    <section class="mb-4">
+        <h2 class="h4 mb-3">Роли доступа</h2>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>Роль</th>
+                        <th>Доступ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="role-badge admin">Admin</span></td>
+                        <td>Полный доступ, управление пользователями и политиками.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="role-badge supervisor">Supervisor</span></td>
+                        <td>Просмотр всех отчётов, подтверждение/комментарии.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="role-badge general">General</span></td>
+                        <td>Доступ к своим и командным отчётам.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="role-badge driver">Driver</span></td>
+                        <td>Создание отчётов о маршрутах, топливе, вложениях.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="role-badge worker">Worker</span></td>
+                        <td>Добавление полевых данных, фото и заметок.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Дорожная карта -->
+    <section class="mb-4">
+        <h2 class="h4 mb-3">Дорожная карта</h2>
+        <ul class="list-unstyled roadmap">
+            <li>
+                <span class="dot done"></span>
+                Базовые отчёты, роли, загрузка изображений
+                <small class="text-muted d-block">v1 • уже доступно</small>
+            </li>
+            <li>
+                <span class="dot inprog"></span>
+                Улучшенный просмотр отчётов, предпросмотр медиа
+                <small class="text-muted d-block">v1.1 • в работе</small>
+            </li>
+            <li>
+                <span class="dot next"></span>
+                Интеграция с картами (GIS/PostGIS), треки GPS
+                <small class="text-muted d-block">v1.2 • запланировано</small>
+            </li>
+        </ul>
+    </section>
+
+    <!-- Контакты -->
+    <section class="mb-2">
+        <h2 class="h4 mb-3">Контакты автора</h2>
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <p class="mb-1"><strong>Email:</strong> mygoldencode@gmail.com</p>
+                <p class="mb-0"><strong>Локация:</strong> Караганда, Казахстан</p>
+            </div>
+        </div>
+    </section>
+</div>

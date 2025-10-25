@@ -18,32 +18,32 @@
 
 <PageTitle>Register</PageTitle>
 
-<h1>Register</h1>
+<h1>Регистрация</h1>
 
 <div class="row">
     <div class="col-lg-6">
         <StatusMessage Message="@Message" />
         <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
             <DataAnnotationsValidator />
-            <h2>Create a new account.</h2>
+            <h2>Создания нового пользователя</h2>
             <hr />
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.FirstName" id="Input.FirstName" class="form-control" autocomplete="firstname" aria-required="true" placeholder="Вася" />
+                <InputText @bind-Value="Input.FirstName" id="Input.FirstName" class="form-control" autocomplete="firstname" aria-required="true" placeholder="Имя" />
                 <label for="Input.FirstName">FirstName</label>
                 <ValidationMessage For="() => Input.FirstName" class="text-danger" />
             </div>
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.LastName" id="Input.LastName" class="form-control" autocomplete="lastname" aria-required="true" placeholder="Пупкин" />
+                <InputText @bind-Value="Input.LastName" id="Input.LastName" class="form-control" autocomplete="lastname" aria-required="true" placeholder="Фамилия" />
                 <label for="Input.LastName">LastName</label>
                 <ValidationMessage For="() => Input.LastName" class="text-danger" />
             </div>
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.MiddleName" id="Input.MiddleName" class="form-control" autocomplete="middlename" aria-required="true" placeholder="Пупкинович" />
+                <InputText @bind-Value="Input.MiddleName" id="Input.MiddleName" class="form-control" autocomplete="middlename" aria-required="true" placeholder="Отчество" />
                 <label for="Input.MiddleName">MiddleName</label>
                 <ValidationMessage For="() => Input.MiddleName" class="text-danger" />
             </div>
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="email" aria-required="true" placeholder="example.com" />
+                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="email" aria-required="true" placeholder="example@mail.ru" />
                 <label for="Input.Email">Email</label>
                 <ValidationMessage For="() => Input.Email" class="text-danger" />
             </div>
@@ -65,12 +65,12 @@
                 <ValidationMessage For="() => Input.Role" class="text-danger" />
             </div>
             <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Пароль" />
                 <label for="Input.Password">Password</label>
                 <ValidationMessage For="() => Input.Password" class="text-danger" />
             </div>
             <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Подврждение пароля" />
                 <label for="Input.ConfirmPassword">Confirm Password</label>
                 <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
             </div>
@@ -79,13 +79,6 @@
             <ValidationSummary class="text-danger" role="alert" />
             <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
         </EditForm>
-    </div>
-    <div class="col-lg-4 col-lg-offset-2">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr />
-            <ExternalLoginPicker />
-        </section>
     </div>
 </div>
 
