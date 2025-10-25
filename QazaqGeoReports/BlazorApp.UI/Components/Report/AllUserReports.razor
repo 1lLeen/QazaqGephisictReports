@@ -1,6 +1,7 @@
 ﻿@page "/Report/AllReports"
 @attribute [Authorize(Roles = "Admin,Supervisor,General")]
 
+@using System.Security.Claims
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using QazaqGeoReports.Domain.Entities
@@ -9,71 +10,404 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IReportService ReportService
 @inject IUserService UserService
-<h3>Все отчеты</h3>
 
-@if (reports == null)
-{
-    <p>Загрузка...</p>
-}
-else if (!reports.Any())
-{
-    <p>Отчеты не найдены.</p>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Название</th>
-                <th>Дата</th>
-                <th>Автор</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var report in reportViewModels)
-            {
-                <tr>
-                    <td>@report.Report.Title</td>
-                    <td>@report.Report.CreatedTime</td>
-                    <td>@report.UserName</td>
-                    <td>
-                        <a class="btn btn-primary" href="/Report/Details/@report.Report.Id">Подробнее</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+<PageTitle>Все отчёты</PageTitle>
+
+<div class="container py-3">
+
+    <div class="d-flex align-items-center gap-3 mb-3">
+        <h3 class="mb-0">Все отчёты</h3>
+        @if (isLoading)
+        {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        }
+        else
+        {
+            <span class="badge bg-secondary">Всего: @filtered.Count()</span>
+        }
+    </div>
+
+    <!-- Панель фильтров -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <div class="fw-semibold">Фильтры</div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-secondary" @onclick="ResetFilters" title="Сбросить фильтры">Сброс</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label">Поиск (название/комментарии/маршрут)</label>
+                    <input class="form-control" placeholder="Введите текст…"
+                           @bind="searchText" @bind:event="oninput" />
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <label class="form-label">Автор</label>
+                    <select class="form-select" @bind="selectedAuthorId">
+                        <option value="">— Любой —</option>
+                        @foreach (var u in authorOptions)
+                        {
+                            <option value="@u.Id">@u.FullName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Дата с</label>
+                    <input type="date" class="form-control" @bind="dateFrom" />
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Дата по</label>
+                    <input type="date" class="form-control" @bind="dateTo" />
+                </div>
+
+                <div class="col-12 col-md-1">
+                    <label class="form-label">Размер</label>
+                    <select class="form-select" @bind="pageSize">
+                        <option>10</option>
+                        <option>25</option>
+                        <option>50</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <label class="form-label">Сортировка</label>
+                    <select class="form-select" @bind="sortOption">
+                        <option value="date_desc">Дата ↓</option>
+                        <option value="date_asc">Дата ↑</option>
+                        <option value="title_asc">Название A→Z</option>
+                        <option value="title_desc">Название Z→A</option>
+                        <option value="author_asc">Автор A→Z</option>
+                        <option value="author_desc">Автор Z→A</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-3 align-self-end">
+                    <button class="btn btn-primary w-100" @onclick="ApplyFilters">
+                        Применить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="d-flex align-items-center justify-content-center py-5">
+            <div class="spinner-border" role="status" aria-hidden="true"></div>
+            <span class="ms-3">Загрузка…</span>
+        </div>
+    }
+    else if (!filtered.Any())
+    {
+        <div class="alert alert-warning">Отчёты не найдены.</div>
+    }
+    else
+    {
+        <div class="table-responsive shadow-sm">
+            <table class="table align-middle table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th style="min-width: 280px;">Название</th>
+                        <th style="width: 160px;">Дата</th>
+                        <th style="min-width: 220px;">Автор</th>
+                        <th style="width: 140px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var vm in paged)
+                    {
+                        <tr class="report-row">
+                            <td>
+                                <div class="fw-semibold text-truncate" title="@vm.Report.Title">
+                                    @(!string.IsNullOrWhiteSpace(vm.Report.Title) ? vm.Report.Title : "(без названия)")
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(vm.Report.Comments) || !string.IsNullOrWhiteSpace(vm.Report.RouteDescription))
+                                {
+                                    <div class="text-muted small text-truncate-2">
+                                        @((vm.Report.Comments ?? vm.Report.RouteDescription)!)
+                                    </div>
+                                }
+                                <div class="mt-1">
+                                    @if (vm.Report.DistanceKM is not null)
+                                    {
+                                        <span class="badge bg-outline me-1" title="Пробег, км">🚗 @vm.Report.DistanceKM.Value.ToString("0.##") км</span>
+                                    }
+                                    @if (vm.Report.FuelUsedLiters is not null)
+                                    {
+                                        <span class="badge bg-outline me-1" title="Топливо, л">⛽ @vm.Report.FuelUsedLiters.Value.ToString("0.##") л</span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                @FormatDate(vm.Report.CreatedTime)
+                            </td>
+                            <td>
+                                @vm.UserName
+                            </td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-primary" href="/Report/Details/@vm.Report.Id">Подробнее</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Пагинация -->
+        <nav class="d-flex justify-content-between align-items-center mt-3">
+            <div class="text-muted small">
+                Показаны @(startIndex + 1)–@((startIndex + paged.Count())) из @filtered.Count()
+            </div>
+            <ul class="pagination mb-0">
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    <button class="page-link" @onclick="(() => GoToPage(1))" aria-label="First">«</button>
+                </li>
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    <button class="page-link" @onclick="(() => GoToPage(currentPage - 1))" aria-label="Previous">‹</button>
+                </li>
+                @foreach (var p in VisiblePages())
+                {
+                    <li class="page-item @(p == currentPage ? "active" : "")">
+                        <button class="page-link" @onclick="(() => GoToPage(p))">@p</button>
+                    </li>
+                }
+                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                    <button class="page-link" @onclick="(() => GoToPage(currentPage + 1))" aria-label="Next">›</button>
+                </li>
+                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                    <button class="page-link" @onclick="(() => GoToPage(totalPages))" aria-label="Last">»</button>
+                </li>
+            </ul>
+        </nav>
+    }
+
+</div>
+
 @code {
-    private List<Report> reports;
-    private List<User> users;
-    private List<ReportViewModel> reportViewModels;
+    // --- State ---
+    private bool isLoading = true;
+
+    private List<Report> reports = new();
+    private List<UserLite> authorOptions = new(); // для выпадающего списка
+    private List<ReportViewModel> viewModels = new();
+    private IEnumerable<ReportViewModel> filtered => _filtered ?? Enumerable.Empty<ReportViewModel>();
+    private IEnumerable<ReportViewModel>? _filtered;
+
+    // Фильтры
+    private string? searchText;
+    private string? selectedAuthorId;
+    private DateTime? dateFrom;
+    private DateTime? dateTo;
+    private string sortOption = "date_desc";
+    private int pageSize = 10;
+
+    // Пагинация
+    private int currentPage = 1;
+    private int totalPages = 1;
+    private int startIndex => (currentPage - 1) * pageSize;
+    private List<ReportViewModel> paged = new();
 
     protected override async Task OnInitializedAsync()
     {
+        isLoading = true;
+
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        reportViewModels = new List<ReportViewModel>();
+
         if (!user.Identity?.IsAuthenticated ?? true)
         {
-            reports = new List<Report>();
+            isLoading = false;
             return;
-        }    
-        reports = await ReportService.GetAllAsync();
-        foreach(var report in reports)
-        {
-            var reportUser = await UserService.GetUserByIdAsync(report.CreatedByUserId);
-            reportViewModels.Add(new ReportViewModel
-            {
-                Report = report,
-                UserName = $"{reportUser.FirstName} {reportUser.LastName} {reportUser.MiddleName}"
-            });
         }
+
+        // Получаем все отчёты
+        reports = await ReportService.GetAllAsync();
+
+        // Ролевая фильтрация: General видит только свои
+        var currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                         ?? user.FindFirst("sub")?.Value;
+
+        if (user.IsInRole("General") && !string.IsNullOrEmpty(currentUserId))
+        {
+            reports = reports.Where(r => r.CreatedByUserId == currentUserId).ToList();
+        }
+
+        // Собираем авторов (минимальный профиль)
+        var userIds = reports.Select(r => r.CreatedByUserId)
+                             .Where(id => !string.IsNullOrWhiteSpace(id))
+                             .Distinct()
+                             .ToList();
+
+        var users = new List<UserLite>();
+        foreach (var id in userIds)
+        {
+            var u = await UserService.GetUserByIdAsync(id!);
+            if (u is not null)
+            {
+                users.Add(new UserLite
+                {
+                    Id = id!,
+                    FullName = $"{u.FirstName} {u.LastName} {u.MiddleName}".Replace("  ", " ").Trim()
+                });
+            }
+        }
+
+        // Для выпадающего списка авторов — сортируем по имени
+        authorOptions = users
+            .DistinctBy(x => x.Id)
+            .OrderBy(x => x.FullName, StringComparer.CurrentCultureIgnoreCase)
+            .ToList();
+
+        // ВМ для таблицы
+        viewModels = reports.Select(r =>
+        {
+            var author = users.FirstOrDefault(u => u.Id == r.CreatedByUserId);
+            var authorName = author?.FullName?.Trim();
+            if (string.IsNullOrWhiteSpace(authorName)) authorName = "Неизвестно";
+
+            return new ReportViewModel
+            {
+                Report = r,
+                UserName = authorName!
+            };
+        })
+        .ToList();
+
+        ApplyFilters(); // первичная отрисовка
+        isLoading = false;
     }
+
+    // Применение фильтров + сортировка + пересчёт пагинации
+    private void ApplyFilters()
+    {
+        IEnumerable<ReportViewModel> q = viewModels;
+
+        // Поиск по тексту
+        if (!string.IsNullOrWhiteSpace(searchText))
+        {
+            var s = searchText.Trim();
+            q = q.Where(vm =>
+                (vm.Report.Title ?? "").Contains(s, StringComparison.CurrentCultureIgnoreCase) ||
+                (vm.Report.Comments ?? "").Contains(s, StringComparison.CurrentCultureIgnoreCase) ||
+                (vm.Report.RouteDescription ?? "").Contains(s, StringComparison.CurrentCultureIgnoreCase));
+        }
+
+        // Автор
+        if (!string.IsNullOrWhiteSpace(selectedAuthorId))
+        {
+            q = q.Where(vm => vm.Report.CreatedByUserId == selectedAuthorId);
+        }
+
+        // Дата
+        if (dateFrom.HasValue)
+        {
+            q = q.Where(vm => GetCreated(vm.Report) >= dateFrom.Value.Date);
+        }
+        if (dateTo.HasValue)
+        {
+            // включительно по конец дня
+            var to = dateTo.Value.Date.AddDays(1).AddTicks(-1);
+            q = q.Where(vm => GetCreated(vm.Report) <= to);
+        }
+
+        // Сортировка
+        q = sortOption switch
+        {
+            "date_asc" => q.OrderBy(vm => GetCreated(vm.Report)),
+            "title_asc" => q.OrderBy(vm => vm.Report.Title, StringComparer.CurrentCultureIgnoreCase),
+            "title_desc" => q.OrderByDescending(vm => vm.Report.Title, StringComparer.CurrentCultureIgnoreCase),
+            "author_asc" => q.OrderBy(vm => vm.UserName, StringComparer.CurrentCultureIgnoreCase),
+            "author_desc" => q.OrderByDescending(vm => vm.UserName, StringComparer.CurrentCultureIgnoreCase),
+            _ => q.OrderByDescending(vm => GetCreated(vm.Report)) // date_desc по умолчанию
+        };
+
+        _filtered = q.ToList();
+
+        // Пагинация
+        totalPages = Math.Max(1, (int)Math.Ceiling((double)filtered.Count() / pageSize));
+        currentPage = Math.Min(currentPage, totalPages);
+        currentPage = Math.Max(currentPage, 1);
+
+        paged = filtered.Skip(startIndex).Take(pageSize).ToList();
+
+        StateHasChanged();
+    }
+
+    private void ResetFilters()
+    {
+        searchText = default;
+        selectedAuthorId = default;
+        dateFrom = default;
+        dateTo = default;
+        sortOption = "date_desc";
+        pageSize = 10;
+        currentPage = 1;
+        ApplyFilters();
+    }
+
+    private void GoToPage(int page)
+    {
+        currentPage = Math.Clamp(page, 1, totalPages);
+        paged = filtered.Skip(startIndex).Take(pageSize).ToList();
+    }
+
+    private IEnumerable<int> VisiblePages()
+    {
+        const int window = 5; // сколько номеров показываем
+        var start = Math.Max(1, currentPage - 2);
+        var end = Math.Min(totalPages, start + window - 1);
+        if (end - start + 1 < window)
+            start = Math.Max(1, end - window + 1);
+        return Enumerable.Range(start, end - start + 1);
+    }
+
+    private DateTime GetCreated(Report r)
+    {
+        // Предположительно CreatedTime находится в BaseEntity.
+        // Если у тебя поле другое — замени здесь.
+        return r.CreatedTime == default ? DateTime.MinValue : r.CreatedTime;
+    }
+
+    private MarkupString FormatDate(DateTime dt)
+    {
+        if (dt == default) return (MarkupString)"—";
+        // Красивый формат: 25.10.2025 12:34
+        return (MarkupString)dt.ToString("dd.MM.yyyy HH:mm");
+    }
+
     public class ReportViewModel
     {
-        public Report Report { get; set; }
-        public string UserName { get; set; }
+        public Report Report { get; set; } = default!;
+        public string UserName { get; set; } = string.Empty;
+    }
+
+    private class UserLite
+    {
+        public string Id { get; set; } = default!;
+        public string FullName { get; set; } = string.Empty;
     }
 }
+
+<style>
+    .text-truncate-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .bg-outline {
+        background: #f6f7f9;
+        color: #495057;
+        border: 1px solid #e9ecef;
+        font-weight: 500;
+    }
+
+    .report-row:hover {
+        background: #f9fbff !important;
+    }
+</style>
