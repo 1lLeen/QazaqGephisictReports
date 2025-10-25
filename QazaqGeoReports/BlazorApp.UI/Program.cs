@@ -13,6 +13,7 @@ using System.Globalization;
 
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseStaticWebAssets();
 
 builder.Configuration
 .AddJsonFile($"appsettings.json", optional: false)
@@ -53,6 +54,7 @@ builder.Services.AddDbContext<QazaqGeoReportContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddSingleton<IEmailSender<User>, IdentityNoOpEmailSender>();
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -82,6 +84,8 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.MapHealthChecks("/health");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
