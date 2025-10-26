@@ -181,7 +181,7 @@ else
         </div>
 
         <div class="mt-3">
-            <button class="btn btn-outline-secondary" @onclick="GoBack">Назад</button>
+            <a class="btn btn-outline-secondary" href="/">Назад</a>
         </div>
     </div>
 }
@@ -205,22 +205,19 @@ else
         {
             roles = (await UserManager.GetRolesAsync(user))?.ToList();
 
-            // Аватар из инициалов: LastName FirstName MiddleName
             var initialsSeed = string.IsNullOrWhiteSpace(user.FullName)
                 ? (user.Email ?? user.UserName ?? "U")
                 : user.FullName;
 
             AvatarSrc = $"https://api.dicebear.com/7.x/initials/svg?seed={Uri.EscapeDataString(initialsSeed)}";
 
-            // Если ведёшь историю логинов, можно показать.
-            // Здесь оставим "—" как заглушку. Подключи свой источник при желании.
             LastLoginDisplay = "—";
         }
 
         isLoading = false;
     }
 
-    private void GoBack() => Nav.NavigateTo(Nav.Uri.Contains("/User/Details") ? "/" : "..");
+    private void GoBack() => Nav.NavigateTo("/");
 
     private static string DisplayName(QazaqGeoReports.Domain.Entities.User u)
         => string.IsNullOrWhiteSpace(u.FullName) ? (u.UserName ?? u.Email ?? "Пользователь") : u.FullName;

@@ -18,6 +18,7 @@ builder.WebHost.UseStaticWebAssets();
 builder.Configuration
 .AddJsonFile($"appsettings.json", optional: false)
 .AddJsonFile($"appsettings.Environment.json", optional: true)
+.AddJsonFile($"appsettings.Production.json", optional: false)
 .AddEnvironmentVariables();
 //Для загрузки файлов не более 10МБ
 builder.Services.Configure<FormOptions>(options =>
@@ -51,6 +52,7 @@ builder.Services
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<QazaqGeoReportContext>(options =>
     options.UseNpgsql(connectionString));
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddSingleton<IEmailSender<User>, IdentityNoOpEmailSender>();

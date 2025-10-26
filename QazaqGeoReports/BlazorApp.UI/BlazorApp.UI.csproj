@@ -19,5 +19,4 @@
     <ProjectReference Include="..\QazaqGeoReports.Application\QazaqGeoReports.Application.csproj" />
     <ProjectReference Include="..\QazaqGeoReports.Infrastructure\QazaqGeoReports.Infrastructure.csproj" />
   </ItemGroup>
-
 </Project>

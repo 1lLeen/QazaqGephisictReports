@@ -1,0 +1,178 @@
+﻿/* ====== QG Тема, основанная на логотипе ====== */
+:root {
+    --qg-navy: #0b1f3a; /* тёмно-синий фон (как подложка логотипа) */
+    --qg-blue: #2f78c8; /* синий из глобуса */
+    --qg-blue-2: #1f5ea5; /* более тёмный синий для ховеров */
+    --qg-orange: #f39a1e; /* оранжевый текст GEOPHYSICS */
+    --qg-ink: #0e1a2f; /* тёмный для заголовков */
+    --qg-paper: #ffffff; /* белый */
+    --qg-muted: #9fb4ce; /* приглушённый на тёмном */
+    --qg-chip-bg: #0f2b52; /* фон бэйджей на тёмном */
+    --qg-border: rgba(255,255,255,.12);
+}
+
+/* Базовая типографика под Montserrat */
+.about {
+    font-family: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", sans-serif;
+    color: var(--qg-paper);
+}
+
+    .about h1, .about h2, .about h3, .about .h4 {
+        color: var(--qg-paper);
+        letter-spacing: .2px;
+    }
+
+    .about p, .about li, .about td, .about th {
+        color: #e6eef7;
+    }
+
+    /* Hero-блок */
+    .about .hero {
+        background: linear-gradient(180deg, var(--qg-navy) 0%, #0a2a52 100%);
+        border: 1px solid var(--qg-border);
+    }
+
+    .about .brand-logo {
+        width: 110px;
+        height: auto;
+        flex: 0 0 auto;
+        filter: drop-shadow(0 2px 6px rgba(0,0,0,.2));
+    }
+
+    .about .lead {
+        color: #cfe2f3;
+    }
+
+    /* Карточки фич */
+    .about .feature {
+        background: #0d274a;
+        border: 1px solid var(--qg-border);
+        border-radius: 16px;
+        transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+        .about .feature:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(0,0,0,.25);
+        }
+
+        .about .feature h3 {
+            color: var(--qg-orange);
+            font-weight: 700;
+            letter-spacing: .3px;
+        }
+
+        .about .feature ul li::marker {
+            color: var(--qg-blue);
+        }
+
+    /* Чипы технологий */
+    .about .qg-chip {
+        background: var(--qg-chip-bg);
+        border: 1px solid var(--qg-border);
+        color: #e5f0ff;
+        padding: .5rem .75rem;
+        font-weight: 600;
+    }
+
+    /* Таблица ролей */
+    .about .qg-table {
+        --bs-table-color: #e6eef7;
+        --bs-table-bg: #0d274a;
+        --bs-table-striped-bg: #0f2e58;
+        --bs-table-striped-color: #e6eef7;
+        border: 1px solid var(--qg-border);
+        overflow: hidden;
+        border-radius: 12px;
+    }
+
+        .about .qg-table thead th {
+            border-bottom: 1px solid var(--qg-border);
+            color: var(--qg-blue);
+            font-weight: 700;
+            letter-spacing: .3px;
+        }
+
+        .about .qg-table tbody tr:hover {
+            background: #103265;
+        }
+
+    /* Бэйджи ролей — брендовые */
+    .about .role-badge {
+        display: inline-block;
+        padding: .25rem .6rem;
+        border-radius: 999px;
+        font-weight: 700;
+        letter-spacing: .3px;
+        border: 1px solid var(--qg-border);
+    }
+
+        .about .role-badge.admin {
+            background: #153a6b;
+            color: #fefefe;
+        }
+
+        .about .role-badge.supervisor {
+            background: #124c8f;
+            color: #ffffff;
+        }
+
+        .about .role-badge.general {
+            background: #0e3765;
+            color: #e8f1ff;
+        }
+
+        .about .role-badge.driver {
+            background: #0b2a50;
+            color: #e8f1ff;
+        }
+
+        .about .role-badge.worker {
+            background: #0a2240;
+            color: #e8f1ff;
+        }
+
+    /* Дорожная карта */
+    .about .roadmap li {
+        position: relative;
+        padding-left: 28px;
+        margin-bottom: .75rem;
+    }
+
+    .about .roadmap .dot {
+        position: absolute;
+        left: 0;
+        top: .25rem;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid var(--qg-paper);
+        box-shadow: 0 0 0 2px rgba(0,0,0,.15) inset;
+    }
+
+        .about .roadmap .dot.done {
+            background: var(--qg-blue);
+        }
+
+        .about .roadmap .dot.inprog {
+            background: var(--qg-orange);
+        }
+
+        .about .roadmap .dot.next {
+            background: transparent;
+            border-color: var(--qg-blue);
+        }
+
+    /* Карточка контактов */
+    .about .card {
+        background: #0d274a;
+        border: 1px solid var(--qg-border);
+        border-radius: 16px;
+    }
+
+/* Адаптив мелочи */
+@media (max-width: 576px) {
+    .about .brand-logo {
+        width: 84px;
+    }
+}

@@ -2,9 +2,16 @@
 
 <PageTitle>О компании — QazaqGeophysics</PageTitle>
 
+<!-- Шрифт (легкий, геометрический) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <div class="about container-xxl py-4">
+
     <!-- Hero -->
     <section class="hero shadow-sm rounded-3 p-4 p-md-5 mb-4 d-flex align-items-center gap-3">
+        <img class="brand-logo" src="logo-inverse-retina.png" alt="QazaqGeophysics" />
         <div>
             <h1 class="mb-2">QazaqGeophysics</h1>
             <p class="lead mb-0">Цифровая экосистема для геофизики и полевых работ в Казахстане: отчёты, оборудование, трассы и аналитика — в одном месте.</p>
@@ -79,12 +86,12 @@
     <section class="mb-4">
         <h2 class="h4 mb-3">Технологии</h2>
         <div class="tech d-flex flex-wrap gap-2">
-            <span class="badge rounded-pill">.NET / ASP.NET Core</span>
-            <span class="badge rounded-pill">Blazor</span>
-            <span class="badge rounded-pill">EF Core</span>
-            <span class="badge rounded-pill">PostgreSQL</span>
-            <span class="badge rounded-pill">Npgsql</span>
-            <span class="badge rounded-pill">Clean Architecture</span>
+            <span class="badge rounded-pill qg-chip">.NET / ASP.NET Core</span>
+            <span class="badge rounded-pill qg-chip">Blazor</span>
+            <span class="badge rounded-pill qg-chip">EF Core</span>
+            <span class="badge rounded-pill qg-chip">PostgreSQL</span>
+            <span class="badge rounded-pill qg-chip">Npgsql</span>
+            <span class="badge rounded-pill qg-chip">Clean Architecture</span>
         </div>
     </section>
 
@@ -92,7 +99,7 @@
     <section class="mb-4">
         <h2 class="h4 mb-3">Роли доступа</h2>
         <div class="table-responsive">
-            <table class="table table-sm align-middle">
+            <table class="table table-sm align-middle qg-table">
                 <thead>
                     <tr>
                         <th>Роль</th>
@@ -158,3 +165,9 @@
         </div>
     </section>
 </div>
+<style>
+    body{
+        background-color: #0b1f3a;
+    }
+
+</style>

@@ -1,0 +1,36 @@
+# артефакты сборки
+**/bin/
+**/obj/
+
+# IDE
+**/.vs/
+**/.idea/
+**/.vscode/
+
+# VCS и прочее
+.git
+.gitignore
+*.user
+*.suo
+*.swp
+
+# локальные env/секреты
+.env
+*.env
+secrets.json
+
+# кэш/логи
+**/node_modules/
+**/dist/
+**/coverage/
+**/logs/
+*.log
+
+# контейнерные/оркестраторные мусоры
+**/.DS_Store
+Thumbs.db
+
+# Папки, которые не должны попадать внутрь образа
+# (если их копируешь в репозиторий)
+docs/
+design/
