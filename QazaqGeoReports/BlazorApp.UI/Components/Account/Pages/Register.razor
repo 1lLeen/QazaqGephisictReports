@@ -113,6 +113,7 @@
         var result = await UserManager.CreateAsync(user, Input.Password);
         if (!result.Succeeded)
         {
+            identityErrors = result.Errors;
             return;
         }
 
