@@ -28,7 +28,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_ENVIRONMENT: "Development"
       ASPNETCORE_URLS: "http://0.0.0.0:8080"
       # строка подключения в КОНТЕЙНЕРЕ — хостом будет имя сервиса db
       ASPNETCORE_ConnectionStrings__DefaultConnection: >

@@ -4,10 +4,10 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authorization
 @using QazaqGeoReports.Domain.Entities
-@using QazaqGeoReports.Domain.Interfaces.Repositories
+@using QazaqGeoReports.Domain.Interfaces.Services
 
 @inject NavigationManager Nav
-@inject IReportRepository ReportRepo
+@inject IReportService ReportService
 
 <PageTitle>Редактирование отчёта</PageTitle>
 
@@ -179,7 +179,7 @@ else
             }
             else
             {
-                var r = await ReportRepo.GetByIdAsync(ReportId);
+                var r = await ReportService.GetByIdAsync(ReportId);
                 if (r is null)
                 {
                     loadError = $"Отчёт с ID {ReportId} не найден.";
@@ -221,19 +221,19 @@ else
         saving = true;
         try
         {
-            // Переносим локальные значения обратно в UTC (или оставь Local, если так храните)
+
             edit.DepartureTime = departureLocal?.ToUniversalTime();
             edit.ArrivalTime = arrivalLocal?.ToUniversalTime();
 
             if (ReportId == 0)
             {
                 var entity = ToEntity(new Report());
-                var created = await ReportRepo.CreateAsync(entity); // нужен метод CreateAsync
+                var created = await ReportService.CreateAsync(entity);
                 Nav.NavigateTo($"/Report/Details/{created.Id}");
             }
             else
             {
-                var existing = await ReportRepo.GetByIdAsync(ReportId);
+                var existing = await ReportService.GetByIdAsync(ReportId);
                 if (existing is null)
                 {
                     loadError = $"Отчёт с ID {ReportId} не найден.";
@@ -241,7 +241,7 @@ else
                 }
 
                 var updated = ToEntity(existing);
-                await ReportRepo.UpdateAsync(updated); // нужен метод UpdateAsync
+                await ReportService.UpdateAsync(updated);
                 Nav.NavigateTo($"/Report/Details/{ReportId}");
             }
         }
@@ -257,7 +257,7 @@ else
         saving = true;
         try
         {
-            await ReportRepo.DeleteAsync(ReportId);
+            await ReportService.DeleteAsync(ReportId);
             Nav.NavigateTo("/Report/AllReports");
         }
         finally

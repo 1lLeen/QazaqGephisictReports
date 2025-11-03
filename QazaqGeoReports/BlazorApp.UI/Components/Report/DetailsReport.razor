@@ -3,11 +3,11 @@
 
 @using Microsoft.AspNetCore.Authorization
 @using QazaqGeoReports.Domain.Entities
-@using QazaqGeoReports.Domain.Interfaces.Repositories
+@using QazaqGeoReports.Domain.Interfaces.Services
 
 @inject NavigationManager Nav
-@inject IReportRepository ReportRepo
-@inject IImageRepository ImageRepo          
+@inject IReportService ReportService
+@inject IImageService ImageService
 @inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Детали отчёта</PageTitle>
@@ -167,7 +167,7 @@ else
         isLoading = true;
         try
         {
-            report = await ReportRepo.GetByIdAsync(ReportId);
+            report = await ReportService.GetByIdAsync(ReportId);
             image  = await GetSingleImageByReportIdAsync(ReportId);   // ONE IMAGE
         }
         finally
@@ -236,7 +236,7 @@ else
         var ok = await DeleteWithConfirmAsync();
         if (ok)
         {
-            await ReportRepo.DeleteAsync(ReportId);
+            await ReportService.DeleteAsync(ReportId);
             Nav.NavigateTo("/Report/AllReports");
         }
     }
@@ -252,7 +252,7 @@ else
     {
         try
         {
-            var list = await ImageRepo.GetImagesByReportId(reportId); 
+            var list = await ImageService.GetImagesByReportId(reportId); 
             return list?.OrderBy(i => i.Id).FirstOrDefault();
         }
         catch
