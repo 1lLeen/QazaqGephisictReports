@@ -5,4 +5,8 @@ public interface IReportService : IAbstractService<Report>
 {
     Task<List<Report>> GetReportsByUserAsync(string userId);
     Task<User> GetUserByReportIdAsync(int reportId);
+    string TripDuratation(Report report);
+    string FuelPer100(Report report); 
+    string TripBadgeText(Report report);
+
 }

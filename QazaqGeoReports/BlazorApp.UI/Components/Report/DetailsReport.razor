@@ -160,6 +160,12 @@ else
 
     private Report? report;
     private Image? image;                 // ONE IMAGE
+    private List<Image> images;
+
+    private string tripDuratation;
+    private string fuel100;
+    private string tripBadgeText; 
+
     private bool isLoading = true;
 
     protected override async Task OnParametersSetAsync()
@@ -244,7 +250,7 @@ else
     async Task<bool> DeleteWithConfirmAsync()
     {
         await Task.Yield();
-        return true; // Подключи реальное подтверждение (модалка/JS)
+        return true;
     }
 
     // ---------- IMAGE (ONE) ----------

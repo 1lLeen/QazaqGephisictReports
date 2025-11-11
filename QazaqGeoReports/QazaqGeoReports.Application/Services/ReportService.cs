@@ -35,5 +35,31 @@ public class ReportService : AbstractService<IReportRepository, Report>, IReport
     {
         return await _repository.GetUserByReportId(reportId);
     }
+     
+    public string TripDuratation(Report report)
+    {
+        if (report?.DepartureTime is DateTime dep && report?.ArrivalTime is DateTime arr && arr > dep)
+        {
+            var ts = arr - dep;
+            return $"{(int)ts.TotalHours} ч {ts.Minutes:D2} мин";
+        }
+        return "—";
+    }
 
+    public string FuelPer100(Report report)
+    {
+        if (report?.FuelUsedLiters is double fuel && report?.DistanceKM is double km && km > 0)
+        {
+            var v = fuel / km * 100.0;
+            return v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+        }
+        return "—";
+    }
+
+    public string TripBadgeText(Report report)
+    {
+        if (report?.DepartureTime is null || report?.ArrivalTime is null) return "время не указано";
+        if (report!.ArrivalTime <= report!.DepartureTime) return "проверь время";
+        return "данные корректны";
+    }
 }
