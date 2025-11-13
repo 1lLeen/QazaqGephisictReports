@@ -37,7 +37,7 @@ else
                 {
                     <span class="badge text-bg-primary">Автор: @report.CreatedByUserId</span>
                 }
-                <span class="badge @GetTripBadgeClass()">@TripBadgeText()</span>
+                <span class="badge @GetTripBadgeClass()">@tripBadgeText</span>
             </div>
         </div>
 
@@ -85,24 +85,27 @@ else
                         }
 
                         @* ONE IMAGE: единое изображение, если есть *@
-                        @if (image is not null && image.Data?.Length > 0)
+                        @foreach(var image in images)
                         {
-                            <hr />
-                            <div class="card shadow-sm">
-                                <img class="card-img-top"
-                                     src="@GetDataUrl(image)"
-                                     alt="Изображение отчёта @ReportId"
-                                     loading="lazy"
-                                     style="object-fit:cover; aspect-ratio: 4/3;" />
-                                <div class="card-body p-2 d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">Image Id: @image.Id</small>
-                                    <a class="btn btn-sm btn-outline-secondary"
-                                       href="@GetDataUrl(image)"
-                                       download="report-@ReportId-image-@image.Id">
-                                        Скачать
-                                    </a>
+                            @if (image is not null && image.Data?.Length > 0)
+                            {
+                                <hr />
+                                <div class="card shadow-sm">
+                                    <img class="card-img-top"
+                                            src="@ImageService.GetDataUrl(image)"
+                                            alt="Изображение отчёта @ReportId"
+                                            loading="lazy"
+                                            style="object-fit:cover; aspect-ratio: 4/3;" />
+                                    <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">Image Id: @image.Id</small>
+                                        <a class="btn btn-sm btn-outline-secondary"
+                                            href="@ImageService.GetDataUrl(image)"
+                                            download="report-@ReportId-image-@image.Id">
+                                            Скачать
+                                        </a>
+                                    </div>
                                 </div>
-                            </div>
+                            } 
                         }
                     </div>
                 </div>
@@ -125,7 +128,7 @@ else
                             </div>
                             <div class="d-flex justify-content-between">
                                 <span class="text-muted">Длительность:</span>
-                                <span class="fw-semibold">@TripDuration()</span>
+                                <span class="fw-semibold">@tripDuratation</span>
                             </div>
                             <hr />
                             <div class="d-flex justify-content-between">
@@ -138,7 +141,7 @@ else
                             </div>
                             <div class="d-flex justify-content-between">
                                 <span class="text-muted">Расход (л / 100 км):</span>
-                                <span class="fw-semibold">@FuelPer100()</span>
+                                <span class="fw-semibold">@fuel100</span>
                             </div>
                         </div>
                     </div>
@@ -160,7 +163,7 @@ else
 
     private Report? report;
     private Image? image;                 // ONE IMAGE
-    private List<Image> images;
+    private List<Image>? images;          // MANY IMAGES
 
     private string tripDuratation;
     private string fuel100;
@@ -174,7 +177,13 @@ else
         try
         {
             report = await ReportService.GetByIdAsync(ReportId);
+            images = await GetListImageByReportIdAsync(ReportId); // MANY IMAGES
             image  = await GetSingleImageByReportIdAsync(ReportId);   // ONE IMAGE
+            
+            tripDuratation = ReportService.TripDuratation(report);
+            fuel100 = ReportService.FuelPer100(report);
+            tripBadgeText = ReportService.TripBadgeText(report);
+
         }
         finally
         {
@@ -194,39 +203,15 @@ else
 
     string FormatNumber(double? n)
         => n.HasValue ? n.Value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) : "—";
+    // ---------------------------------
 
-    string TripDuration()
-    {
-        if (report?.DepartureTime is DateTime dep && report?.ArrivalTime is DateTime arr && arr > dep)
-        {
-            var ts = arr - dep;
-            return $"{(int)ts.TotalHours} ч {ts.Minutes:D2} мин";
-        }
-        return "—";
-    }
-
-    string FuelPer100()
-    {
-        if (report?.FuelUsedLiters is double fuel && report?.DistanceKM is double km && km > 0)
-        {
-            var v = fuel / km * 100.0;
-            return v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
-        }
-        return "—";
-    }
+ 
 
     string GetTripBadgeClass()
     {
         if (report?.DepartureTime is null || report?.ArrivalTime is null) return "text-bg-secondary";
         if (report!.ArrivalTime <= report!.DepartureTime) return "text-bg-warning";
         return "text-bg-success";
-    }
-
-    string TripBadgeText()
-    {
-        if (report?.DepartureTime is null || report?.ArrivalTime is null) return "время не указано";
-        if (report!.ArrivalTime <= report!.DepartureTime) return "проверь время";
-        return "данные корректны";
     }
 
     void GoBack()
@@ -236,13 +221,12 @@ else
         else
             Nav.NavigateTo("/", true);
     }
-
     async Task ConfirmDelete()
     {
         var ok = await DeleteWithConfirmAsync();
         if (ok)
         {
-            await ReportService.DeleteAsync(ReportId);
+            await ReportService.DeleteAllDataReportAsync(ReportId);
             Nav.NavigateTo("/Report/AllReports");
         }
     }
@@ -266,22 +250,16 @@ else
             return null;
         }
     }
-
-    string GetDataUrl(Image img)
+    async Task<List<Image>?> GetListImageByReportIdAsync(int reportId)
     {
-        if (img?.Data is null || img.Data.Length == 0) return string.Empty;
-        var mime = GuessMime(img.Data);
-        var b64  = Convert.ToBase64String(img.Data);
-        return $"data:{mime};base64,{b64}";
-    }
-
-    string GuessMime(byte[] data)
-    {
-        if (data.Length > 3 && data[0] == 0xFF && data[1] == 0xD8 && data[2] == 0xFF) return "image/jpeg";
-        if (data.Length > 8 && data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47) return "image/png";
-        if (data.Length > 4 && data[0] == 0x47 && data[1] == 0x49 && data[2] == 0x46 && data[3] == 0x38) return "image/gif";
-        if (data.Length > 12 && data[0] == 0x52 && data[1] == 0x49 && data[2] == 0x46 && data[3] == 0x46 &&
-            data[8] == 0x57 && data[9] == 0x45 && data[10] == 0x42 && data[11] == 0x50) return "image/webp";
-        return "image/jpeg";
+        try
+        {
+            var list = await ImageService.GetImagesByReportId(reportId);
+            return list?.OrderBy(i => i.Id).ToList();
+        }
+        catch
+        {
+            return null;
+        }
     }
 }
