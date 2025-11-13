@@ -36,6 +36,11 @@ public class ReportService : AbstractService<IReportRepository, Report>, IReport
         return await _repository.GetUserByReportId(reportId);
     }
      
+    public async Task DeleteAllDataReportAsync(int reportId)
+    {
+        var deletedReport = await _repository.DeleteAsync(reportId);
+        await _imageService.DeleteImagesByReportId(reportId);
+    }
     public string TripDuratation(Report report)
     {
         if (report?.DepartureTime is DateTime dep && report?.ArrivalTime is DateTime arr && arr > dep)

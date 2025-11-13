@@ -28,6 +28,14 @@ public class ImageService : AbstractService<IImageRepository, Image>, IImageServ
     {
         return await _repository.GetImagesByReportId(reportId);
     }
+    public async Task DeleteImagesByReportId(int reportId)
+    {
+        var images = await _repository.GetImagesByReportId(reportId);
+        foreach(var image in images)
+        {
+            await _repository.DeleteAsync(image.Id);
+        }
+    }
     public string GetDataUrl(Image img)
     {
         if (img?.Data is null || img.Data.Length == 0) return string.Empty;

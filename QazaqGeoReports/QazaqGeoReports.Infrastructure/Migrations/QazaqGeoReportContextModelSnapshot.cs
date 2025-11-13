@@ -174,6 +174,8 @@ namespace QazaqGeoReports.Infrastructure.Migrations
                     b.Property<string>("SerialNumber")
                         .HasColumnType("text");
 
+                    b.Property<string>("Status")
+                        .HasColumnType("text");
                     b.Property<DateTime>("UpdatedTime")
                         .HasColumnType("timestamp with time zone");
 

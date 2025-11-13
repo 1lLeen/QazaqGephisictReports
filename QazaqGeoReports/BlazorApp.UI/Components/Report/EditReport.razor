@@ -257,7 +257,7 @@ else
         saving = true;
         try
         {
-            await ReportService.DeleteAsync(ReportId);
+            await ReportService.DeleteAllDataReportAsync(ReportId);
             Nav.NavigateTo("/Report/AllReports");
         }
         finally
