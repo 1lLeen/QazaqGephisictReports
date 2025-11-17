@@ -1,8 +1,9 @@
-﻿using QazaqGeoReports.Domain.Entities; 
+﻿using QazaqGeoReports.Domain.Entities;
+using QazaqGeoReports.Domain.Interfaces.Dtos;
 
 namespace QazaqGeoReports.Application.DTOs.ReportDtos;
 
-public class BaseReportDto
+public class BaseReportDto : IBase
 {
     public int Id { get; set; }
     public string? CreatedByUserId { get; set; }

@@ -1,11 +1,7 @@
-﻿using QazaqGeoReports.Domain.Common;
+﻿using QazaqGeoReports.Domain.Interfaces.Dtos;
 
 namespace QazaqGeoReports.Application.DTOs.EquipmentDtos;
 
-public class ListEquipmentViewModel
-{
-    public string? SerialNumber { get; set; }
-    public string? Name { get; set; }
-    public int Count { get; set; }
-    public string? Status { get; set; } = EquipmentStatus.Available.ToString();
+public class ListEquipmentViewModel : BaseEquipmentDto, IListView
+{ 
 }

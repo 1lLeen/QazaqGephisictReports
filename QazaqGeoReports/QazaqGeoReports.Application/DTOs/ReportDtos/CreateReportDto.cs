@@ -1,25 +1,20 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using QazaqGeoReports.Domain.Interfaces.Dtos;
+using System.ComponentModel.DataAnnotations;
 
 namespace QazaqGeoReports.Application.DTOs.ReportDtos;
 
-public class CreateReportDto
+public class CreateReportDto : BaseReportDto, ICreate
 {
     [Required]
-    public string Title { get; set; } = string.Empty;
-
-    public string? Content { get; set; }
-    public string? Comments { get; set; }
-    public string? RouteDescription { get; set; }
-    public string? UsersMovement { get; set; }
-    public string? EquipmentsMovement { get; set; }
+    public new string Title { get; set; } = string.Empty;
 
     [Range(0, 99999)]
-    public double? DistanceKM { get; set; }
+    public new double? DistanceKM { get; set; }
 
     [Range(0, 99999)]
-    public double? FuelUsedLiters { get; set; }
+    public new double? FuelUsedLiters { get; set; }
     [DataType(DataType.Date)]
-    public DateTime? DepartureTime { get; set; }
+    public new DateTime? DepartureTime { get; set; }
     [DataType(DataType.Date)]
-    public DateTime? ArrivalTime { get; set; }
+    public new DateTime? ArrivalTime { get; set; }
 }

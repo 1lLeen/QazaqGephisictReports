@@ -3,9 +3,10 @@ using QazaqGeoReports.Domain.Interfaces.Repositories;
 using System.Linq.Expressions;
 
 namespace QazaqGeoReports.Application.Services;
-public class AbstractService<TRepository, TEntity> 
+public class AbstractService<TRepository, TEntity, DtoCreate, DtoUpdate, DtoBase, DtoList> 
     where TRepository : IAbstractRepository<TEntity> 
     where TEntity : BaseEntity, new()
+
 {
     protected readonly TRepository _repository;
     public AbstractService(TRepository repository)
