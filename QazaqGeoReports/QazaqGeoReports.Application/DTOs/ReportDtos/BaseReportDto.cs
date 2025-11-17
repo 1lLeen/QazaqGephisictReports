@@ -1,9 +1,12 @@
-﻿using QazaqGeoReports.Domain.Entities;
+﻿using QazaqGeoReports.Domain.Entities; 
 
-namespace QazaqGeoReports.Application.DTOs;
-public class ReportDto
+namespace QazaqGeoReports.Application.DTOs.ReportDtos;
+
+public class BaseReportDto
 {
+    public int Id { get; set; }
     public string? CreatedByUserId { get; set; }
+    public User? CreatedByUser { get; set; }
     public string? Content { get; set; }
     public string? Title { get; set; }
     public string? Comments { get; set; }
@@ -14,5 +17,4 @@ public class ReportDto
     public string? EquipmentsMovement { get; set; }
     public DateTime? DepartureTime { get; set; }
     public DateTime? ArrivalTime { get; set; }
-    public List<Image> Images{ get; set; }
 }
