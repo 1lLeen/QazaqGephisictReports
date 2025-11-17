@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using QazaqGeoReports.Application.DTOs;
+﻿using AutoMapper; 
 using QazaqGeoReports.Domain.Entities;
 using QazaqGeoReports.Domain.Interfaces.Repositories;
 using QazaqGeoReports.Domain.Interfaces.Services;
@@ -19,17 +18,6 @@ public class ReportService : AbstractService<IReportRepository, Report>, IReport
     {
         var reports = await _repository.GetReportsByUserAsync(userId);
         return reports;
-    }
-    public async Task<ReportDto?> GetReportByIdAsync(int id)
-    {
-        var report = await _repository.GetByIdAsync(id);
-        if (report == null)
-            return null;
-        var dto = mapper.Map<ReportDto>(report);
-
-        dto = new ReportDto { Images = await _imageService.GetImagesByReportId(id) };
-        
-        return dto;
     }
     public async Task<User> GetUserByReportIdAsync(int reportId)
     {

@@ -15,12 +15,17 @@ public class ReportRepository : AbstractRepository<Report>, IReportRepository
 
     public async Task<List<Report>> GetReportsByUserAsync(string userId)
     {
-        return await _context.Reports.Where(x => x.CreatedByUserId == userId).ToListAsync();
+        return await _context.Reports
+            .AsNoTracking()
+            .Include(x => x.CreatedByUser)
+            .OrderBy(x => x.CreatedTime)
+            .ToListAsync();
     }
     public async Task<User> GetUserByReportId(int reportId)
     {
-        var report = await _context.Reports
-            .Include(r => r.CreatedByUserId)
+        var report = await _context.Reports 
+            .Include(r => r.CreatedByUser)
+            .AsNoTracking()
             .FirstOrDefaultAsync(r => r.Id == reportId);
 
         return await userService.GetUserByIdAsync(report.CreatedByUserId);

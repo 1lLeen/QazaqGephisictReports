@@ -1,5 +1,6 @@
-﻿using QazaqGeoReports.Domain.Common;
+﻿using QazaqGeoReports.Domain.Entities;
 using QazaqGeoReports.Domain.Interfaces.Repositories;
+using System.Linq.Expressions;
 
 namespace QazaqGeoReports.Application.Services;
 public class AbstractService<TRepository, TEntity> 
@@ -11,6 +12,7 @@ public class AbstractService<TRepository, TEntity>
     {
         _repository = repository;
     }
+    public virtual async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate) => await _repository.GetAsync(predicate);
     public virtual async Task<List<TEntity>> GetAllAsync() => await _repository.GetAllAsync();
     public virtual async Task<TEntity> GetByIdAsync(int id) => await _repository.GetByIdAsync(id);
     public virtual async Task<TEntity> CreateAsync(TEntity entity) => await _repository.CreateAsync(entity);

@@ -1,9 +1,8 @@
-﻿using QazaqGeoReports.Domain.Common;
-
-namespace QazaqGeoReports.Domain.Entities;
+﻿namespace QazaqGeoReports.Domain.Entities;
 public class Report : BaseEntity
 {
     public string? CreatedByUserId { get; set; }
+    public User? CreatedByUser { get; set; }
     public string? Content { get; set; }
     public string? Title { get; set; }
     public string? Comments { get; set; }

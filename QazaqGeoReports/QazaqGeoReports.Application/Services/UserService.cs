@@ -11,9 +11,11 @@ public class UserService : IUserService
         _repository = repository;
     }
     public virtual async Task<List<User>> GetAllAsync() => await _repository.GetAllAsync();
-    public virtual async Task<User> GetByFullNameAsync(string fullName) => await _repository.GetByFullNameAsync(fullName);
+    public virtual async Task<User> GetByFullNameAsync(string fullName) => await _repository
+        .GetAsync(x => x.FullName == fullName);
     public virtual async Task<User> GetUserByIdAsync(string id) => await _repository.GetUserByIdAsync(id);
-    public virtual async Task<User> GetUserByEmailAsync(string email) => await _repository.GetUserByEmailAsync(email);
+    public virtual async Task<User> GetUserByEmailAsync(string email) => await _repository
+        .GetAsync(x => x.Email == email);
     public virtual async Task<User> CreateAsync(User entity) => await _repository.CreateAsync(entity);
     public virtual async Task<User> UpdateAsync(User entity) => await _repository.UpdateAsync(entity);
     public virtual async Task<User> DeleteAsync(string id) => await _repository.DeleteAsync(id);

@@ -1,4 +1,4 @@
-﻿namespace QazaqGeoReports.Domain.Common;
+﻿namespace QazaqGeoReports.Domain.Entities;
 public class BaseEntity
 {
     public int Id { get; set; }

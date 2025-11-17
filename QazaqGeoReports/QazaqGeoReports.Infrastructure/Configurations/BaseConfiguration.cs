@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QazaqGeoReports.Domain.Common;
+using QazaqGeoReports.Domain.Entities;
 
 namespace QazaqGeoReports.Infrastructure.Configurations;
 public class BaseConfiguration<TModel> : IEntityTypeConfiguration<TModel> where TModel : BaseEntity

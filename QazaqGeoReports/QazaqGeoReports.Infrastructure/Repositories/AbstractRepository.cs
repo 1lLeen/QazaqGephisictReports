@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using QazaqGeoReports.Domain.Common;
+using QazaqGeoReports.Domain.Entities;
 using QazaqGeoReports.Domain.Interfaces.Repositories;
+using System.Linq.Expressions;
 
 namespace QazaqGeoReports.Infrastructure.Repositories;
 
@@ -32,8 +33,15 @@ public class AbstractRepository<TModel> : IAbstractRepository<TModel> where TMod
 
     public async Task<List<TModel>> GetAllAsync()
     {
-        var res = await _dbSet.ToListAsync();
+        var res = await _dbSet.AsNoTracking().ToListAsync();
         return res;
+    }
+
+    public async Task<TModel?> GetAsync(Expression<Func<TModel, bool>> predicate)
+    {
+        return await _dbSet
+        .AsNoTracking()
+        .FirstOrDefaultAsync(predicate);
     }
 
     public async Task<TModel> GetByIdAsync(int id)

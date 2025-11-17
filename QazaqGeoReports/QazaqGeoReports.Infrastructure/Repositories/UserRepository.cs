@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using QazaqGeoReports.Domain.Entities;
 using QazaqGeoReports.Domain.Interfaces.Repositories;
+using System.Linq.Expressions;
 
 namespace QazaqGeoReports.Infrastructure.Repositories;
 
@@ -16,7 +17,9 @@ public class UserRepository : IUserRepository
     }
     public async Task<List<User>> GetAllAsync()
     {
-        var res = await _dbSet.ToListAsync();
+        var res = await _dbSet
+            .AsNoTracking()
+            .ToListAsync();
         return res;
     }
     public async Task<User> CreateAsync(User model)
@@ -51,20 +54,13 @@ public class UserRepository : IUserRepository
         await _context.SaveChangesAsync();
         return model;
 
-    } 
-
-    public async Task<User> GetByFullNameAsync(string fullname) => await _dbSet.FirstOrDefaultAsync(x => x.FullName == fullname);
-    
-    public async Task<User> GetUserByIdAsync(string id) => await _dbSet.FirstOrDefaultAsync(x => x.Id.Contains(id));
-
-    public async Task<User> GetUserByEmailAsync(string email) => await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-
-    public async Task<User> GetUserByFirstNameAsync(string firstName) => await _context.Users.FirstOrDefaultAsync(x => x.FirstName == firstName);
-
-    public async Task<User> GetUserByLastNameAsync(string lastName) => await _context.Users.FirstOrDefaultAsync(x => x.LastName == lastName);
-
-    public async Task<User> GetUserByMiddleNameAsync(string middleName) => await _context.Users.FirstOrDefaultAsync(x => x.MiddleName== middleName);
-
-    public async Task<User> GetUserByPhoneAsync(string phone) => await _context.Users.FirstOrDefaultAsync(x => x.PhoneNumber == phone);
+    }
+    public async Task<User> GetUserByIdAsync(string id) => await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+    public async Task<User?> GetAsync(Expression<Func<User, bool>> predicate)
+    {
+        return await _context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(predicate);
+    }
 
 }

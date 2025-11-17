@@ -1,4 +1,4 @@
-﻿using QazaqGeoReports.Domain.Common;
+﻿using QazaqGeoReports.Domain.Entities;
 
 namespace QazaqGeoReports.Domain.Interfaces.Services;
 public interface IAbstractService<T> where T : BaseEntity
