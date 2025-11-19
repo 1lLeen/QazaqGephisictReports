@@ -1,7 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using QazaqGeoReports.Domain.Common;
-using QazaqGeoReports.Domain.Entities;
-using QazaqGeoReports.Domain.Interfaces.Repositories;
+﻿using QazaqGeoReports.Domain.Entities;
+using QazaqGeoReports.Application.Interfaces.Repositories;
 
 namespace QazaqGeoReports.Infrastructure.Repositories;
 

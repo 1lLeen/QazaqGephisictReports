@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using QazaqGeoReports.Application.Mapper;
 using QazaqGeoReports.Application.Services;
-using QazaqGeoReports.Domain.Interfaces.Services;
+using QazaqGeoReports.Application.Interfaces.Services;
 
 namespace QazaqGeoReports.Application;
 public static class RegistrationApplication

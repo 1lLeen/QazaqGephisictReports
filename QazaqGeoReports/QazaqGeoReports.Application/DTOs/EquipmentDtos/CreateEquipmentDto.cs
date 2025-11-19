@@ -1,4 +1,4 @@
-﻿using QazaqGeoReports.Domain.Interfaces.Dtos;
+﻿using QazaqGeoReports.Application.Interfaces.Dtos;
 
 namespace QazaqGeoReports.Application.DTOs.EquipmentDtos;
 

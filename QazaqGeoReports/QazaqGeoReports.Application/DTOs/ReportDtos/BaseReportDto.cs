@@ -1,5 +1,5 @@
 ﻿using QazaqGeoReports.Domain.Entities;
-using QazaqGeoReports.Domain.Interfaces.Dtos;
+using QazaqGeoReports.Application.Interfaces.Dtos;
 
 namespace QazaqGeoReports.Application.DTOs.ReportDtos;
 

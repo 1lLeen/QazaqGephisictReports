@@ -1,9 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using QazaqGeoReports.Application;
-using QazaqGeoReports.Domain.Interfaces.Repositories;
+using QazaqGeoReports.Application.Interfaces.Repositories;
 using QazaqGeoReports.Infrastructure.Repositories;
 
 namespace QazaqGeoReports.Infrastructure;

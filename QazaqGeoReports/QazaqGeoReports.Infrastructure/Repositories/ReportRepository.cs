@@ -1,17 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using QazaqGeoReports.Domain.Entities;
-using QazaqGeoReports.Domain.Interfaces.Repositories;
-using QazaqGeoReports.Domain.Interfaces.Services;
+using QazaqGeoReports.Application.Interfaces.Repositories;
 
 namespace QazaqGeoReports.Infrastructure.Repositories;
 
 public class ReportRepository : AbstractRepository<Report>, IReportRepository
 {
-    protected private IUserService userService;
-    public ReportRepository(QazaqGeoReportContext context, IUserService userSerivce) : base(context)
-    {
-        this.userService = userSerivce;
-    }
+    public ReportRepository(QazaqGeoReportContext context) : base(context)
+    {}
 
     public async Task<List<Report>> GetReportsByUserAsync(string userId)
     {
@@ -28,6 +24,8 @@ public class ReportRepository : AbstractRepository<Report>, IReportRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(r => r.Id == reportId);
 
-        return await userService.GetUserByIdAsync(report.CreatedByUserId);
+        return await _context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == report.CreatedByUserId);
     }
 }

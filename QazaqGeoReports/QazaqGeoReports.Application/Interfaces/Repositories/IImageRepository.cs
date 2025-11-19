@@ -1,6 +1,6 @@
 ﻿using QazaqGeoReports.Domain.Entities;
 
-namespace QazaqGeoReports.Domain.Interfaces.Repositories;
+namespace QazaqGeoReports.Application.Interfaces.Repositories;
 public interface IImageRepository : IAbstractRepository<Image>
 {
     Task<List<Image>> GetImagesByReportId(int reportId);

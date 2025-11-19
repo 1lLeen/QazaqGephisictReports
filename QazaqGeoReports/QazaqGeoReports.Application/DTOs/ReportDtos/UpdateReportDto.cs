@@ -1,4 +1,4 @@
-﻿using QazaqGeoReports.Domain.Interfaces.Dtos;
+﻿using QazaqGeoReports.Application.Interfaces.Dtos;
 using System.ComponentModel.DataAnnotations;
 
 namespace QazaqGeoReports.Application.DTOs.ReportDtos;
