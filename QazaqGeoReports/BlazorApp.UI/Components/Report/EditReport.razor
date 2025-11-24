@@ -2,9 +2,11 @@
 @attribute [Authorize(Roles = "Admin,Supervisor,General")]
 
 @using System.ComponentModel.DataAnnotations
+@using AutoMapper
 @using Microsoft.AspNetCore.Authorization
+@using QazaqGeoReports.Application.DTOs.ReportDtos
 @using QazaqGeoReports.Domain.Entities
-@using QazaqGeoReports.Domain.Interfaces.Services
+@using QazaqGeoReports.Application.Interfaces.Services
 
 @inject NavigationManager Nav
 @inject IReportService ReportService
@@ -155,7 +157,7 @@ else
 @code {
     [Parameter] public int ReportId { get; set; }
 
-    private ReportEditDto edit = new();
+    private UpdateReportDto edit = new();
     private bool isLoading = true;
     private bool saving = false;
     private string? loadError;
@@ -173,20 +175,21 @@ else
             if (ReportId == 0)
             {
                 // Новый отчёт
-                edit = new ReportEditDto();
+                edit = new UpdateReportDto();
                 departureLocal = null;
                 arrivalLocal = null;
             }
             else
             {
-                var r = await ReportService.GetByIdAsync(ReportId);
-                if (r is null)
+                var result = await ReportService.GetByIdAsync(ReportId);
+                if (result is null)
                 {
                     loadError = $"Отчёт с ID {ReportId} не найден.";
                 }
                 else
                 {
-                    edit = new ReportEditDto
+                    var r = result;
+                    edit = new UpdateReportDto
                     {
                         Title = r.Title,
                         Content = r.Content,
@@ -227,8 +230,13 @@ else
 
             if (ReportId == 0)
             {
-                var entity = ToEntity(new Report());
+                var entity = new CreateReportDto();
                 var created = await ReportService.CreateAsync(entity);
+                if (created is null)
+                {
+                    saving = false;
+                    return;
+                }
                 Nav.NavigateTo($"/Report/Details/{created.Id}");
             }
             else
@@ -268,8 +276,9 @@ else
 
     private void GoBack() => Nav.NavigateTo("/Report/AllReports");
 
-    private Report ToEntity(Report target)
+    private UpdateReportDto ToEntity(BaseReportDto edit)
     {
+        UpdateReportDto target = new UpdateReportDto();
         target.Title = edit.Title?.Trim();
         target.Content = edit.Content;
         target.Comments = edit.Comments;
@@ -301,27 +310,5 @@ else
             }
             return "—";
         }
-    }
-
-    // --------- DTO с валидацией ---------
-    private class ReportEditDto
-    {
-        [Required(ErrorMessage = "Заголовок обязателен")]
-        [StringLength(200, ErrorMessage = "Максимум 200 символов")]
-        public string? Title { get; set; }
-
-        public string? Content { get; set; }
-        public string? Comments { get; set; }
-        [Range(0, double.MaxValue, ErrorMessage = "Не может быть меньше 0")]
-        public double? DistanceKM { get; set; }
-        [Range(0, double.MaxValue, ErrorMessage = "Не может быть меньше 0")]
-        public double? FuelUsedLiters { get; set; }
-        public string? RouteDescription { get; set; }
-        public string? UsersMovement { get; set; }
-        public string? EquipmentsMovement { get; set; }
-        public string? CreatedByUserId { get; set; }
-
-        public DateTime? DepartureTime { get; set; }
-        public DateTime? ArrivalTime { get; set; }
     }
 }

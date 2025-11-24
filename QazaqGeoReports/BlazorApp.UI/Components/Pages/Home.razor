@@ -1,12 +1,13 @@
 ﻿@page "/"
 
 @using System.Security.Claims
+@using QazaqGeoReports.Application.DTOs.UserDtos
 @using QazaqGeoReports.Domain.Entities
-@using QazaqGeoReports.Domain.Interfaces.Services
+@using QazaqGeoReports.Application.Interfaces.Services
 
 @inject IUserService UserService
 @inject IReportService ReportService
-@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject AuthenticationStateProvider AuthenticationStateProvider 
 
 <PageTitle>Главная</PageTitle>
 
@@ -203,7 +204,7 @@
 @code {
     private bool isLoading = true;
 
-    private List<User> users = new();
+    private List<BaseUserDto> users = new();
     private List<UserViewModel> userViews = new();
 
     // Фильтры/сортировка/страницы
@@ -222,23 +223,13 @@
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
+        var result = await UserService.GetAllAsync();
+        users = result;
 
-        users = await UserService.GetAllAsync();
-
-        // Подготовка вью-моделей + подсчёт отчётов
-        userViews = new List<UserViewModel>(users.Count);
-        foreach (var u in users)
-        {
-            var reports = await ReportService.GetReportsByUserAsync(u.Id);
-            userViews.Add(new UserViewModel
-            {
-                User = u,
-                // Если вашей модели User нет поля роли, оставь пусто — бейдж просто не покажется:
-                Role = TryGetRole(u),
-                ReportCount = reports?.Count ?? 0
-            });
-        }
-
+        var usersWithState = await UserService.GetUsersWithStatsAsync();
+      
+        userViews = usersWithState;
+      
         ApplyFilters();
         isLoading = false;
     }
@@ -303,22 +294,12 @@
     }
 
     private string? TryGetRole(User u)
-    {
-        // Если у твоей модели User есть свойство Role (enum/string), распакуем красиво:
-        // Попробуем безопасно, без compile-time зависимости:
+    { 
         var prop = u.GetType().GetProperty("Role");
         var value = prop?.GetValue(u)?.ToString();
         return string.IsNullOrWhiteSpace(value) ? null : value;
     }
-
-    private class UserViewModel
-    {
-        public User User { get; set; } = default!;
-        public string? Role { get; set; }
-        public int ReportCount { get; set; }
-    }
-
-    // Реакция на изменения контролов
+       
     private string SortOption { get => sortOption; set { sortOption = value; ApplyFilters(); } }
     private string Search { get => search ?? ""; set { search = value; ApplyFilters(); } }
     private bool OnlyWithReports { get => onlyWithReports; set { onlyWithReports = value; ApplyFilters(); } }

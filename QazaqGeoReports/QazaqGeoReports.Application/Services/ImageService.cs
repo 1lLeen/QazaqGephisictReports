@@ -2,9 +2,7 @@
 using QazaqGeoReports.Application.Interfaces.Repositories;
 using QazaqGeoReports.Application.Interfaces.Services;
 using QazaqGeoReports.Application.DTOs.ImageDtos;
-using AutoMapper;
-using QazaqGeoReports.Application.DTOs.Common;
-using QazaqGeoReports.Application.DTOs.Helpers;
+using AutoMapper; 
 
 namespace QazaqGeoReports.Application.Services;
 public class ImageService : AbstractService<IImageRepository, Image, CreateImageDto, UpdateImageDto, BaseImageDto, ListImageViewModel>, 
@@ -24,16 +22,16 @@ public class ImageService : AbstractService<IImageRepository, Image, CreateImage
         return await File.ReadAllBytesAsync(path);
     }
 
-    public async Task<ResultDto<List<BaseImageDto>>> GetImagesByEquipmentId(int equipmentId)
+    public async Task<List<BaseImageDto>> GetImagesByEquipmentId(int equipmentId)
     {
         var res =  await _repository.GetImagesByReportId(equipmentId);
-        return ResultBuilder.BuildList<BaseImageDto, Image>(res, mapper);
+        return mapper.Map<List<BaseImageDto>>(res);
     }
 
-    public async Task<ResultDto<List<BaseImageDto>>> GetImagesByReportId(int reportId)
+    public async Task<List<BaseImageDto>> GetImagesByReportId(int reportId)
     {
         var res = await _repository.GetImagesByReportId(reportId);
-        return ResultBuilder.BuildList<BaseImageDto, Image>(res, mapper);
+        return mapper.Map<List<BaseImageDto>>(res);
     }
     public async Task DeleteImagesByReportId(int reportId)
     {
@@ -43,26 +41,26 @@ public class ImageService : AbstractService<IImageRepository, Image, CreateImage
             await _repository.DeleteAsync(image.Id);
         }
     }
-    public ResultDto<string> GetDataUrl(Image img)
+    public string GetDataUrl(BaseImageDto img)
     {
-        if (img?.Data is null || img.Data.Length == 0) return ResultBuilder.Build<string>(string.Empty);
+        if (img?.Data is null || img.Data.Length == 0) return string.Empty;
         var mime = GuessMime(img.Data);
         var b64 = Convert.ToBase64String(img.Data);
-        return ResultBuilder.Build<string>($"data:{mime};base64,{b64}");
+        return $"data:{mime};base64,{b64}";
     }
 
-    public ResultDto<string> GuessMime(byte[] data)
+    public string GuessMime(byte[] data)
     {
         if (data.Length > 3 && data[0] == 0xFF && data[1] == 0xD8 && data[2] == 0xFF) 
-            return ResultBuilder.Build<string>("image/jpeg");
+            return "image/jpeg";
         if (data.Length > 8 && data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47) 
-            return ResultBuilder.Build<string>("image/png");
+            return "image/png";
         if (data.Length > 4 && data[0] == 0x47 && data[1] == 0x49 && data[2] == 0x46 && data[3] == 0x38) 
-            return ResultBuilder.Build<string>("image/gif");
+            return "image/gif";
         if (data.Length > 12 && data[0] == 0x52 && data[1] == 0x49 && data[2] == 0x46 && data[3] == 0x46 &&
             data[8] == 0x57 && data[9] == 0x45 && data[10] == 0x42 && data[11] == 0x50) 
-            return ResultBuilder.Build<string>("image/webp");
+            return "image/webp";
         
-        return ResultBuilder.Build<string>("image/jpeg");
+        return "image/jpeg";
     }
 }

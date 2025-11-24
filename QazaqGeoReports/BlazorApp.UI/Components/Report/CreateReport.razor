@@ -2,12 +2,15 @@
 @attribute [Authorize]
 
 @using System.ComponentModel.DataAnnotations
+@using AutoMapper
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity
+@using QazaqGeoReports.Application.DTOs.ImageDtos
+@using QazaqGeoReports.Application.DTOs.ReportDtos
 @using QazaqGeoReports.Domain.Entities
-@using QazaqGeoReports.Domain.Interfaces.Services
+@using QazaqGeoReports.Application.Interfaces.Services
 @using QazaqGeoReports.Infrastructure
 
 @inject UserManager<User> UserManager
@@ -16,6 +19,8 @@
 @inject NavigationManager NavigationManager
 @inject IReportService reportService
 @inject IImageService imageService
+@inject IMapper mapper
+
 <PageTitle>Создание отчёта</PageTitle>
 
 <h3>Создать отчёт</h3>
@@ -121,7 +126,7 @@
 </EditForm>
 
 @code {
-    private ReportInputModel Input { get; set; } = new();
+    private CreateReportDto Input { get; set; } = new();
     private string? StatusMessage;
     private List<IBrowserFile> uploadedImages = new();
 
@@ -148,7 +153,7 @@
             return;
         }
 
-        var report = new Report
+        var report = new CreateReportDto
         {
             Title = Input.Title,
             Content = Input.Content,
@@ -165,7 +170,9 @@
 
 
         var result = await reportService.CreateAsync(report); // Сохраняем отчёт
-        if(result.Id > 0)
+         
+        var resultDto = result;
+        if (resultDto.Id > 0)
         {
             Console.WriteLine("рапорт создан");
         }
@@ -177,49 +184,28 @@
             await stream.CopyToAsync(ms);
             var imageData = ms.ToArray();
 
-            var image = new QazaqGeoReports.Domain.Entities.Image
+            var image = new CreateImageDto
             {
                 Data = imageData,
                 ReportId = report.Id
             };
 
-            var resultImage = await imageService.CreateAsync(image);// Сохраняем изображение
-            if(resultImage.Id > 0)
+            var resultImage = await imageService.CreateAsync(image); // Сохраняем изображение
+            if (resultImage.Id > 0)
             {
                 Console.WriteLine("изображение сохранено");
             }
         }
 
         NavigationManager.NavigateTo("/Report/MyReports");
+    
     }
     private static DateTime? ToUtcFromInput(DateTime? dt)
     {
         if (dt is null) return null;
-
-        // InputDate даёт Kind=Unspecified. Считаем это локальным временем сервера
+         
         var local = DateTime.SpecifyKind(dt.Value, DateTimeKind.Local);
         return local.ToUniversalTime();
-    }
-    private class ReportInputModel
-    {
-        [Required]
-        public string Title { get; set; } = string.Empty;
-
-        public string? Content { get; set; }
-        public string? Comments { get; set; }
-        public string? RouteDescription { get; set; }
-        public string? UsersMovement { get; set; }
-        public string? EquipmentsMovement { get; set; }
-
-        [Range(0, 99999)]
-        public double? DistanceKM { get; set; }
-
-        [Range(0, 99999)]
-        public double? FuelUsedLiters { get; set; }
-        [DataType(DataType.Date)]
-        public DateTime? DepartureTime { get; set; }
-        [DataType(DataType.Date)]
-        public DateTime? ArrivalTime { get; set; }
     }
 }
 

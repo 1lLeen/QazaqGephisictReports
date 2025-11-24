@@ -25,48 +25,36 @@ public class AbstractService<TRepository, TEntity, DtoCreate, DtoUpdate, DtoBase
         this.mapper = mapper;
     }
 
-    public virtual async Task<ResultDto<DtoBase>?> GetAsync(Expression<Func<TEntity, bool>> predicate)
+    public virtual async Task<DtoBase>? GetAsync(Expression<Func<TEntity, bool>> predicate)
     { 
         var res = mapper.Map<DtoBase>(await _repository.GetAsync(predicate));
-        if(res is null)
-        {
-            return new ResultDto<DtoBase>
-            {
-                Success = false,
-                Error = "DTO entity is null"
-            };
-        }
-        return new ResultDto<DtoBase>
-        {
-            Success = true,
-            Data = mapper.Map<DtoBase>(res)
-        };
+        return mapper.Map<DtoBase>(res);
 
     }
-    public virtual async Task<ResultDto<List<DtoBase>>> GetAllAsync() 
+    public virtual async Task<List<DtoBase>> GetAllAsync() 
     {
         var entities = await _repository.GetAllAsync();
-        return ResultBuilder.BuildList<DtoBase, TEntity>(entities, mapper);
+        return mapper.Map<List<DtoBase>>(entities);
     }
-    public virtual async Task<ResultDto<DtoBase>> GetByIdAsync(int id)
+    public virtual async Task<DtoBase> GetByIdAsync(int id)
     {
         var entity = await _repository.GetByIdAsync(id);
-        return ResultBuilder.Build<DtoBase, TEntity>(entity, mapper);
+        return mapper.Map<DtoBase>(entity);
     }
-    public virtual async Task<ResultDto<DtoBase>> CreateAsync(DtoCreate entity)
+    public virtual async Task<DtoBase> CreateAsync(DtoCreate entity)
     {
         var created = await _repository.CreateAsync(mapper.Map<TEntity>(entity));
-        return ResultBuilder.Build<DtoBase, TEntity>(created, mapper);
+        return mapper.Map<DtoBase>(created);
     }
-    public virtual async Task<ResultDto<DtoBase>> UpdateAsync(DtoUpdate entity) 
+    public virtual async Task<DtoBase> UpdateAsync(DtoUpdate entity) 
     {
         var updated = await _repository.UpdateAsync(mapper.Map<TEntity>(entity));
-        return ResultBuilder.Build<DtoBase, TEntity>(updated, mapper);
+        return mapper.Map<DtoBase>(updated);
 
     }
-    public virtual async Task<ResultDto<DtoBase>> DeleteAsync(int id)
+    public virtual async Task<DtoBase> DeleteAsync(int id)
     {
         var deleted = await _repository.DeleteAsync(id);
-        return ResultBuilder.Build<DtoBase, TEntity>(deleted, mapper);
+        return mapper.Map<DtoBase>(deleted);
     }
 }

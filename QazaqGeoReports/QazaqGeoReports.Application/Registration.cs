@@ -8,8 +8,10 @@ public static class RegistrationApplication
 {
     public static void RegistrationAutoMapper(this IServiceCollection services)
     {
-        services.AddAutoMapper(typeof(EquipmentMapperDto));
+        services.AddAutoMapper(typeof(UserMapperProfile));
+        services.AddAutoMapper(typeof(EquipmentMapperProfile));
         services.AddAutoMapper(typeof(ReportMapperProfile));
+        services.AddAutoMapper(typeof(ImageMapperProfile));
     }
     public static void RegistrationServices(this IServiceCollection services)
     {

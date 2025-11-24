@@ -5,11 +5,12 @@ using QazaqGeoReports.Domain.Entities;
 namespace QazaqGeoReports.Application.Mapper;
 public class ReportMapperProfile : Profile
 {
-    public ReportMapperProfile() 
+    public ReportMapperProfile()
     {
+        CreateMap<BaseReportDto, Report>().ReverseMap();
         CreateMap<CreateReportDto, Report>().ReverseMap();
         CreateMap<UpdateReportDto, Report>().ReverseMap();
-        CreateMap<BaseReportDto, Report>().ReverseMap();
         CreateMap<ListReportViewModel,  Report>().ReverseMap();
+        CreateMap<ReportViewModel, Report>().ReverseMap();
     }
 }

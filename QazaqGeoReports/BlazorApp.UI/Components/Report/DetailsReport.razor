@@ -2,8 +2,10 @@
 @attribute [Authorize]
 
 @using Microsoft.AspNetCore.Authorization
+@using QazaqGeoReports.Application.DTOs.ImageDtos
+@using QazaqGeoReports.Application.DTOs.ReportDtos
 @using QazaqGeoReports.Domain.Entities
-@using QazaqGeoReports.Domain.Interfaces.Services
+@using QazaqGeoReports.Application.Interfaces.Services
 
 @inject NavigationManager Nav
 @inject IReportService ReportService
@@ -160,9 +162,9 @@ else
 {
     [Parameter] public int ReportId { get; set; }
 
-    private Report? report;
-    private Image? image;                 // ONE IMAGE
-    private List<Image>? images;          // MANY IMAGES
+    private BaseReportDto? report;
+    private BaseImageDto? image;                 // ONE IMAGE
+    private List<BaseImageDto>? images;          // MANY IMAGES
 
     private string tripDuratation;
     private string fuel100;
@@ -175,10 +177,12 @@ else
         isLoading = true;
         try
         {
-            report = await ReportService.GetByIdAsync(ReportId);
-            images = await GetListImageByReportIdAsync(ReportId); // MANY IMAGES
-            image  = await GetSingleImageByReportIdAsync(ReportId);   // ONE IMAGE
-            
+
+            var resultReport = await ReportService.GetByIdAsync(ReportId);
+            var images = await GetListImageByReportIdAsync(ReportId); // MANY IMAGES
+            var image  = await GetSingleImageByReportIdAsync(ReportId);   // ONE IMAGE
+
+            report = resultReport;
             tripDuratation = ReportService.TripDuratation(report);
             fuel100 = ReportService.FuelPer100(report);
             tripBadgeText = ReportService.TripBadgeText(report);
@@ -237,7 +241,7 @@ else
     }
 
     // ---------- IMAGE (ONE) ----------
-    async Task<Image?> GetSingleImageByReportIdAsync(int reportId)
+    async Task<BaseImageDto?> GetSingleImageByReportIdAsync(int reportId)
     {
         try
         {
@@ -249,7 +253,7 @@ else
             return null;
         }
     }
-    async Task<List<Image>?> GetListImageByReportIdAsync(int reportId)
+    async Task<List<BaseImageDto>?> GetListImageByReportIdAsync(int reportId)
     {
         try
         {

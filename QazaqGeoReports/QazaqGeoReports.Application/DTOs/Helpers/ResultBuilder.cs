@@ -7,7 +7,6 @@ namespace QazaqGeoReports.Application.DTOs.Helpers;
 public static class ResultBuilder
 {
     public static ResultDto<TDto> Build<TDto, TSource>(TSource source, IMapper mapper)
-        where TDto : IBase 
     {
         if (source is null)
         {
@@ -25,7 +24,6 @@ public static class ResultBuilder
         };
     }
     public static ResultDto<List<TDto>> BuildList<TDto, TSource>(List<TSource>? source, IMapper mapper)
-        where TDto : IBase
     {
         if (source is null)
         {

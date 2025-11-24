@@ -61,6 +61,5 @@ public class UserRepository : IUserRepository
         return await _context.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(predicate);
-    }
-
+    } 
 }

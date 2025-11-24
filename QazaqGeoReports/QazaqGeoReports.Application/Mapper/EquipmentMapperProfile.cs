@@ -4,9 +4,9 @@ using QazaqGeoReports.Domain.Entities;
 
 namespace QazaqGeoReports.Application.Mapper;
 
-public class EquipmentMapperDto : Profile
+public class EquipmentMapperProfile : Profile
 {
-    public EquipmentMapperDto()
+    public EquipmentMapperProfile()
     {
         CreateMap<CreateEquipmentDto, Equipment>().ReverseMap();
         CreateMap<UpdateEquipmentDto, Equipment>().ReverseMap();

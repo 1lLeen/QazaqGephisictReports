@@ -12,7 +12,6 @@ public class ReportRepository : AbstractRepository<Report>, IReportRepository
     public async Task<List<Report>> GetReportsByUserAsync(string userId)
     {
         return await _context.Reports
-            .AsNoTracking()
             .Include(x => x.CreatedByUser)
             .OrderBy(x => x.CreatedTime)
             .ToListAsync();

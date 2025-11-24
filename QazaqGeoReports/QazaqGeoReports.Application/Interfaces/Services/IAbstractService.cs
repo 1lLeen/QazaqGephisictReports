@@ -7,9 +7,9 @@ public interface IAbstractService<TDtoBase, TCreateDto, TUpdateDto>
     where TCreateDto : ICreate
     where TUpdateDto : IUpdate
 {
-    Task<ResultDto<TDtoBase>> GetByIdAsync(int id);
-    Task<ResultDto<List<TDtoBase>>> GetAllAsync();
-    Task<ResultDto<TDtoBase>> CreateAsync(TCreateDto entity);
-    Task<ResultDto<TDtoBase>> UpdateAsync(TUpdateDto entity);
-    Task<ResultDto<TDtoBase>> DeleteAsync(int id);
+    Task<TDtoBase> GetByIdAsync(int id);
+    Task<List<TDtoBase>> GetAllAsync();
+    Task<TDtoBase> CreateAsync(TCreateDto entity);
+    Task<TDtoBase> UpdateAsync(TUpdateDto entity);
+    Task<TDtoBase> DeleteAsync(int id);
 }
