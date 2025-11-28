@@ -16,6 +16,7 @@ public static class DependencyInjection
     }
     public static void RegistrationRepositories(this IServiceCollection services)
     {
+        services.AddTransient<IRoleRepository, RoleRepository>();
         services.AddTransient<IImageRepository, ImageRepository>();
         services.AddTransient<IUserRepository, UserRepository>();
         services.AddTransient<IEquipmentRepository, EquipmentRepository>();

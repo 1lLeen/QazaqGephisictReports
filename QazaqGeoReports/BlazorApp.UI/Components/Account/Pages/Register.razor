@@ -5,7 +5,11 @@
 @using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
+@using QazaqGeoReports.Application.DTOs.UserDtos
+@using QazaqGeoReports.Application.DTOs.UserDtos.AuthDtos
+@using QazaqGeoReports.Application.Interfaces.Services
 @using QazaqGeoReports.Domain.Entities
+@using AutoMapper;
 
 @inject UserManager<User> UserManager
 @inject IUserStore<User> UserStore
@@ -15,6 +19,8 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 @inject QazaqGeoReports.Infrastructure.QazaqGeoReportContext DbContext
+@inject IMapper Mapper;
+@inject IAuthService AuthServiceRegister
 
 <PageTitle>Register</PageTitle>
 
@@ -86,7 +92,7 @@
     private IEnumerable<IdentityError>? identityErrors;
 
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = new();
+    private RegisterDto Input { get; set; } = new();
 
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
@@ -102,20 +108,12 @@
             role = DbContext.Roles.FirstOrDefault(x => x.Name == QazaqGeoReports.Domain.Common.Roles.Worker.ToString());
         }
 
-        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+        await UserStore.SetUserNameAsync(Mapper.Map<User>(user), Input.Email, CancellationToken.None);
         // var emailStore = GetEmailStore();
         // await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-        
-        //Hand data
-        user.FirstName = Input.FirstName;
-        user.LastName = Input.LastName;
-        user.MiddleName = Input.MiddleName;
-        user.PhoneNumber = Input.PhoneNumber;
-        user.Email = Input.Email;
-        user.EmailConfirmed = true;
-        user.PhoneNumberConfirmed = true;
+ 
 
-        var result = await UserManager.CreateAsync(user, Input.Password);
+        var result = await AuthServiceRegister.RegistrationAsync(Input);
         
         if (!result.Succeeded)
         {
@@ -123,10 +121,10 @@
             return;
         }
 
-        await UserManager.AddToRoleAsync(user, role.Name);
-        await SignInManager.SignInAsync(user, isPersistent: false);
+        // await UserManager.AddToRoleAsync(Mapper.Map<User>(user), role.Name);
+        // await SignInManager.SignInAsync(Mapper.Map<User>(user), isPersistent: false);
 
-        await SignInManager.UserManager.SetLockoutEnabledAsync(user, false);
+        await SignInManager.UserManager.SetLockoutEnabledAsync(Mapper.Map<User>(user), false);
         if (!result.Succeeded)
         {
             identityErrors = result.Errors;
@@ -135,7 +133,7 @@
 
         // var userId = await UserManager.GetUserIdAsync(user);
 
-        await SignInManager.SignInAsync(user, isPersistent: false);
+        // await SignInManager.SignInAsync(user, isPersistent: false);
         RedirectManager.RedirectTo(ReturnUrl);
         // var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         // code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -155,72 +153,27 @@
 
     }
 
-    private User CreateUser()
+    private CreateUserDto CreateUser()
     {
         try
         {
-            return Activator.CreateInstance<User>();
+            return Activator.CreateInstance<CreateUserDto>();
         }
         catch
         {
-            throw new InvalidOperationException($"Can't create an instance of '{nameof(User)}'. " +
-                $"Ensure that '{nameof(User)}' is not an abstract class and has a parameterless constructor.");
+            throw new InvalidOperationException($"Can't create an instance of '{nameof(CreateUserDto)}'. " +
+                $"Ensure that '{nameof(CreateUserDto)}' is not an abstract class and has a parameterless constructor.");
         }
     }
 
-    private IUserEmailStore<User> GetEmailStore()
-    {
-        if (!UserManager.SupportsUserEmail)
-        {
-            throw new NotSupportedException("The default UI requires a user store with email support.");
-        }
-        return (IUserEmailStore<User>)UserStore;
-    }
+    // private IUserEmailStore<User> GetEmailStore()
+    // {
+    //     if (!UserManager.SupportsUserEmail)
+    //     {
+    //         throw new NotSupportedException("The default UI requires a user store with email support.");
+    //     }
+    //     return (IUserEmailStore<User>)UserStore;
+    // }
 
-    private sealed class InputModel
-    {
-        [Required]
-        [StringLength(100, MinimumLength = 3)]
-        [Display(Name = "FirstName")]
-        public string FirstName { get; set; } = "";
-
-        [Required]
-        [StringLength(100, MinimumLength = 3)]
-        [Display(Name = "LastName")]
-        public string LastName { get; set; } = "";
-
-        [Required]
-        [StringLength(100, MinimumLength = 3)]
-        [Display(Name = "MiddleName")]
-        public string MiddleName { get; set; } = "";
-
-        [Required]
-        [StringLength(100, MinimumLength = 3)]
-        [DataType(DataType.PhoneNumber)]
-        [Display(Name = "PhoneNumber")]
-        public string PhoneNumber { get; set; } = "";
-
-        [Required]
-        [StringLength(100, MinimumLength = 3)]
-        [DataType(DataType.PhoneNumber)]
-        [Display(Name = "Role")]
-        public string Role { get; set; } = "";
-
-
-        [Required]
-        [EmailAddress]
-        [Display(Name = "Email")]
-        public string Email { get; set; } = "";
-
-        [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
-        [DataType(DataType.Password)]
-        [Display(Name = "Password")]
-        public string Password { get; set; } = "";
-
-        [DataType(DataType.Password)]
-        [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-        public string ConfirmPassword { get; set; } = "";
-    }
+    
 }

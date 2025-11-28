@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using QazaqGeoReports.Application.DTOs.UserDtos;
+using QazaqGeoReports.Application.DTOs.UserDtos.AuthDtos;
 using QazaqGeoReports.Domain.Entities;
 
 namespace QazaqGeoReports.Application.Mapper;
@@ -14,5 +15,7 @@ public class UserMapperProfile : Profile
         CreateMap<UserDetailsDto, User>().ReverseMap();
         CreateMap<UserLite, User>().ReverseMap();
         CreateMap<UserViewModel, User>().ReverseMap();
+        CreateMap<RegisterDto, User>().ReverseMap();
+        CreateMap<LoginDto, User>().ReverseMap();
     }
 }

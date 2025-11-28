@@ -1,14 +1,22 @@
 ﻿@page "/Account/Login"
 
 @using System.ComponentModel.DataAnnotations
+@using AutoMapper
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
+@using QazaqGeoReports.Application.DTOs.UserDtos
+@using QazaqGeoReports.Application.DTOs.UserDtos.AuthDtos
+@using QazaqGeoReports.Application.Interfaces.Services
 @using QazaqGeoReports.Domain.Entities
 
 @inject SignInManager<User> SignInManager
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject IUserService UserService;
+@inject IMapper Mapper;
+@inject IdentityUserAccessor UserAccessor
+@inject IAuthService AuthServiceLogin
 
 <PageTitle>Log in</PageTitle>
 
@@ -64,7 +72,7 @@
     private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = new();
+    private LoginDto Input { get; set; } = new();
 
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
@@ -78,19 +86,21 @@
     }
 
     public async Task LoginUser()
-    { 
-        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
-        if (result.Succeeded)
+    {
+        var resultAuth = await AuthServiceLogin.LoginAsync(Input);
+        if (resultAuth.Succeeded)
         {
+
             RedirectManager.RedirectTo(ReturnUrl);
         }
-        else if (result.RequiresTwoFactor)
+        else if (resultAuth.RequiresTwoFactor)
         {
             RedirectManager.RedirectTo(
                 "Account/LoginWith2fa",
                 new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
+
         }
-        else if (result.IsLockedOut)
+        else if (resultAuth.IsLockedOut)
         {
             Logger.LogWarning("User account locked out.");
             RedirectManager.RedirectTo("Account/Lockout");
@@ -100,18 +110,5 @@
             errorMessage = "Error: Invalid login attempt.";
         }
     }
-
-    private sealed class InputModel
-    {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; } = "";
-
-        [Required]
-        [DataType(DataType.Password)]
-        public string Password { get; set; } = "";
-
-        [Display(Name = "Remember me?")]
-        public bool RememberMe { get; set; }
-    }
+     
 }

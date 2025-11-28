@@ -11,6 +11,7 @@ public class Report : BaseEntity
     public string? RouteDescription { get; set; }
     public string? UsersMovement { get; set; }
     public string? EquipmentsMovement { get; set; }
+    public string? ReportStatus { get; set; }
     public DateTime? DepartureTime { get; set; }
     public DateTime? ArrivalTime { get; set; }
 }

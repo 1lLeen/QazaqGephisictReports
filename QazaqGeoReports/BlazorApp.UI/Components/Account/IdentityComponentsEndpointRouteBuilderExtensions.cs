@@ -1,12 +1,13 @@
 using BlazorApp.UI.Components.Account.Pages;
 using BlazorApp.UI.Components.Account.Pages.Manage;
-using QazaqGeoReports.Domain.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
+using QazaqGeoReports.Application.Interfaces.Services;
+using QazaqGeoReports.Domain.Entities;
 using System.Security.Claims;
 using System.Text.Json;
 
@@ -43,9 +44,18 @@ namespace BlazorApp.UI.Components.Account
             accountGroup.MapPost("/Logout", async (
                 ClaimsPrincipal user,
                 [FromServices] SignInManager<User> signInManager,
+                [FromServices] UserManager<User> userManager,
+                [FromServices] IAuthService authService,
                 [FromForm] string returnUrl) =>
             {
+                var currentUser = await userManager.GetUserAsync(user);
+                if (currentUser != null)
+                {
+                    await authService.LogoutAsync(currentUser);
+                }
+
                 await signInManager.SignOutAsync();
+                
                 return TypedResults.LocalRedirect($"~/{returnUrl}");
             });
 
