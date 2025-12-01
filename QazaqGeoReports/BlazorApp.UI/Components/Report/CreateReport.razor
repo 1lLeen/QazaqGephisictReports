@@ -184,7 +184,7 @@
             await stream.CopyToAsync(ms);
             var imageData = ms.ToArray();
 
-            var image = new CreateImageDto
+            var image = new CreateImageUserDto
             {
                 Data = imageData,
                 ReportId = report.Id

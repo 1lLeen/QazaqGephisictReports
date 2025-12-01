@@ -249,7 +249,7 @@ else
                 }
 
                 var updated = ToEntity(existing);
-                await ReportService.UpdateAsync(updated);
+                await ReportService.UpdateAsync(updated, ReportId);
                 Nav.NavigateTo($"/Report/Details/{ReportId}");
             }
         }

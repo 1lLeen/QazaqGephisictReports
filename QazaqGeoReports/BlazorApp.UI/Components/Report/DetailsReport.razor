@@ -163,8 +163,8 @@ else
     [Parameter] public int ReportId { get; set; }
 
     private BaseReportDto? report;
-    private BaseImageDto? image;                 // ONE IMAGE
-    private List<BaseImageDto>? images;          // MANY IMAGES
+    private BaseImageUserDto? image;                 // ONE IMAGE
+    private List<BaseImageUserDto>? images;          // MANY IMAGES
 
     private string tripDuratation;
     private string fuel100;
@@ -241,7 +241,7 @@ else
     }
 
     // ---------- IMAGE (ONE) ----------
-    async Task<BaseImageDto?> GetSingleImageByReportIdAsync(int reportId)
+    async Task<BaseImageUserDto?> GetSingleImageByReportIdAsync(int reportId)
     {
         try
         {
@@ -253,7 +253,7 @@ else
             return null;
         }
     }
-    async Task<List<BaseImageDto>?> GetListImageByReportIdAsync(int reportId)
+    async Task<List<BaseImageUserDto>?> GetListImageByReportIdAsync(int reportId)
     {
         try
         {
