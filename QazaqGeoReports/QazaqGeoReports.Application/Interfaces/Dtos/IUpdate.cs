@@ -1,5 +1,5 @@
 ﻿namespace QazaqGeoReports.Application.Interfaces.Dtos;
 
-public interface IUpdate
+public interface IUpdate : IBase
 {
 }

@@ -1,5 +1,5 @@
 ﻿namespace QazaqGeoReports.Application.Interfaces.Dtos;
 
-public interface IListView
+public interface IListView : IBase
 {
 }

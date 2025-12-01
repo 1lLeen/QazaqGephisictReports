@@ -1,5 +1,5 @@
 ﻿namespace QazaqGeoReports.Application.Interfaces.Dtos;
 
-public interface ICreate
+public interface ICreate : IBase
 { 
 }

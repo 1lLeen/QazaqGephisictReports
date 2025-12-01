@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using QazaqGeoReports.Domain.Entities;
+using QazaqGeoReports.Domain.Entities.Images;
 using QazaqGeoReports.Infrastructure.Configurations;
+using QazaqGeoReports.Infrastructure.Configurations.ImageConfiguration;
 
 namespace QazaqGeoReports.Infrastructure;
 
@@ -10,13 +12,21 @@ public class QazaqGeoReportContext(DbContextOptions<QazaqGeoReportContext> optio
     public DbSet<User> Users { get; set; }
     public DbSet<Report> Reports { get; set; }
     public DbSet<Equipment> Equipments { get; set; }
+    #region imgs
+    public DbSet<ImageEquipment> ImageEquipments { get; set; }
+    public DbSet<ImageReport> ImageReports { get; set; }
+    public DbSet<ImageUser> ImageUsers { get; set; }
     public DbSet<Image> Images { get; set; }
+    #endregion
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
         builder.ApplyConfiguration(new BaseConfiguration<Report>());
         builder.ApplyConfiguration(new BaseConfiguration<Equipment>());
         builder.ApplyConfiguration(new BaseConfiguration<Image>());
+        builder.ApplyConfiguration(new ImageEquipmentConfiguration());
+        builder.ApplyConfiguration(new ImageUserConfiguration());
+        builder.ApplyConfiguration(new ImageReportConfiguration());
 
         builder.Entity<User>(entity =>
         {

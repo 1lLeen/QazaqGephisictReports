@@ -10,6 +10,6 @@ public interface IAbstractService<TDtoBase, TCreateDto, TUpdateDto>
     Task<TDtoBase> GetByIdAsync(int id);
     Task<List<TDtoBase>> GetAllAsync();
     Task<TDtoBase> CreateAsync(TCreateDto entity);
-    Task<TDtoBase> UpdateAsync(TUpdateDto entity);
+    Task<TDtoBase> UpdateAsync(TUpdateDto entity, int id);
     Task<TDtoBase> DeleteAsync(int id);
 }

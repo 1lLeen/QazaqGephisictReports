@@ -1,4 +1,4 @@
-﻿using QazaqGeoReports.Domain.Entities;
+﻿using QazaqGeoReports.Domain.Entities.Images;
 
 namespace QazaqGeoReports.Application.Interfaces.Repositories;
 public interface IImageRepository : IAbstractRepository<Image>

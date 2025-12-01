@@ -46,9 +46,15 @@ public class AbstractService<TRepository, TEntity, DtoCreate, DtoUpdate, DtoBase
         var created = await _repository.CreateAsync(mapper.Map<TEntity>(entity));
         return mapper.Map<DtoBase>(created);
     }
-    public virtual async Task<DtoBase> UpdateAsync(DtoUpdate entity) 
+    public virtual async Task<DtoBase> UpdateAsync(DtoUpdate entity, int id) 
     {
-        var updated = await _repository.UpdateAsync(mapper.Map<TEntity>(entity));
+        var localEntity = await _repository.GetByIdAsync(id);
+        if (localEntity == null)
+        {
+            throw new KeyNotFoundException($"Entity with id {id} not found.");
+        }
+        localEntity = mapper.Map(entity, localEntity);
+        var updated = await _repository.UpdateAsync(localEntity);
         return mapper.Map<DtoBase>(updated);
 
     }

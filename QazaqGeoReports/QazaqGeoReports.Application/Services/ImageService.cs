@@ -1,8 +1,8 @@
-﻿using QazaqGeoReports.Domain.Entities;
-using QazaqGeoReports.Application.Interfaces.Repositories;
+﻿using QazaqGeoReports.Application.Interfaces.Repositories;
 using QazaqGeoReports.Application.Interfaces.Services;
 using QazaqGeoReports.Application.DTOs.ImageDtos;
-using AutoMapper; 
+using AutoMapper;
+using QazaqGeoReports.Domain.Entities.Images;
 
 namespace QazaqGeoReports.Application.Services;
 public class ImageService : AbstractService<IImageRepository, Image, CreateImageDto, UpdateImageDto, BaseImageDto, ListImageViewModel>, 
