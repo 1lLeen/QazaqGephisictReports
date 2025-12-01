@@ -1,0 +1,103 @@
+﻿@page "/Equipment/Edit/{Id:int}"
+@using QazaqGeoReports.Application.DTOs.EquipmentDtos
+@using QazaqGeoReports.Application.Interfaces.Services
+@using QazaqGeoReports.Domain.Common
+
+@inject IEquipmentService EquipmentService
+@inject NavigationManager Nav
+
+<PageTitle>Редактировать оборудование</PageTitle>
+
+<div class="container py-4">
+
+    <h2 class="mb-4">✏️ Редактировать оборудование</h2>
+
+    @if (_model is null)
+    {
+        <p>Загрузка...</p>
+    }
+    else
+    {
+        <EditForm Model="_model" OnValidSubmit="Save">
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">Название</label>
+                        <InputText class="form-control" @bind-Value="_model.Name" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Инвентарный номер</label>
+                        <InputText class="form-control" @bind-Value="_model.SerialNumber" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <InputText class="form-control" @bind-Value="_model.Description" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Количество</label>
+                        <InputNumber class="form-control" @bind-Value="_model.Count" />
+                    </div>
+                    <div class="form-floating mb-3">
+                        <InputSelect @bind-Value="_model.Status" id="_model.Status" class="form-control form-select" autocomplete="status" aria-required="true" placeholder="">
+                            <option value="none">None</option>
+                            @foreach (var item in Enum.GetNames(typeof(EquipmentStatus)))
+                            {
+                                <option class="" value="@item">@item</option>
+                            }
+                        </InputSelect>
+                        <label for="_model.Status">Role</label>
+                        <ValidationMessage For="() => _model.Status" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Статус</label>
+                        <select class="form-select" @bind="_model.Status">
+                            @foreach (var s in Enum.GetNames<EquipmentStatus>())
+                            {
+                                <option>@s</option>
+                            }
+                        </select>
+                    </div>
+
+                    <button class="btn btn-success">Сохранить</button>
+                    <button type="button" class="btn btn-secondary ms-2" @onclick="Back">Отмена</button>
+
+                </div>
+            </div>
+        </EditForm>
+    }
+
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private UpdateEquipmentDto? _model;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var local = await EquipmentService.GetByIdAsync(Id);
+        _model = new UpdateEquipmentDto
+        {
+            Name =  local.Name,
+            SerialNumber = local.SerialNumber,
+            Description = local.Description,
+            Status = local.Status,
+            Count = local.Count
+        };
+    }
+
+    private async Task Save()
+    {
+        var result = await EquipmentService.UpdateAsync(_model, Id);
+        if(result is not null)
+        {
+            Nav.NavigateTo("/AllEquipments");
+        }
+    }
+
+    private void Back() => Nav.NavigateTo("/AllEquipments");
+}

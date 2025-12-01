@@ -1,0 +1,70 @@
+﻿@page "/Equipment/Details/{Id:int}"
+
+@using QazaqGeoReports.Application.DTOs.EquipmentDtos
+@using QazaqGeoReports.Application.Interfaces.Services
+
+@inject IEquipmentService EquipmentService
+@inject NavigationManager Nav
+
+<PageTitle>Детали оборудования</PageTitle>
+
+<div class="container py-4">
+
+    @if (_item is null)
+    {
+        <p>Загрузка...</p>
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>📦 @_item.Name</h2>
+
+            <a class="btn btn-primary" href="/equipment/edit/@_item.Id">
+                ✏️ Изменить
+            </a>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+
+                <p><strong>Инвентарный №:</strong> @_item.SerialNumber</p>
+
+                <p>
+                    <strong>Статус: </strong>
+                    <span class="badge bg-@GetStatusColor(_item.Status)">
+                        @_item.Status
+                    </span>
+                </p>
+
+                @if (!string.IsNullOrWhiteSpace(_item.Description))
+                {
+                    <p><strong>Описание:</strong> @_item.Description</p>
+                }
+            </div>
+        </div>
+
+        <button class="btn btn-secondary" @onclick="Back">Назад</button>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private BaseEquipmentDto? _item;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _item = await EquipmentService.GetByIdAsync(Id);
+    }
+
+    private void Back() => Nav.NavigateTo("/equipment");
+
+    private string GetStatusColor(string status) =>
+        status switch
+        {
+            "Available" => "success",
+            "InUse" => "warning",
+            "Broken" => "danger",
+            "OnRepair" => "info",
+            _ => "secondary"
+        };
+}
