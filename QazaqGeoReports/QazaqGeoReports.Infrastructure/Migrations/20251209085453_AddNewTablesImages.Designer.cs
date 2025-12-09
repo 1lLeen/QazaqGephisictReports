@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using QazaqGeoReports.Infrastructure;
@@ -11,9 +12,11 @@ using QazaqGeoReports.Infrastructure;
 namespace QazaqGeoReports.Infrastructure.Migrations
 {
     [DbContext(typeof(QazaqGeoReportContext))]
-    partial class QazaqGeoReportContextModelSnapshot : ModelSnapshot
+    [Migration("20251209085453_AddNewTablesImages")]
+    partial class AddNewTablesImages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -223,7 +226,7 @@ namespace QazaqGeoReports.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Image");
+                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("QazaqGeoReports.Domain.Entities.Images.ImageEquipment", b =>

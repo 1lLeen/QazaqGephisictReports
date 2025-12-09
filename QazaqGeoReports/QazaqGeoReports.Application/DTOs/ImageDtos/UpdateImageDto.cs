@@ -2,6 +2,6 @@
 
 namespace QazaqGeoReports.Application.DTOs.ImageDtos;
 
-public class UpdateImageDto : BaseImageUserDto, IUpdate
+public class UpdateImageDto : BaseImageDto, IUpdate
 {
 }

@@ -2,6 +2,6 @@
 
 namespace QazaqGeoReports.Application.DTOs.ImageDtos.ImageEquiomentDtos;
 
-public class ListImageEquipmentViewModel : BaseImageUserDto, IListView
+public class ListImageEquipmentViewModel : BaseImageEquipmentDto, IListView
 {
 }

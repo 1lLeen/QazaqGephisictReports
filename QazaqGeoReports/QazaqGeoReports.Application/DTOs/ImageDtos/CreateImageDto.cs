@@ -1,7 +1,8 @@
-﻿using QazaqGeoReports.Application.Interfaces.Dtos;
+﻿using QazaqGeoReports.Application.DTOs.ImageDtos.ImageEquiomentDtos;
+using QazaqGeoReports.Application.Interfaces.Dtos;
 
 namespace QazaqGeoReports.Application.DTOs.ImageDtos;
 
-public class CreateImageDto : BaseImageUserDto, ICreate
+public class CreateImageDto : BaseImageDto, ICreate
 {
 }

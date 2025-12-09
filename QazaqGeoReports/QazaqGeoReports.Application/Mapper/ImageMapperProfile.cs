@@ -1,6 +1,7 @@
-﻿using AutoMapper;
-using QazaqGeoReports.Application.DTOs.ImageDtos;
+﻿using AutoMapper; 
+using QazaqGeoReports.Application.DTOs.ImageDtos.ImageEquiomentDtos;
 using QazaqGeoReports.Domain.Entities.Images;
+using QazaqGeoReports.Application.DTOs.ImageDtos.ImageUserDtos;
 
 namespace QazaqGeoReports.Application.Mapper;
 
@@ -8,9 +9,9 @@ public class ImageMapperProfile : Profile
 {
     public ImageMapperProfile() 
     {
-        CreateMap<BaseImageDto, Image>().ReverseMap();
-        CreateMap<CreateImageDto, Image>().ReverseMap();
-        CreateMap<UpdateImageDto, Image>().ReverseMap();
-        CreateMap<ListImageViewModel, Image>().ReverseMap();
+        CreateMap<BaseImageUserDto, Image>().ReverseMap();
+        CreateMap<CreateImageUserDto, Image>().ReverseMap();
+        CreateMap<UpdateImageUserDto, Image>().ReverseMap();
+        CreateMap<ListImageUserViewModel, Image>().ReverseMap();
     }
 }

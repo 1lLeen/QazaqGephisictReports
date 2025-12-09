@@ -1,9 +1,9 @@
 ﻿using QazaqGeoReports.Application.Interfaces.Dtos;
 using QazaqGeoReports.Domain.Entities;
 
-namespace QazaqGeoReports.Application.DTOs.ImageDtos.ImageEquip,emtDtos`;
+namespace QazaqGeoReports.Application.DTOs.ImageDtos.ImageEquiomentDtos;
 
-public class BaseImageUserDto : IBase
+public class BaseImageEquipmentDto : IImageBase
 {
     public int Id { get; set; }
     public byte[] Data { get; set; }

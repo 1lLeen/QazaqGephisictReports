@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
-using QazaqGeoReports.Application.DTOs.Common;
-using QazaqGeoReports.Application.DTOs.Helpers;
+using QazaqGeoReports.Application.DTOs.Common; 
 using QazaqGeoReports.Application.Interfaces.Dtos;
 using QazaqGeoReports.Application.Interfaces.Repositories;
 using QazaqGeoReports.Domain.Entities; 
@@ -15,8 +14,7 @@ public class AbstractService<TRepository, TEntity, DtoCreate, DtoUpdate, DtoBase
     where DtoBase : IBase
     where DtoList : IListView
 {
-    protected readonly TRepository _repository;
-    protected ResultDto<DtoBase> _resultDto = new ResultDto<DtoBase>();
+    protected readonly TRepository _repository; 
     protected IMapper mapper; 
 
     public AbstractService(TRepository repository, IMapper mapper)

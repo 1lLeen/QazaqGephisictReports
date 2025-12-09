@@ -3,7 +3,7 @@ using QazaqGeoReports.Domain.Entities;
 
 namespace QazaqGeoReports.Application.DTOs.ImageDtos.ImageReportDtos;
 
-public class BaseImageUserDto : IBase
+public class BaseImageReportDto : IImageBase
 {
     public int Id { get; set; }
     public byte[] Data { get; set; }

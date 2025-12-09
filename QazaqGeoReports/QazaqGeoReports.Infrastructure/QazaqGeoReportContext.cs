@@ -16,7 +16,7 @@ public class QazaqGeoReportContext(DbContextOptions<QazaqGeoReportContext> optio
     public DbSet<ImageEquipment> ImageEquipments { get; set; }
     public DbSet<ImageReport> ImageReports { get; set; }
     public DbSet<ImageUser> ImageUsers { get; set; }
-    public DbSet<Image> Images { get; set; }
+    //public DbSet<Image> Images { get; set; }
     #endregion
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -24,10 +24,11 @@ public class QazaqGeoReportContext(DbContextOptions<QazaqGeoReportContext> optio
         builder.ApplyConfiguration(new BaseConfiguration<Report>());
         builder.ApplyConfiguration(new BaseConfiguration<Equipment>());
         builder.ApplyConfiguration(new BaseConfiguration<Image>());
+        #region ImageConfig
         builder.ApplyConfiguration(new ImageEquipmentConfiguration());
         builder.ApplyConfiguration(new ImageUserConfiguration());
         builder.ApplyConfiguration(new ImageReportConfiguration());
-
+        #endregion
         builder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.Id);

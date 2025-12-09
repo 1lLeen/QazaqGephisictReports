@@ -1,4 +1,4 @@
-﻿namespace QazaqGeoReports.Domain.Entities;
+﻿namespace QazaqGeoReports.Domain.Entities.Images;
 public class Image : BaseEntity
 {
     public byte[] Data { get; set; }

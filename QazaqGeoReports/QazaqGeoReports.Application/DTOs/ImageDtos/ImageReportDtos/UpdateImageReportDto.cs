@@ -1,7 +1,7 @@
 ﻿using QazaqGeoReports.Application.Interfaces.Dtos;
 
-namespace QazaqGeoReports.Application.DTOs.ImageDtos.ImageUserDtos;
+namespace QazaqGeoReports.Application.DTOs.ImageDtos.ImageReportDtos;
 
-public class UpdateImageUserDto : BaseImageUserDto, IUpdate
+public class UpdateImageReportDto : BaseImageReportDto, IUpdate
 {
 }

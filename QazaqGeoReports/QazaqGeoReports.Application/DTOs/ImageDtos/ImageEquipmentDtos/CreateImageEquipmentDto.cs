@@ -2,6 +2,6 @@
 
 namespace QazaqGeoReports.Application.DTOs.ImageDtos.ImageEquiomentDtos;
 
-public class CreateImageDto : BaseImageUserDto, ICreate
+public class CreateImageEquipmentDto : BaseImageEquipmentDto, ICreate
 {
 }
