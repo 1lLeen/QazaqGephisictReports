@@ -75,7 +75,10 @@ else
                 <div class="card mt-3 shadow-sm">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <strong>Содержимое отчёта</strong>
-                        @if (image is not null) { <span class="badge text-bg-light">Фото: 1</span> }
+                        @if (image is not null)
+                        {
+                            <span class="badge text-bg-light">Фото: @images.Count</span>
+                        }
                     </div>
                     <div class="card-body">
                         @if (!string.IsNullOrWhiteSpace(report.Content))
@@ -86,29 +89,31 @@ else
                         {
                             <span class="text-muted">—</span>
                         }
-
-                        @foreach(var image in images)
-                        {
-                            @if (image is not null && image.Data?.Length > 0)
+                        @if (images is not null && images.Any())
+                        { 
+                            @foreach(var image in images)
                             {
-                                <hr />
-                                <div class="card shadow-sm">
-                                    <img class="card-img-top"
-                                            src="@ImageService.GetDataUrl(image)"
-                                            alt="Изображение отчёта @ReportId"
-                                            loading="lazy"
-                                            style="object-fit:cover; aspect-ratio: 4/3;" />
-                                    <div class="card-body p-2 d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">Image Id: @image.Id</small>
-                                        <a class="btn btn-sm btn-outline-secondary"
-                                            href="@ImageService.GetDataUrl(image)"
-                                            download="report-@ReportId-image-@image.Id">
-                                            Скачать
-                                        </a>
+                                @if (image is not null && image.Data?.Length > 0)
+                                {
+                                    <hr />
+                                    <div class="card shadow-sm">
+                                        <img class="card-img-top"
+                                                src="@ImageService.GetDataUrl(image)"
+                                                alt="Изображение отчёта @ReportId"
+                                                loading="lazy"
+                                                style="object-fit:cover; aspect-ratio: 4/3;" />
+                                        <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">Image Id: @image.Id</small>
+                                            <a class="btn btn-sm btn-outline-secondary"
+                                                href="@ImageService.GetDataUrl(image)"
+                                                download="report-@ReportId-image-@image.Id">
+                                                Скачать
+                                            </a>
+                                        </div>
                                     </div>
-                                </div>
-                            } 
-                        }
+                                    }
+                                }
+                            }
                     </div>
                 </div>
             </div>
@@ -172,7 +177,7 @@ else
     private string tripBadgeText; 
 
     private bool isLoading = true;
-
+    
     protected override async Task OnParametersSetAsync()
     {
         isLoading = true;
@@ -180,8 +185,8 @@ else
         {
 
             var resultReport = await ReportService.GetByIdAsync(ReportId);
-            var images = await GetListImageByReportIdAsync(ReportId); // MANY IMAGES
-            var image  = await GetSingleImageByReportIdAsync(ReportId);   // ONE IMAGE
+            images = await GetListImageByReportIdAsync(ReportId); // MANY IMAGES
+            image = await GetSingleImageByReportIdAsync(ReportId);   // ONE IMAGE
 
             report = resultReport;
             tripDuratation = ReportService.TripDuratation(report);

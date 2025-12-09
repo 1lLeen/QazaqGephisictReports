@@ -4,4 +4,5 @@ namespace QazaqGeoReports.Application.Interfaces.Repositories.ImagesRepositories
 
 public interface IImageReportRepository : IImageAbstractRepository<ImageReport>
 {
+    Task DeleteAllImagesByReportIdAsync(int reportId);
 }

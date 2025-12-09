@@ -19,4 +19,12 @@ public class ImageReportService : AbstractImageService<IImageReportRepository, I
         var images = entities.Where(x => x.ReportId == reportId).ToList();
         return _mapper.Map<List<BaseImageReportDto>>(images);
     }
+    public async Task DeleteAllImagesByReportIdAsync(int reportId)
+    {
+        if (reportId <= 0)
+            return;
+
+        _repository.DeleteAllImagesByReportIdAsync(reportId);
+        await Task.CompletedTask;   
+    }
 }

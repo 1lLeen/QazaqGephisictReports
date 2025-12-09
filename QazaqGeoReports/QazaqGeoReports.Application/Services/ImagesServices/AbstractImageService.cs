@@ -33,7 +33,8 @@ public class AbstractImageService<TRepository, TEntity, DtoCreate, DtoUpdate, Dt
     }
     public virtual async Task<DtoBase> CreateAsync(DtoCreate entity)
     {
-        var created = await _repository.CreateAsync(_mapper.Map<TEntity>(entity));
+        var mapp = _mapper.Map<TEntity>(entity);
+        var created = await _repository.CreateAsync(mapp);
         return _mapper.Map<DtoBase>(created);
     }
     public virtual async Task<DtoBase> UpdateAsync(DtoUpdate entity, int id)

@@ -189,7 +189,7 @@
             var image = new CreateImageReportDto
             {
                 Data = imageData,
-                ReportId = report.Id
+                ReportId = resultDto.Id
             };
 
             var resultImage = await imageService.CreateAsync(image); // Сохраняем изображение
