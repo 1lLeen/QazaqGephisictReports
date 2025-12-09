@@ -13,7 +13,7 @@ public class ImageReportRepository : AbstractRepository<ImageReport>,
     public async Task DeleteAllImagesByReportIdAsync(int reportId)
     {
         var entities = await _context.ImageReports
-            .Where(x => x.ReportId == reportId).ToListAsync();
+            .Include(x => x.ReportId).ToListAsync();
         _context.ImageReports.RemoveRange(entities);
         await _context.SaveChangesAsync();
     }

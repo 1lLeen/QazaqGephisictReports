@@ -36,8 +36,8 @@ public class ReportService : AbstractService<IReportRepository, Report, CreateRe
     }
     public async Task DeleteAllDataReportAsync(int reportId)
     {
+        await _imageService.DeleteAllImagesByReportIdAsync(reportId);
         var deletedReport = await _repository.DeleteAsync(reportId);
-        await _imageService.DeleteAsync(reportId);
     }
     public string TripDuratation(BaseReportDto report)
     {

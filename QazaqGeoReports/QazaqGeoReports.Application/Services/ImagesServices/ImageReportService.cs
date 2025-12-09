@@ -21,7 +21,7 @@ public class ImageReportService : AbstractImageService<IImageReportRepository, I
     }
     public async Task DeleteAllImagesByReportIdAsync(int reportId)
     {
-        if (reportId <= 0)
+        if (reportId < 0)
             return;
 
         _repository.DeleteAllImagesByReportIdAsync(reportId);
