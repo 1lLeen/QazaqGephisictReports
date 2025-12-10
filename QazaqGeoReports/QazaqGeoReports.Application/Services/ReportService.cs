@@ -4,6 +4,7 @@ using QazaqGeoReports.Application.DTOs.UserDtos;
 using QazaqGeoReports.Application.Interfaces.Repositories;
 using QazaqGeoReports.Application.Interfaces.Services;
 using QazaqGeoReports.Application.Interfaces.Services.ImagesServices;
+using QazaqGeoReports.Domain.Common;
 using QazaqGeoReports.Domain.Entities;
 
 namespace QazaqGeoReports.Application.Services;
@@ -65,4 +66,11 @@ public class ReportService : AbstractService<IReportRepository, Report, CreateRe
         if (report!.ArrivalTime <= report!.DepartureTime) return "проверь время";
         return "данные корректны";
     }
-}
+
+    public async Task ApproveReportAsync(BaseReportDto report)
+    {
+        report.ReportStatus = ReportStatus.Approved.ToString();
+        await UpdateAsync(mapper.Map<UpdateReportDto>(report), report.Id);
+        await Task.CompletedTask;
+    }
+} 

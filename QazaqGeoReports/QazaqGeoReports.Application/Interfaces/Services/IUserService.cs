@@ -8,7 +8,8 @@ public interface IUserService
 {
     Task<List<UserViewModel>> GetUsersWithStatsAsync(); 
     Task<BaseUserDto>? GetAsync(Expression<Func<User, bool>> predicate);
-    Task<List<BaseUserDto>> GetAllAsync(); 
+    Task<List<BaseUserDto>> GetAllAsync();
+    Task<string> GetRoleByUserIdAsync(string userId);
     Task<BaseUserDto> GetUserByIdAsync(string id); 
     Task<BaseUserDto> CreateAsync(CreateUserDto entity);
     Task<BaseUserDto> UpdateAsync(UpdateUserDto entity);

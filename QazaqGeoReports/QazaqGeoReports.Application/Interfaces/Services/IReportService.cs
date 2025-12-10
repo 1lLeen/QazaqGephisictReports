@@ -12,5 +12,5 @@ public interface IReportService : IAbstractService<BaseReportDto, CreateReportDt
     string TripDuratation(BaseReportDto report);
     string FuelPer100(BaseReportDto report); 
     string TripBadgeText(BaseReportDto report);
-
+    Task ApproveReportAsync(BaseReportDto report);
 }

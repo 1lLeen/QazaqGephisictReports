@@ -1,10 +1,11 @@
 ﻿@page "/Report/Details/{ReportId:int}"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin,Supervisor,General")]
 
 @using Microsoft.AspNetCore.Authorization
 @using QazaqGeoReports.Application.DTOs.ImageDtos.ImageReportDtos
 @using QazaqGeoReports.Application.DTOs.ReportDtos
 @using QazaqGeoReports.Application.Interfaces.Services.ImagesServices
+@using QazaqGeoReports.Domain.Common
 @using QazaqGeoReports.Domain.Entities
 @using QazaqGeoReports.Application.Interfaces.Services
 
@@ -12,6 +13,7 @@
 @inject IReportService ReportService
 @inject IImageReportService ImageService
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IUserService userService
 
 <PageTitle>Детали отчёта</PageTitle>
 
@@ -39,6 +41,8 @@ else
                 @if (!string.IsNullOrWhiteSpace(report.CreatedByUserId))
                 {
                     <span class="badge text-bg-primary">Автор: @report.CreatedByUserId</span>
+            
+                    <span class="badge text-bg-info">Статус: @report.ReportStatus</span>
                 }
                 <span class="badge @GetTripBadgeClass()">@tripBadgeText</span>
             </div>
@@ -155,6 +159,10 @@ else
                 </div>
 
                 <div class="d-flex gap-2 mt-3 flex-wrap">
+                    @if (Roles.General.ToString() == role || Roles.Supervisor.ToString() == role || Roles.Admin.ToString() == role)
+                    {
+                        <button class="btn btn-success" @onclick="ApproveReport">Подвердить</button>
+                    }
                     <button class="btn btn-outline-secondary" @onclick="GoBack">Назад</button>
                     <button class="btn btn-primary" @onclick="@(() => Nav.NavigateTo($"/Report/Edit/{ReportId}"))">Редактировать</button>
                     <button class="btn btn-danger" @onclick="ConfirmDelete">Удалить</button>
@@ -171,13 +179,16 @@ else
     private BaseReportDto? report;
     private BaseImageReportDto? image;                 // ONE IMAGE
     private List<BaseImageReportDto>? images;          // MANY IMAGES
-
+    private string role;
     private string tripDuratation;
     private string fuel100;
     private string tripBadgeText; 
 
     private bool isLoading = true;
-    
+    private async Task ApproveReport()
+    {
+        await ReportService.ApproveReportAsync(report);
+    }
     protected override async Task OnParametersSetAsync()
     {
         isLoading = true;
@@ -192,6 +203,8 @@ else
             tripDuratation = ReportService.TripDuratation(report);
             fuel100 = ReportService.FuelPer100(report);
             tripBadgeText = ReportService.TripBadgeText(report);
+
+            role = await userService.GetRoleByUserIdAsync(report.CreatedByUserId);
 
         }
         finally

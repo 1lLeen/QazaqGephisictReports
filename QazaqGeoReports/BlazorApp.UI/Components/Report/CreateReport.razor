@@ -11,9 +11,11 @@
 @using QazaqGeoReports.Application.DTOs.ImageDtos.ImageUserDtos
 @using QazaqGeoReports.Application.DTOs.ReportDtos
 @using QazaqGeoReports.Application.Interfaces.Services.ImagesServices
+@using QazaqGeoReports.Domain.Common
 @using QazaqGeoReports.Domain.Entities
 @using QazaqGeoReports.Application.Interfaces.Services
 @using QazaqGeoReports.Infrastructure
+@using System.Security.Claims
 
 @inject UserManager<User> UserManager
 @inject AuthenticationStateProvider AuthStateProvider
@@ -135,8 +137,7 @@
     private async Task HandleImageUpload(InputFileChangeEventArgs e)
     {
         uploadedImages = e.GetMultipleFiles(10).ToList(); // до 10 файлов
-    }
-
+    } 
     private async Task CreateReportAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -167,12 +168,13 @@
             FuelUsedLiters = Input.FuelUsedLiters,
             DepartureTime = ToUtcFromInput(Input.DepartureTime),
             ArrivalTime = ToUtcFromInput(Input.ArrivalTime),
+            ReportStatus = ReportStatus.Draft.ToString(),
             CreatedByUserId = userId, 
         };
 
 
         var result = await reportService.CreateAsync(report); // Сохраняем отчёт
-         
+
         var resultDto = result;
         if (resultDto.Id > 0)
         {
@@ -198,7 +200,7 @@
                 Console.WriteLine("изображение сохранено");
             }
         }
-
+      
         NavigationManager.NavigateTo("/Report/MyReports");
     
     }

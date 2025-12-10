@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using QazaqGeoReports.Application.DTOs.Common;
-using QazaqGeoReports.Application.DTOs.Helpers;
 using QazaqGeoReports.Application.DTOs.UserDtos;
 using QazaqGeoReports.Application.Interfaces.Repositories;
 using QazaqGeoReports.Application.Interfaces.Services;
@@ -37,6 +35,10 @@ public class UserService : IUserService
             return null;
         }
         return res;
+    }
+    public virtual async Task<string> GetRoleByUserIdAsync(string userId)
+    {
+        return await _repository.GetRoleByUserIdAsync(userId);
     }
     public virtual async Task<BaseUserDto> GetUserByIdAsync(string id) 
     {
