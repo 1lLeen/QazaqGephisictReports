@@ -43,7 +43,9 @@
                         🔍 Поиск
                     </button>
                 </div>
-
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="ResetFilters" title="Сбросить фильтры">Сброс</button>
+                </div>
             </div>
         </div>
     </div>
@@ -104,26 +106,100 @@
 </div>
 
 @code {
-    private List<BaseEquipmentDto>? _items;
+    private List<BaseEquipmentDto>? _allItems;  // все данные
+    private List<BaseEquipmentDto>? _items;     // отфильтрованные
+
     private string _search = "";
     private string _status = "";
 
     private readonly string[] _statuses = Enum.GetNames<EquipmentStatus>();
 
-    protected override async Task OnInitializedAsync() => await Load();
-
-    private async Task Load()
+    protected override async Task OnInitializedAsync()
     {
-        _items = await EquipmentService.GetAllAsync();
+        _allItems = await EquipmentService.GetAllAsync();
+        ApplyFilter();
     }
 
-    private string GetStatusColor(string status) =>
-        status switch
+    private async Task Load()
+    { 
+        ApplyFilter();
+    }
+    private void ResetFilters()
+    {
+        _search = "";
+        _status = "";
+
+        ApplyFilter();
+    }
+    private void ApplyFilter()
+    {
+        if (_allItems is null)
         {
-            "Available" => "success",
-            "InUse" => "warning",
-            "Broken" => "danger",
-            "OnRepair" => "info",
-            _ => "secondary"
-        };
+            _items = null;
+            return;
+        }
+
+        IEnumerable<BaseEquipmentDto> query = _allItems;
+
+        // Поиск по названию и инв. номеру
+        if (!string.IsNullOrWhiteSpace(_search))
+        {
+            var term = _search.Trim();
+
+            query = query.Where(e =>
+                (!string.IsNullOrEmpty(e.Name) &&
+                 e.Name.Contains(term, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(e.SerialNumber) &&
+                 e.SerialNumber.Contains(term, StringComparison.OrdinalIgnoreCase))
+            );
+        }
+
+        // Фильтр по статусу
+        if (!string.IsNullOrWhiteSpace(_status))
+        {
+            query = query.Where(e => e.Status == _status);
+        }
+
+        _items = query.ToList();
+    }
+
+    private static readonly HashSet<string> DangerStatuses =
+    [
+        EquipmentStatus.Damaged.ToString(),
+        EquipmentStatus.Lost.ToString(),
+    ];
+    private static readonly HashSet<string> InfoStatuses =
+    [
+        EquipmentStatus.UnderMaintenance.ToString(),
+        EquipmentStatus.Calibrating.ToString(),
+        EquipmentStatus.Repairing.ToString(),
+    ];
+    private static readonly HashSet<string> WarningStatuses =
+    [
+        EquipmentStatus.AwaitingReturn.ToString(),
+        EquipmentStatus.AwaitingPickup.ToString(),
+        EquipmentStatus.InUse.ToString(),
+        EquipmentStatus.InTransit.ToString(),
+    ];
+    private static readonly HashSet<string> SuccessStatuses =
+    [
+        EquipmentStatus.Available.ToString(),
+        EquipmentStatus.FieldReady.ToString(),
+    ];
+    private string GetStatusColor(string status)
+    {
+        if (DangerStatuses.Contains(status))
+            return "danger";
+
+        if (InfoStatuses.Contains(status))
+            return "info";
+
+        if (WarningStatuses.Contains(status))
+            return "warning";
+
+        if (SuccessStatuses.Contains(status))
+            return "success";
+
+        return "secondary";
+    }
 }
