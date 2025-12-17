@@ -12,7 +12,17 @@ public class DashboardService : IDashboardService
     private readonly IReportRepository _reports;
     private readonly IEquipmentRepository _equipment;
     private readonly IMissionRepository _missions;
-
+    public DashboardService(
+        IUserRepository users,
+        IReportRepository reports,
+        IEquipmentRepository equipment,
+        IMissionRepository missions)
+    {
+        _users = users;
+        _reports = reports;
+        _equipment = equipment;
+        _missions = missions;
+    }
     public async Task<DashboardDto> GetAsync()
     {
         return new DashboardDto

@@ -41,6 +41,7 @@ public static class RegistrationApplication
         services.AddTransient<IReportService, ReportService>();
         services.AddTransient<ICarService, CarService>();
         services.AddTransient<ITaskItemService, TaskItemService>();
+        services.AddTransient<IDashboardService, DashboardService>();
         #region ImageServices
         services.AddTransient<IImageEquipmentService, ImageEquipementService>();
         services.AddTransient<IImageReportService, ImageReportService>();
