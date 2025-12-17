@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using QazaqGeoReports.Application.Interfaces.Dtos;
 
-namespace QazaqGeoReports.Application.DTOs.CarDtos
+namespace QazaqGeoReports.Application.DTOs.CarDtos;
+
+public class ListCarViewModel : BaseCarDto, IListView
 {
-    internal class ListCarViewModel
-    {
-    }
 }

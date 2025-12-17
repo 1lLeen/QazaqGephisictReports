@@ -2,6 +2,6 @@
 
 namespace QazaqGeoReports.Application.DTOs.MissionDtos.EquipmentMissionDtos;
 
-public class UpdateEquipmentDto : BaseEquipmentMissionDto, IUpdate
+public class UpdateEquipmentMissionDto : BaseEquipmentMissionDto, IUpdate
 {
 }

@@ -2,6 +2,6 @@
 
 namespace QazaqGeoReports.Application.DTOs.MissionDtos.CarMissionDtos;
 
-public class UpdateCarMission : BaseCarMissionDto, IUpdate
+public class UpdateCarMissionDto : BaseCarMissionDto, IUpdate
 { 
 }

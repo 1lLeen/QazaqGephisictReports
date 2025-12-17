@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using QazaqGeoReports.Application.Interfaces.Repositories;
+using QazaqGeoReports.Domain.Entities;
 
-namespace QazaqGeoReports.Infrastructure.Repositories
+namespace QazaqGeoReports.Infrastructure.Repositories;
+
+public class CarRepository : AbstractRepository<Car>,
+    ICarRepository
 {
-    internal class CarRepository
+    public CarRepository(QazaqGeoReportContext context) : base(context)
     {
     }
 }

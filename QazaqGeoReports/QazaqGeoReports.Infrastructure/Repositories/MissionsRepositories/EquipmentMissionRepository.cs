@@ -6,4 +6,7 @@ namespace QazaqGeoReports.Infrastructure.Repositories.MissionsRepositories;
 public class EquipmentMissionRepository : AbstractRepository<EquipmentMission>,
     IEquipmentMissionRepository
 {
+    public EquipmentMissionRepository(QazaqGeoReportContext context) : base(context)
+    {
+    }
 }

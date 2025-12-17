@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace QazaqGeoReports.Application.Interfaces.Repositories
+namespace QazaqGeoReports.Application.Interfaces.Repositories.ImagesRepositories
 {
     internal interface IImageCarRepository
     {

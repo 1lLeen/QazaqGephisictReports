@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AutoMapper;
+using QazaqGeoReports.Application.DTOs.CarDtos;
+using QazaqGeoReports.Application.Interfaces.Repositories;
+using QazaqGeoReports.Application.Interfaces.Services;
+using QazaqGeoReports.Domain.Entities;
 
-namespace QazaqGeoReports.Application.Services
+namespace QazaqGeoReports.Application.Services;
+
+public class CarService : AbstractService<ICarRepository, Car, CreateCarDto, UpdateCarDto, BaseCarDto, ListCarViewModel>,
+    ICarService
 {
-    internal class CarService
+    public CarService(ICarRepository repository, IMapper mapper) : base(repository, mapper)
     {
     }
 }

@@ -1,5 +1,7 @@
-﻿namespace QazaqGeoReports.Application.Interfaces.Services;
+﻿using QazaqGeoReports.Application.DTOs.TaskItemDtos;
 
-internal interface ITaskItemService
+namespace QazaqGeoReports.Application.Interfaces.Services;
+
+public interface ITaskItemService : IAbstractService<BaseTaskItemDto, CreateTaskItemDto, UpdateTaskItemDto>
 {
 }

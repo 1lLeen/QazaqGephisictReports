@@ -185,7 +185,7 @@ namespace QazaqGeoReports.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Equipments");
+                    b.ToTable("Equipments", (string)null);
                 });
 
             modelBuilder.Entity("QazaqGeoReports.Domain.Entities.Images.Image", b =>
@@ -223,7 +223,7 @@ namespace QazaqGeoReports.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Image");
+                    b.ToTable("Image", (string)null);
                 });
 
             modelBuilder.Entity("QazaqGeoReports.Domain.Entities.Images.ImageEquipment", b =>
@@ -254,7 +254,7 @@ namespace QazaqGeoReports.Infrastructure.Migrations
 
                     b.HasIndex("EquipmentId");
 
-                    b.ToTable("ImageEquipments");
+                    b.ToTable("ImageEquipments", (string)null);
                 });
 
             modelBuilder.Entity("QazaqGeoReports.Domain.Entities.Images.ImageReport", b =>
@@ -282,7 +282,7 @@ namespace QazaqGeoReports.Infrastructure.Migrations
 
                     b.HasIndex("ReportId");
 
-                    b.ToTable("ImageReports");
+                    b.ToTable("ImageReports", (string)null);
                 });
 
             modelBuilder.Entity("QazaqGeoReports.Domain.Entities.Images.ImageUser", b =>
@@ -311,7 +311,7 @@ namespace QazaqGeoReports.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ImageUsers");
+                    b.ToTable("ImageUsers", (string)null);
                 });
 
             modelBuilder.Entity("QazaqGeoReports.Domain.Entities.Report", b =>
@@ -368,7 +368,7 @@ namespace QazaqGeoReports.Infrastructure.Migrations
 
                     b.HasIndex("CreatedByUserId");
 
-                    b.ToTable("Reports");
+                    b.ToTable("Reports", (string)null);
                 });
 
             modelBuilder.Entity("QazaqGeoReports.Domain.Entities.User", b =>
