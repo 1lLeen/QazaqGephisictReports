@@ -80,4 +80,17 @@ public class UserRepository : IUserRepository
 
         return roleName;
     } 
+
+    public async Task<int> UsersCountAsync()
+    {
+        return await _context.Users
+            .AsNoTracking()
+            .CountAsync();
+    }
+    public async Task<int> UsersActivceCountAsync()
+    {
+        return await _context.Users
+            .AsNoTracking()
+            .CountAsync(u => u.IsActive);
+    }
 }

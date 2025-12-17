@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using QazaqGeoReports.Domain.Entities;
 using QazaqGeoReports.Domain.Entities.Images;
+using QazaqGeoReports.Domain.Entities.Missions;
 using QazaqGeoReports.Infrastructure.Configurations;
 using QazaqGeoReports.Infrastructure.Configurations.ImageConfiguration;
 
@@ -12,11 +13,19 @@ public class QazaqGeoReportContext(DbContextOptions<QazaqGeoReportContext> optio
     public DbSet<User> Users { get; set; }
     public DbSet<Report> Reports { get; set; }
     public DbSet<Equipment> Equipments { get; set; }
+    public DbSet<Car> Cars { get; set; }
+    public DbSet<TaskItem> TaskItems { get; set; }
     #region imgs
     public DbSet<ImageEquipment> ImageEquipments { get; set; }
     public DbSet<ImageReport> ImageReports { get; set; }
     public DbSet<ImageUser> ImageUsers { get; set; }
+    public DbSet<ImageCar> ImageCars { get; set; }
     //public DbSet<Image> Images { get; set; }
+    #endregion
+    #region missions
+    public DbSet<Mission> Missions { get; set; }
+    public DbSet<CarMission> CarMissions { get; set; }
+    public DbSet<EquipmentMission> EquipmentMissions { get; set; }
     #endregion
     protected override void OnModelCreating(ModelBuilder builder)
     {

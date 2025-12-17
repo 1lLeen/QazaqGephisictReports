@@ -4,4 +4,6 @@ namespace QazaqGeoReports.Application.Interfaces.Repositories.MissionsRepositori
 
 public interface IMissionRepository : IAbstractRepository<Mission>
 {
+    public Task<int> CountActiveAsync();
+    public Task<int> CountOverdueAsync();
 }
