@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using QazaqGeoReports.Domain.Entities.Images;
 
-namespace QazaqGeoReports.Application.Interfaces.Repositories.ImagesRepositories
+namespace QazaqGeoReports.Application.Interfaces.Repositories.ImagesRepositories;
+
+public interface IImageCarRepository : IImageAbstractRepository<ImageCar>
 {
-    internal interface IImageCarRepository
-    {
-    }
 }

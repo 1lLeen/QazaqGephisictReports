@@ -1,322 +1,69 @@
 ﻿@page "/Dashboard"
-@using System.Timers
-@using QazaqGeoReports.Application.DTOs.DashboardDtos
 @using QazaqGeoReports.Application.Interfaces.Services
 @inject IDashboardService DashboardService
 
 <PageTitle>Dashboard</PageTitle>
 
-<div class="container py-4">
+<div class="container py-3">
 
-    <!-- Header -->
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
         <div>
             <h2 class="mb-1 fw-bold">📊 Dashboard</h2>
-            <div class="text-muted small">
-                Центр управления: быстро увидеть, где “горит” и что живо.
-                @if (_lastUpdated != null)
-                {
-                    <span class="ms-2">• Обновлено: <span class="fw-semibold">@_lastUpdated.Value.ToString("dd.MM.yyyy HH:mm")</span></span>
-                }
-            </div>
+            <div class="text-muted small">Всё управление проектом — здесь.</div>
         </div>
 
         <div class="d-flex gap-2">
-            <button class="btn btn-outline-secondary rounded-pill px-3"
-                    @onclick="ReloadAsync"
-                    disabled="@_loading">
-                <i class="bi bi-arrow-clockwise me-2"></i>
-                Обновить
-            </button>
-
-            <button class="btn btn-primary rounded-pill px-3"
-                    @onclick="ToggleAutoRefresh">
-                <i class="bi bi-lightning-charge me-2"></i>
-                Авто: @(_autoRefresh ? "ON" : "OFF")
-            </button>
+            <a class="btn btn-primary rounded-pill px-3" href="/reports/create">
+                <i class="bi bi-plus-circle me-2"></i> Новый отчёт
+            </a>
+            <a class="btn btn-outline-secondary rounded-pill px-3" href="/missions/create">
+                <i class="bi bi-flag me-2"></i> Новая миссия
+            </a>
         </div>
     </div>
 
-    <!-- Status strip -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-2">
-            <div class="d-flex align-items-center gap-2">
-                <span class="badge rounded-pill text-bg-dark px-3 py-2">
-                    <i class="bi bi-activity me-1"></i> Состояние системы
-                </span>
-
-                @if (_loading)
-                {
-                    <span class="badge rounded-pill text-bg-secondary px-3 py-2">
-                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                        Загружаю…
-                    </span>
-                }
-                else if (_error != null)
-                {
-                    <span class="badge rounded-pill text-bg-danger px-3 py-2">
-                        <i class="bi bi-x-octagon me-1"></i> Ошибка загрузки
-                    </span>
-                }
-                else
-                {
-                    <span class="badge rounded-pill text-bg-success px-3 py-2">
-                        <i class="bi bi-check2-circle me-1"></i> ОК
-                    </span>
-                }
-            </div>
-
-            <div class="text-muted small">
-                @if (_error != null)
-                {
-                    <span><i class="bi bi-exclamation-triangle me-1"></i>@_error</span>
-                }
-                else
-                {
-                    <span>Подсказка: красные карточки — срочно, жёлтые — скоро, зелёные — живём.</span>
-                }
-            </div>
-        </div>
-    </div>
-
-    <!-- Grid -->
+    <!-- Навигация плитками -->
     <div class="row g-3">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body">
+                    <div class="fw-bold">🧭 Разделы</div>
+                    <div class="text-muted small">Нажал — и ты там.</div>
 
-        @if (_loading)
-        {
-            <!-- Skeletons -->
-            @for (int i = 0; i < 8; i++)
-            {
-                <div class="col-12 col-md-6 col-xl-3">
-                    <DashboardStatCardSkeleton />
-                </div>
-            }
-        }
-        else if (_data != null)
-        {
-            <div class="col-12 col-md-6 col-xl-3">
-                <DashboardStatCard Title="Пользователи" Icon="bi-people"
-                                  Value="@_data.UsersTotal"
-                                  Subtitle=$"Активных: {_data.UsersActive}"
-                                  Tone="good"
-                                  Link="/users" />
-            </div>
-
-            <div class="col-12 col-md-6 col-xl-3">
-                <DashboardStatCard Title="Отчёты сегодня" Icon="bi-file-earmark-text"
-                                  Value="@_data.ReportsToday"
-                                  Subtitle="Свежее с полей"
-                                  Tone="info"
-                                  Link="/reports" />
-            </div>
-
-            <div class="col-12 col-md-6 col-xl-3">
-                <DashboardStatCard Title="Проблемные отчёты" Icon="bi-exclamation-triangle"
-                                  Value="@_data.ReportsProblem"
-                                  Subtitle="Нужно внимание"
-                                  Tone="@GetToneForProblem(_data.ReportsProblem)"
-                                  Link="/reports?filter=problem" />
-            </div>
-
-            <div class="col-12 col-md-6 col-xl-3">
-                <DashboardStatCard Title="Оборудование в ремонте" Icon="bi-tools"
-                                  Value="@_data.EquipmentBroken"
-                                  Subtitle="Техсостояние"
-                                  Tone="@GetToneForProblem(_data.EquipmentBroken)"
-                                  Link="/equipment?filter=maintenance" />
-            </div>
-
-            <div class="col-12 col-md-6 col-xl-3">
-                <DashboardStatCard Title="Активные миссии" Icon="bi-compass"
-                                  Value="@_data.MissionsActive"
-                                  Subtitle="В работе"
-                                  Tone="good"
-                                  Link="/missions" />
-            </div>
-
-            <div class="col-12 col-md-6 col-xl-3">
-                <DashboardStatCard Title="Просроченные миссии" Icon="bi-alarm"
-                                  Value="@_data.MissionsOverdue"
-                                  Subtitle="Сроки кусаются"
-                                  Tone="@GetToneForOverdue(_data.MissionsOverdue)"
-                                  Link="/missions?filter=overdue" />
-            </div>
-
-            <!-- Nice panel -->
-            <div class="col-12 col-xl-6">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="fw-bold">⚡ Быстрые действия</div>
-                                <div class="text-muted small">Сделай ход — система оживёт.</div>
-                            </div>
-                            <span class="badge rounded-pill text-bg-light border px-3 py-2">
-                                <i class="bi bi-mouse me-1"></i> 1 клик
-                            </span>
+                    <div class="row g-3 mt-1"> 
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <NavTile Title="Отчёты" Subtitle="Список, фильтры, проблемные"
+                                     Icon="bi-file-earmark-text" Href="/Report/AllReports" ImgHref="/imgs/report.png"/>
                         </div>
 
-                        <div class="row g-2 mt-3">
-                            <div class="col-12 col-md-6">
-                                <a class="btn btn-outline-primary w-100 rounded-4 py-3"
-                                   href="/reports/create">
-                                    <i class="bi bi-plus-circle me-2"></i> Новый отчёт
-                                </a>
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <a class="btn btn-outline-dark w-100 rounded-4 py-3"
-                                   href="/missions/create">
-                                    <i class="bi bi-flag me-2"></i> Новая миссия
-                                </a>
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <a class="btn btn-outline-secondary w-100 rounded-4 py-3"
-                                   href="/equipment/create">
-                                    <i class="bi bi-box-seam me-2"></i> Добавить оборудование
-                                </a>
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <a class="btn btn-outline-success w-100 rounded-4 py-3"
-                                   href="/users/create">
-                                    <i class="bi bi-person-plus me-2"></i> Добавить пользователя
-                                </a>
-                            </div>
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <NavTile Title="Оборудование" Subtitle="Снаряга, статусы, ремонт"
+                                     Icon="bi-box-seam" Href="/Equipment/AllEquipments" ImgHref="/imgs/equipment.png/" />
+                        </div>
+
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <NavTile Title="Фото" Subtitle="Галерея: отчёты/машины/оборудование"
+                                     Icon="bi-images" Href="/images" ImgHref="/imgs/photo.png"/>
+                        </div>
+
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <NavTile Title="Миссии" Subtitle="Активные, завершённые, сроки"
+                                     Icon="bi-compass" Href="/missions" ImgHref="/imgs/mission.png"/>
+                        </div>
+
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <NavTile Title="Машины" Subtitle="Транспорт, состояния, привязки"
+                                     Icon="bi-truck" Href="/cars" ImgHref="/imgs/cars.png" />
+                        </div>
+
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <NavTile Title="Пользователи" Subtitle="Роли, доступ, активность"
+                                     Icon="bi-people" Href="/users" ImgHref="/imgs/users.png" />
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Cute “insight” -->
-            <div class="col-12 col-xl-6">
-                <div class="card border-0 shadow-sm h-100 bg-body">
-                    <div class="card-body">
-                        <div class="fw-bold">🧠 Инсайт дня</div>
-                        <div class="text-muted small mb-3">
-                            Dashboard должен быть как каска: не красивый аксессуар, а защита от сюрпризов.
-                        </div>
-
-                        <div class="d-flex flex-column gap-2">
-                            <MiniInsight Icon="bi-graph-up" Title="Стабильность"
-                                        Text="@GetStabilityText()" />
-                            <MiniInsight Icon="bi-shield-check" Title="Риски"
-                                        Text="@GetRiskText()" />
-                            <MiniInsight Icon="bi-lightbulb" Title="Фокус"
-                                        Text="@GetFocusText()" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
-        else
-        {
-            <div class="col-12">
-                <div class="alert alert-warning border-0 shadow-sm">
-                    Данные не получены. Попробуй обновить.
-                </div>
-            </div>
-        }
+        </div>
     </div>
+
 </div>
-
-@code {
-    private DashboardDto? _data;
-    private bool _loading = true;
-    private string? _error;
-    private DateTime? _lastUpdated;
-
-    private bool _autoRefresh = false;
-    private PeriodicTimer? _timer;
-    private CancellationTokenSource? _cts;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await ReloadAsync();
-    }
-
-    private async Task ReloadAsync()
-    {
-        _loading = true;
-        _error = null;
-        StateHasChanged();
-
-        try
-        {
-            _data = await DashboardService.GetAsync();
-            _lastUpdated = DateTime.Now;
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
-        }
-        finally
-        {
-            _loading = false;
-            StateHasChanged();
-        }
-    }
-
-    private string GetToneForProblem(int value)
-        => value <= 0 ? "good" : value <= 3 ? "warn" : "bad";
-
-    private string GetToneForOverdue(int value)
-        => value <= 0 ? "good" : value <= 2 ? "warn" : "bad";
-
-    private string GetStabilityText()
-    {
-        if (_data == null) return "Ожидаю данные…";
-        return _data.MissionsOverdue == 0 && _data.ReportsProblem == 0
-            ? "Похоже на редкий день без пожаров. Наслаждайся."
-            : "Есть шум в системе. Пора навести порядок по приоритетам.";
-    }
-
-    private string GetRiskText()
-    {
-        if (_data == null) return "Ожидаю данные…";
-        var risk = _data.MissionsOverdue + _data.ReportsProblem + _data.EquipmentBroken;
-        return risk == 0 ? "Критичных рисков не видно." : $"Рисковых точек: {risk}.";
-    }
-
-    private string GetFocusText()
-    {
-        if (_data == null) return "Ожидаю данные…";
-        if (_data.MissionsOverdue > 0) return "Сначала просрочки — потом красота.";
-        if (_data.ReportsProblem > 0) return "Разрули проблемные отчёты.";
-        if (_data.EquipmentBroken > 0) return "Проверь ремонт/логистику оборудования.";
-        return "Можно улучшать UX и добавлять графики 😈";
-    }
-
-    private async Task ToggleAutoRefresh()
-    {
-        _autoRefresh = !_autoRefresh;
-
-        if (_autoRefresh)
-        {
-            _cts = new CancellationTokenSource();
-            _timer = new PeriodicTimer(TimeSpan.FromSeconds(20));
-
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    while (await _timer.WaitForNextTickAsync(_cts.Token))
-                    {
-                        await InvokeAsync(ReloadAsync);
-                    }
-                }
-                catch { /* ignored */ }
-            });
-        }
-        else
-        {
-            _cts?.Cancel();
-            _timer?.Dispose();
-            _timer = null;
-        }
-    }
-
-    public void Dispose()
-    {
-        _cts?.Cancel();
-        _timer?.Dispose();
-    }
-}

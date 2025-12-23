@@ -30,6 +30,7 @@ public class DashboardService : IDashboardService
             UsersTotal = await _users.UsersCountAsync(),
             UsersActive = await _users.UsersActivceCountAsync(),
 
+            ReportsTotal = (await _reports.GetAllAsync()).Count,
             ReportsToday = await _reports.CountTodayAsync(),
             ReportsProblem = await _reports.CountByStatusAsync(ReportStatus.Rejected),
 
