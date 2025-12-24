@@ -12,9 +12,25 @@ public class GalleryService : IGalleryService
     {
         _repo = repo;
     }
+    public Task<IReadOnlyList<GalleryImageDto>> GetLatestAsync(int take = 24, CancellationToken ct = default)
+     => _repo.GetLatestAsync(take, ct);
+    public async Task<PagedResult<GalleryImageDto>> GetAsync(int take, GalleryFilter filter, CancellationToken ct = default)
+    {
+        var normalized = Normalize(filter);
 
-    public Task<PagedResult<GalleryImageDto>> GetAsync(GalleryFilter filter, CancellationToken ct = default)
-        => _repo.QueryAsync(Normalize(filter), ct);
+        var totalTask = _repo.CountAsync(normalized, ct);
+        var itemsTask = _repo.QueryAsync(take, normalized, ct);
+
+        await Task.WhenAll(totalTask, itemsTask);
+
+        return new PagedResult<GalleryImageDto>
+        {
+            Items = itemsTask.Result,
+            Page = normalized.Page,
+            PageSize = normalized.PageSize,
+            TotalCount = totalTask.Result
+        };
+    }
 
     private static GalleryFilter Normalize(GalleryFilter f)
     {

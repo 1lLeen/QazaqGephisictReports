@@ -1,0 +1,299 @@
+﻿@page "/Images" 
+@using QazaqGeoReports.Application.DTOs.GalleryDtos
+@using QazaqGeoReports.Application.Interfaces.Services 
+
+@inject IGalleryService GalleryService
+@inject NavigationManager Nav
+
+<PageTitle>Фото</PageTitle>
+
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <h2 class="mb-0 fw-bold">🖼️ Фото</h2>
+                <span class="badge rounded-pill text-bg-dark px-3 py-2">ТОП 24 • Свежее</span>
+            </div>
+            <div class="text-muted small mt-1">
+                Только изображения из отчётов. Самые новые — сверху.
+                @if (_lastUpdated != null)
+                {
+                    <span class="ms-2">• Обновлено: <span class="fw-semibold">@_lastUpdated.Value.ToString("dd.MM.yyyy HH:mm")</span></span>
+                }
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary rounded-pill px-3"
+                    disabled="@_loading"
+                    @onclick="ReloadAsync">
+                <i class="bi bi-arrow-clockwise me-2"></i> Обновить
+            </button>
+
+            <a class="btn btn-primary rounded-pill px-3" href="/reports">
+                <i class="bi bi-file-earmark-text me-2"></i> Отчёты
+            </a>
+        </div>
+    </div>
+
+    <!-- Status -->
+    @if (_error != null)
+    {
+        <div class="alert alert-danger border-0 shadow-sm rounded-4">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            @_error
+        </div>
+    }
+
+    <!-- Grid -->
+    @if (_loading)
+    {
+        <div class="row g-3">
+            @for (int i = 0; i < 8; i++)
+            {
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="placeholder-glow">
+                            <div class="placeholder w-100" style="height: 180px; border-radius: 1rem 1rem 0 0;"></div>
+                            <div class="p-3">
+                                <span class="placeholder col-6"></span>
+                                <div class="mt-2">
+                                    <span class="placeholder col-8"></span>
+                                </div>
+                                <div class="mt-2">
+                                    <span class="placeholder col-7"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else if (_items is { Count: > 0 })
+    {
+        <div class="row g-3">
+            @foreach (var img in _items)
+            {
+                <div class="col-6 col-md-4 col-xl-3">
+                    <div class="gallery-card h-100" @onclick="() => Open(img)">
+                        <div class="img-wrap">
+                            <img src="@ToDataUrl(img.Data, img.ContentType)" loading="lazy" />
+
+                            <div class="chip">
+                                <i class="bi bi-file-earmark-text me-1"></i>
+                                Отчёт
+                            </div>
+
+                            <div class="overlay">
+                                <div class="overlay-inner">
+                                    <i class="bi bi-arrows-fullscreen"></i>
+                                    <span>Открыть</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="small text-muted">
+                                    @img.CreatedTime.ToString("dd.MM HH:mm")
+                                </div>
+                                <i class="bi bi-chevron-right text-muted"></i>
+                            </div>
+
+                            <div class="fw-semibold text-truncate mt-1">
+                                @(!string.IsNullOrWhiteSpace(img.ReportTitle) ? img.ReportTitle : "Отчёт без названия")
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body">
+                <div class="fw-bold">Пока пусто</div>
+                <div class="text-muted small">Добавь фото в отчёты — и они появятся здесь.</div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modal (quick view) -->
+@if (_selected != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,.55)">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 overflow-hidden border-0 shadow-lg">
+
+                <div class="modal-header">
+                    <div>
+                        <div class="fw-bold">@(_selected.ReportTitle ?? "Отчёт")</div>
+                        <div class="text-muted small">@_selected.CreatedTime.ToString("dd.MM.yyyy HH:mm")</div>
+                    </div>
+                    <button type="button" class="btn-close" @onclick="Close"></button>
+                </div>
+
+                <div class="modal-body p-0 bg-dark">
+                    <img src="@ToDataUrl(_selected.Data, _selected.ContentType)" class="img-fluid w-100" style="object-fit: contain; max-height: 70vh;" />
+                </div>
+
+                <div class="modal-footer d-flex justify-content-between">
+              
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-secondary rounded-pill" @onclick="Close">
+                            Закрыть
+                        </button>
+                        <button class="btn btn-primary rounded-pill"
+                                @onclick="() => GoToReport(_selected.ReportId)">
+                            <i class="bi bi-box-arrow-up-right me-2"></i>
+                            К отчёту
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private IReadOnlyList<GalleryImageDto>? _items;
+    private GalleryImageDto? _selected;
+
+    private bool _loading = true;
+    private string? _error;
+    private DateTime? _lastUpdated;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        _loading = true;
+        _error = null;
+        StateHasChanged();
+
+        try
+        {
+            _items = await GalleryService.GetLatestAsync(24);
+            _lastUpdated = DateTime.Now;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void Open(GalleryImageDto img) => _selected = img;
+    private void Close() => _selected = null;
+
+    private static string ToDataUrl(byte[] data, string? contentType)
+    {
+        var ct = string.IsNullOrWhiteSpace(contentType) ? "image/jpeg" : contentType;
+        return $"data:{ct};base64,{Convert.ToBase64String(data)}";
+    }
+    private void GoToReport(int reportId)
+    {
+        Close();
+        Nav.NavigateTo($"/Report/Details/{reportId}");
+    }
+}
+
+<style>
+    /* Card */
+    .gallery-card {
+        border-radius: 1.25rem;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 .6rem 1.2rem rgba(0,0,0,.08);
+        transition: transform .14s ease, box-shadow .14s ease;
+        cursor: pointer;
+    }
+
+        .gallery-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 1.2rem 2.4rem rgba(0,0,0,.14);
+        }
+
+    /* Image area */
+    .img-wrap {
+        position: relative;
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+        background: #111;
+    }
+
+        .img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .22s ease;
+        }
+
+    .gallery-card:hover .img-wrap img {
+        transform: scale(1.06);
+    }
+
+    /* Overlay */
+    .overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0,0,0,.0), rgba(0,0,0,.55));
+        opacity: 0;
+        transition: opacity .18s ease;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 14px;
+    }
+
+    .gallery-card:hover .overlay {
+        opacity: 1;
+    }
+
+    .overlay-inner {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: #fff;
+        font-weight: 600;
+        background: rgba(255,255,255,.12);
+        border: 1px solid rgba(255,255,255,.18);
+        border-radius: 999px;
+        padding: 10px 12px;
+        backdrop-filter: blur(8px);
+    }
+
+    /* Chip badge */
+    .chip {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(255,255,255,.92);
+        border: 1px solid rgba(0,0,0,.06);
+        color: #111;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: .78rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+</style>

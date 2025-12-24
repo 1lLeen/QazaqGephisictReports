@@ -5,7 +5,8 @@ namespace QazaqGeoReports.Application.Interfaces.Repositories.ImagesRepositories
 
 public interface IImageReportRepository : IImageAbstractRepository<ImageReport>
 {
-    Task DeleteAllImagesByReportIdAsync(int reportId);
-    Task<IReadOnlyList<GalleryImageDto>> QueryAsync(GalleryFilter filter, CancellationToken ct);
+    Task DeleteAllImagesByReportIdAsync(int reportId); 
+    Task<IReadOnlyList<GalleryImageDto>> GetLatestAsync(int take, CancellationToken ct);
+    Task<IReadOnlyList<GalleryImageDto>> QueryAsync(int take, GalleryFilter filter, CancellationToken ct); 
     Task<int> CountAsync(GalleryFilter filter, CancellationToken ct);
 }
