@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using QazaqGeoReports.Domain.Entities.Images;
 
 namespace QazaqGeoReports.Domain.Entities;
 public class User : IdentityUser
@@ -14,8 +13,7 @@ public class User : IdentityUser
         }
     }
 
-    public bool IsActive { get; set; }
-    public List<ImageUser> Images { get; set; } = new();
+    public bool IsActive { get; set; } 
     public DateTime CreatedTime { get; set; }
     public DateTime UpdatedTime { get; set; }
 }

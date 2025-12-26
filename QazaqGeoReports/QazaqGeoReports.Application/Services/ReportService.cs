@@ -67,10 +67,15 @@ public class ReportService : AbstractService<IReportRepository, Report, CreateRe
         return "данные корректны";
     }
 
-    public async Task ApproveReportAsync(BaseReportDto report)
+    public async Task ApproveReportAsync(int reportId)
     {
+        var report = await GetByIdAsync(reportId);
+        if (report == null)
+            throw new Exception($"Report with id {reportId} not found");
+
         report.ReportStatus = ReportStatus.Approved.ToString();
-        await UpdateAsync(mapper.Map<UpdateReportDto>(report), report.Id);
-        await Task.CompletedTask;
+
+        var dto = mapper.Map<UpdateReportDto>(report);
+        await UpdateAsync(dto, report.Id);
     }
 } 

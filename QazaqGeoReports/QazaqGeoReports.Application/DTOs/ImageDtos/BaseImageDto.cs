@@ -1,5 +1,7 @@
 ﻿using QazaqGeoReports.Application.Interfaces.Dtos;
+using QazaqGeoReports.Domain.Common;
 using QazaqGeoReports.Domain.Entities;
+using System.Diagnostics.Contracts;
 
 namespace QazaqGeoReports.Application.DTOs.ImageDtos;
 
@@ -12,5 +14,8 @@ public class BaseImageDto : IBase
     public int? ReportId { get; set; }
     public Report? Report { get; set; }
     public int? EquipmentId { get; set; }
-    public Equipment Equipment { get; set; }
+    public Equipment? Equipment { get; set; }
+    public int CarId { get; set; }
+    public Car? Car { get; set; }
+    public ImageType ImageType {get; set;}
 }

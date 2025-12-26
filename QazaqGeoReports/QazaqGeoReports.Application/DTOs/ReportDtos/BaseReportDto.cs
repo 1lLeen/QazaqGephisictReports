@@ -19,6 +19,8 @@ public class BaseReportDto : IBase
     public string? EquipmentsMovement { get; set; }
     public string ReportStatus { get; set; }
     public List<ImageReport> Images { get; set; } = new();
+    public List<ImageCar> CarImages { get; set; } = new();
+    public List<ImageEquipment> EquipmentImages { get; set; } = new();
     public DateTime? DepartureTime { get; set; }
     public DateTime? ArrivalTime { get; set; }
     public DateTime CreatedTime { get; set; }

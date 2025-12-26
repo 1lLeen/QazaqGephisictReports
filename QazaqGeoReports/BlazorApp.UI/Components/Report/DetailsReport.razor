@@ -187,7 +187,7 @@ else
     private bool isLoading = true;
     private async Task ApproveReport()
     {
-        await ReportService.ApproveReportAsync(report);
+        await ReportService.ApproveReportAsync(report.Id);
     }
     protected override async Task OnParametersSetAsync()
     {

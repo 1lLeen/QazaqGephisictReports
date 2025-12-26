@@ -4,8 +4,7 @@ using QazaqGeoReports.Application;
 using QazaqGeoReports.Application.Interfaces.Repositories;
 using QazaqGeoReports.Application.Interfaces.Repositories.ImagesRepositories;
 using QazaqGeoReports.Application.Interfaces.Repositories.MissionsRepositories;
-using QazaqGeoReports.Infrastructure.Repositories;
-using QazaqGeoReports.Infrastructure.Repositories.ImagesRepositories;
+using QazaqGeoReports.Infrastructure.Repositories; 
 using QazaqGeoReports.Infrastructure.Repositories.MissionsRepositories;
 
 namespace QazaqGeoReports.Infrastructure;
@@ -26,15 +25,7 @@ public static class DependencyInjection
         services.AddTransient<IReportRepository, ReportRepository>();
         services.AddTransient<ICarRepository, CarRepository>();
         services.AddTransient<ITaskItemRepository, TaskItemRepository>();
-        #region ImagesRepositories
-        services.AddTransient<IImageEquipmentRepository, ImageEquipmentRepository>();
-        services.AddTransient<IImageReportRepository, ImageReportRepository>();
-        services.AddTransient<IImageUserRepository, ImageUserRepository>();
-        #endregion
-        #region MissionsRepositories
-        services.AddTransient<IMissionRepository, MissionRepository>();
-        services.AddTransient<ICarMissionRepository, CarMissionRepository>();
-        services.AddTransient<IEquipmentMissionRepository, EquipmentMissionRepository>();
-        #endregion
+        services.AddTransient<IImageRepository, ImageRepository>(); 
+        services.AddTransient<IMissionRepository, MissionRepository>();  
     }
 }

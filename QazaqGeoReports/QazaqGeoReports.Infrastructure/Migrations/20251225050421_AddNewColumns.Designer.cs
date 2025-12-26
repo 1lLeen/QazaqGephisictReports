@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using QazaqGeoReports.Infrastructure;
@@ -11,9 +12,11 @@ using QazaqGeoReports.Infrastructure;
 namespace QazaqGeoReports.Infrastructure.Migrations
 {
     [DbContext(typeof(QazaqGeoReportContext))]
-    partial class QazaqGeoReportContextModelSnapshot : ModelSnapshot
+    [Migration("20251225050421_AddNewColumns")]
+    partial class AddNewColumns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -539,9 +542,6 @@ namespace QazaqGeoReports.Infrastructure.Migrations
 
                     b.Property<string>("ReportStatus")
                         .HasColumnType("text");
-
-                    b.Property<int>("ReportType")
-                        .HasColumnType("integer");
 
                     b.Property<string>("RouteDescription")
                         .HasColumnType("text");

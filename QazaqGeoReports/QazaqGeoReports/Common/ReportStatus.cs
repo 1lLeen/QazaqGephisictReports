@@ -9,3 +9,9 @@ public enum ReportStatus
     Rejected,
     Archived,
 }
+public enum ReportType
+{
+    MissionType,
+    CarType,
+    EquipmentType,
+}

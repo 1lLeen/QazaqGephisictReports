@@ -1,4 +1,5 @@
-﻿using QazaqGeoReports.Domain.Entities.Images;
+﻿using QazaqGeoReports.Domain.Common;
+using QazaqGeoReports.Domain.Entities.Images;
 
 namespace QazaqGeoReports.Domain.Entities;
 public class Report : BaseEntity
@@ -13,8 +14,9 @@ public class Report : BaseEntity
     public string? RouteDescription { get; set; }
     public string? UsersMovement { get; set; }
     public string? EquipmentsMovement { get; set; }
-    public string? ReportStatus { get; set; }
-    public List<ImageReport> Images { get; set; } = new();
+    public string? ReportStatus { get; set; } 
+    public ReportType ReportType { get; set; }
+    public List<Image> Images { get; set; } = new(); 
     public DateTime? DepartureTime { get; set; }
     public DateTime? ArrivalTime { get; set; }
 }

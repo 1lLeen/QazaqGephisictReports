@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using QazaqGeoReports.Application.DTOs.ImageDtos.ImageEquiomentDtos; 
-using QazaqGeoReports.Domain.Entities.Images;
+using QazaqGeoReports.Application.DTOs.ImageDtos.ImageEquiomentDtos;
+using QazaqGeoReports.Domain.Entities;
 
 namespace QazaqGeoReports.Application.Mapper.ImagesMapper;
 
