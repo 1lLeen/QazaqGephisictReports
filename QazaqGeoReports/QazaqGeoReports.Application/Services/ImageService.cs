@@ -6,13 +6,22 @@ using QazaqGeoReports.Domain.Entities;
 
 namespace QazaqGeoReports.Application.Services;
 
-public class ImagaService : AbstractService<IImageRepository, Image, CreateImageDto, UpdateImageDto, BaseImageDto, ListImageViewModel>,
+public class ImageService : AbstractService<IImageRepository, Image, CreateImageDto, UpdateImageDto, BaseImageDto, ListImageViewModel>,
     IImageService
 {
-    public ImagaService(IImageRepository repository, IMapper mapper) : base(repository, mapper)
+    public ImageService(IImageRepository repository, IMapper mapper) : base(repository, mapper)
     {
     }
 
+    public async Task<List<BaseImageDto>> GetImagesByReportIdAsync(int id, CancellationToken ct = default)
+    {
+        var images = await _repository.GetImagesByReportIdAsync(id);
+        return mapper.Map<List<BaseImageDto>>(images);
+    }
+    public async Task DeleteAllImagesByReportIdAsync(int reportId, CancellationToken ct = default)
+    {
+        await _repository.DeleteAllImagesByReportIdAsync(reportId, ct);
+    }
     public string GetDataUrl(BaseImageDto img)
     {
         if (img?.Data is null || img.Data.Length == 0) return string.Empty;

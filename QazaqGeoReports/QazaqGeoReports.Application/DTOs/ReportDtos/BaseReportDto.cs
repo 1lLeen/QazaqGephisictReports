@@ -1,6 +1,5 @@
 ﻿using QazaqGeoReports.Application.Interfaces.Dtos;
-using QazaqGeoReports.Domain.Entities;
-using QazaqGeoReports.Domain.Entities.Images;
+using QazaqGeoReports.Domain.Entities; 
 
 namespace QazaqGeoReports.Application.DTOs.ReportDtos;
 
@@ -18,9 +17,7 @@ public class BaseReportDto : IBase
     public string? UsersMovement { get; set; }
     public string? EquipmentsMovement { get; set; }
     public string ReportStatus { get; set; }
-    public List<ImageReport> Images { get; set; } = new();
-    public List<ImageCar> CarImages { get; set; } = new();
-    public List<ImageEquipment> EquipmentImages { get; set; } = new();
+    public List<Image> Images { get; set; } = new(); 
     public DateTime? DepartureTime { get; set; }
     public DateTime? ArrivalTime { get; set; }
     public DateTime CreatedTime { get; set; }

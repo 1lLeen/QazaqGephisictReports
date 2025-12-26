@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using QazaqGeoReports.Application.DTOs.MissionDtos;
-using QazaqGeoReports.Application.Interfaces.Repositories.MissionsRepositories;
-using QazaqGeoReports.Application.Interfaces.Services.MissionsRepositories;
-using QazaqGeoReports.Domain.Entities.Missions;
+using QazaqGeoReports.Application.Interfaces.Repositories;
+using QazaqGeoReports.Application.Interfaces.Services;
+using QazaqGeoReports.Domain.Entities;
 
 namespace QazaqGeoReports.Application.Services;
 

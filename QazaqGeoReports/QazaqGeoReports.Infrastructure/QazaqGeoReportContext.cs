@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using QazaqGeoReports.Domain.Entities;
-using QazaqGeoReports.Domain.Entities.Missions;
-using QazaqGeoReports.Infrastructure.Configurations;
-using QazaqGeoReports.Infrastructure.Configurations.ImageConfiguration;
+using QazaqGeoReports.Domain.Entities; 
+using QazaqGeoReports.Infrastructure.Configurations; 
 
 namespace QazaqGeoReports.Infrastructure;
 

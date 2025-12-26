@@ -6,23 +6,21 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Identity
-@using QazaqGeoReports.Application.DTOs.ImageDtos.ImageReportDtos
-@using QazaqGeoReports.Application.DTOs.ImageDtos.ImageUserDtos
-@using QazaqGeoReports.Application.DTOs.ReportDtos
-@using QazaqGeoReports.Application.Interfaces.Services.ImagesServices
+@using Microsoft.AspNetCore.Identity 
+@using QazaqGeoReports.Application.DTOs.ReportDtos 
 @using QazaqGeoReports.Domain.Common
 @using QazaqGeoReports.Domain.Entities
 @using QazaqGeoReports.Application.Interfaces.Services
 @using QazaqGeoReports.Infrastructure
 @using System.Security.Claims
+@using QazaqGeoReports.Application.DTOs.ImageDtos
 
 @inject UserManager<User> UserManager
 @inject AuthenticationStateProvider AuthStateProvider
 @inject QazaqGeoReportContext DbContext
 @inject NavigationManager NavigationManager
 @inject IReportService reportService
-@inject IImageReportService imageService
+@inject IImageService imageService
 @inject IMapper mapper
 
 <PageTitle>Создание отчёта</PageTitle>
@@ -188,7 +186,7 @@
             await stream.CopyToAsync(ms);
             var imageData = ms.ToArray();
 
-            var image = new CreateImageReportDto
+            var image = new CreateImageDto
             {
                 Data = imageData,
                 ReportId = resultDto.Id

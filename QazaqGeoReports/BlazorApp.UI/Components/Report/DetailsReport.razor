@@ -1,17 +1,15 @@
 ﻿@page "/Report/Details/{ReportId:int}"
-@attribute [Authorize(Roles = "Admin,Supervisor,General")]
 
-@using Microsoft.AspNetCore.Authorization
-@using QazaqGeoReports.Application.DTOs.ImageDtos.ImageReportDtos
-@using QazaqGeoReports.Application.DTOs.ReportDtos
-@using QazaqGeoReports.Application.Interfaces.Services.ImagesServices
+@using Microsoft.AspNetCore.Authorization 
+@using QazaqGeoReports.Application.DTOs.ImageDtos
+@using QazaqGeoReports.Application.DTOs.ReportDtos 
 @using QazaqGeoReports.Domain.Common
 @using QazaqGeoReports.Domain.Entities
 @using QazaqGeoReports.Application.Interfaces.Services
 
 @inject NavigationManager Nav
 @inject IReportService ReportService
-@inject IImageReportService ImageService
+@inject IImageService ImageService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IUserService userService
 
@@ -177,8 +175,8 @@ else
     [Parameter] public int ReportId { get; set; }
 
     private BaseReportDto? report;
-    private BaseImageReportDto? image;                 // ONE IMAGE
-    private List<BaseImageReportDto>? images;          // MANY IMAGES
+    private BaseImageDto? image;                 // ONE IMAGE
+    private List<BaseImageDto>? images;          // MANY IMAGES
     private string role;
     private string tripDuratation;
     private string fuel100;
@@ -260,7 +258,7 @@ else
     }
 
     // ---------- IMAGE (ONE) ----------
-    async Task<BaseImageReportDto?> GetSingleImageByReportIdAsync(int reportId)
+    async Task<BaseImageDto?> GetSingleImageByReportIdAsync(int reportId)
     {
         try
         {
@@ -272,7 +270,7 @@ else
             return null;
         }
     }
-    async Task<List<BaseImageReportDto>?> GetListImageByReportIdAsync(int reportId)
+    async Task<List<BaseImageDto>?> GetListImageByReportIdAsync(int reportId)
     {
         try
         {

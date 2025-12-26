@@ -1,7 +1,6 @@
 ﻿using QazaqGeoReports.Application.Interfaces.Dtos;
 using QazaqGeoReports.Domain.Common;
 using QazaqGeoReports.Domain.Entities;
-using QazaqGeoReports.Domain.Entities.Missions;
 
 namespace QazaqGeoReports.Application.DTOs.MissionDtos;
 
@@ -21,6 +20,6 @@ public class BaseMissionDto : IBase
     public List<User>? Workers { get; set; }
     public List<TaskItem>? Tasks { get; set; } = new();
     public List<Report>? Reports { get; set; } = new();
-    public List<EquipmentMission>? Equipments { get; set; } = new();
-    public List<CarMission>? Cars { get; set; } = new();
+    public List<Equipment>? Equipments { get; set; } = new();
+    public List<Car>? Cars { get; set; } = new();
 }

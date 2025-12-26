@@ -1,14 +1,14 @@
 ﻿using QazaqGeoReports.Application.DTOs.GalleryDtos;
-using QazaqGeoReports.Application.Interfaces.Repositories.ImagesRepositories;
+using QazaqGeoReports.Application.Interfaces.Repositories;
 using QazaqGeoReports.Application.Interfaces.Services;
 
 namespace QazaqGeoReports.Application.Services;
 
 public class GalleryService : IGalleryService
 {
-    private readonly IImageReportRepository _repo;
+    private readonly IImageRepository _repo;
 
-    public GalleryService(IImageReportRepository repo)
+    public GalleryService(IImageRepository repo)
     {
         _repo = repo;
     }

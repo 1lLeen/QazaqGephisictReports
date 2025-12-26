@@ -1,11 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using QazaqGeoReports.Application;
-using QazaqGeoReports.Application.Interfaces.Repositories;
-using QazaqGeoReports.Application.Interfaces.Repositories.ImagesRepositories;
-using QazaqGeoReports.Application.Interfaces.Repositories.MissionsRepositories;
-using QazaqGeoReports.Infrastructure.Repositories; 
-using QazaqGeoReports.Infrastructure.Repositories.MissionsRepositories;
+using QazaqGeoReports.Application.Interfaces.Repositories; 
+using QazaqGeoReports.Infrastructure.Repositories;
 
 namespace QazaqGeoReports.Infrastructure;
 

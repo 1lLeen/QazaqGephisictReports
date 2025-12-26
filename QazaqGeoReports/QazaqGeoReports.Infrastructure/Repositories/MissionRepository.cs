@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using QazaqGeoReports.Application.Interfaces.Repositories.MissionsRepositories;
-using QazaqGeoReports.Domain.Entities.Missions;
+using QazaqGeoReports.Application.Interfaces.Repositories;
+using QazaqGeoReports.Domain.Entities;
 
-namespace QazaqGeoReports.Infrastructure.Repositories.MissionsRepositories;
+namespace QazaqGeoReports.Infrastructure.Repositories;
 
 public class MissionRepository : AbstractRepository<Mission>,
     IMissionRepository

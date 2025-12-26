@@ -2,8 +2,7 @@
 using QazaqGeoReports.Application.DTOs.ReportDtos;
 using QazaqGeoReports.Application.DTOs.UserDtos;
 using QazaqGeoReports.Application.Interfaces.Repositories;
-using QazaqGeoReports.Application.Interfaces.Services;
-using QazaqGeoReports.Application.Interfaces.Services.ImagesServices;
+using QazaqGeoReports.Application.Interfaces.Services; 
 using QazaqGeoReports.Domain.Common;
 using QazaqGeoReports.Domain.Entities;
 
@@ -11,10 +10,10 @@ namespace QazaqGeoReports.Application.Services;
 public class ReportService : AbstractService<IReportRepository, Report, CreateReportDto, UpdateReportDto, BaseReportDto, ListReportViewModel>,
     IReportService
 {
-    private readonly IImageReportService _imageService;
+    private readonly IImageService _imageService;
     private readonly IMapper mapper;
 
-    public ReportService(IReportRepository repository, IImageReportService imageService, IMapper mapper) : base(repository, mapper)
+    public ReportService(IReportRepository repository, IImageService imageService, IMapper mapper) : base(repository, mapper)
     {
         _imageService = imageService;
         this.mapper = mapper;

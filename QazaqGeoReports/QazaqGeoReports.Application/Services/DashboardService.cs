@@ -1,6 +1,5 @@
 ﻿using QazaqGeoReports.Application.DTOs.DashboardDtos;
 using QazaqGeoReports.Application.Interfaces.Repositories;
-using QazaqGeoReports.Application.Interfaces.Repositories.MissionsRepositories;
 using QazaqGeoReports.Application.Interfaces.Services;
 using QazaqGeoReports.Domain.Common;
 

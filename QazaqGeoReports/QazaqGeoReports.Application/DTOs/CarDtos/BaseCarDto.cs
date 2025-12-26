@@ -1,8 +1,6 @@
 ﻿using QazaqGeoReports.Application.Interfaces.Dtos;
 using QazaqGeoReports.Domain.Common;
 using QazaqGeoReports.Domain.Entities;
-using QazaqGeoReports.Domain.Entities.Images;
-using QazaqGeoReports.Domain.Entities.Missions;
 
 namespace QazaqGeoReports.Application.DTOs.CarDtos;
 
@@ -22,6 +20,6 @@ public class BaseCarDto : IBase
     public string? DriverId { get; set; }
     public User? Driver { get; set; }
 
-    public List<CarMission> Missions { get; set; } = new();
-    public List<ImageCar> Images { get; set; } = new();
+    public List<Mission> Missions { get; set; } = new();
+    public List<Image> Images { get; set; } = new();
 }

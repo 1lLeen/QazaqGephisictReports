@@ -2,7 +2,7 @@
 using QazaqGeoReports.Application.DTOs.MissionDtos;
 using QazaqGeoReports.Domain.Entities;
 
-namespace QazaqGeoReports.Application.Mapper.MissionsMapper;
+namespace QazaqGeoReports.Application.Mapper;
 
 public class MissionMapperProfile : Profile
 {
