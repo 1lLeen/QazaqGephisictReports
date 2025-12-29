@@ -1,5 +1,387 @@
-﻿<h3>AllMissions</h3>
+﻿@page "/Missions"
+@using QazaqGeoReports.Application.DTOs.MissionDtos
+@using QazaqGeoReports.Application.Interfaces.Services
+@using QazaqGeoReports.Domain.Common
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Nav
+ 
+@inject IMissionService MissionService
 
-@code {
+<div class="missions-page">
 
+    <header class="page-header">
+        <div class="title-block">
+            <div class="kicker">QazaqGeoReports • Missions</div>
+            <h3 class="page-title">All Missions</h3>
+            <div class="subtitle">
+                Список миссий. Фильтруй, ищи, открывай — без лишней суеты.
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <button class="btn btn-ghost" @onclick="Reload" disabled="@IsBusy" title="Обновить">
+                <span class="icon">⟳</span> Refresh
+            </button>
+            <button class="btn btn-primary" @onclick="Create" title="Создать миссию">
+                <span class="icon">＋</span> New mission
+            </button>
+        </div>
+    </header>
+
+    <section class="toolbar">
+        <div class="search">
+            <span class="icon">⌕</span>
+            <input class="search-input"
+                   placeholder="Поиск: название, описание, супервайзер…"
+                   @bind="Query"
+                   @bind:event="oninput" />
+            @if (!string.IsNullOrWhiteSpace(Query))
+            {
+                <button class="chip-clear" @onclick="ClearSearch" title="Очистить">×</button>
+            }
+        </div>
+
+        <div class="filters">
+            <select class="select" @bind="StatusFilter">
+                <option value="">Все статусы</option>
+                @foreach (var s in Enum.GetValues<MissionStatus>())
+                {
+                    <option value="@s">@s</option>
+                }
+            </select>
+
+            <select class="select" @bind="Sort">
+                <option value="@SortMode.UpdatedDesc">Сортировка: обновл. ↓</option>
+                <option value="@SortMode.UpdatedAsc">Сортировка: обновл. ↑</option>
+                <option value="@SortMode.CreatedDesc">Сортировка: создано ↓</option>
+                <option value="@SortMode.CreatedAsc">Сортировка: создано ↑</option>
+                <option value="@SortMode.EndDateAsc">Сортировка: конец ↑</option>
+                <option value="@SortMode.EndDateDesc">Сортировка: конец ↓</option>
+            </select>
+
+            <div class="toggle">
+                <button class="seg @(View == ViewMode.Cards ? "active" : "")" @onclick="() => SetView(ViewMode.Cards)">
+                    ⬚ Cards
+                </button>
+                <button class="seg @(View == ViewMode.Table ? "active" : "")" @onclick="() => SetView(ViewMode.Table)">
+                    ≣ Table
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section class="tabs">
+        <button class="tab @(Tab == MissionTab.All ? "active" : "")" @onclick="() => SetTab(MissionTab.All)">
+            All <span class="count">@AllCount</span>
+        </button>
+        <button class="tab @(Tab == MissionTab.Planned ? "active" : "")" @onclick="() => SetTab(MissionTab.Planned)">
+            Planned <span class="count">@PlannedCount</span>
+        </button>
+        <button class="tab @(Tab == MissionTab.Active ? "active" : "")" @onclick="() => SetTab(MissionTab.Active)">
+            Active <span class="count">@ActiveCount</span>
+        </button>
+        <button class="tab @(Tab == MissionTab.Paused ? "active" : "")" @onclick="() => SetTab(MissionTab.Paused)">
+            Paused <span class="count">@PausedCount</span>
+        </button>
+        <button class="tab @(Tab == MissionTab.Completed ? "active" : "")" @onclick="() => SetTab(MissionTab.Completed)">
+            Completed <span class="count">@CompletedCount</span>
+        </button>
+    </section>
+
+    <section class="content">
+        @if (IsBusy)
+        {
+            <div class="skeleton-grid">
+                @for (int i = 0; i < 8; i++)
+                {
+                    <div class="skeleton-card">
+                        <div class="sk sk-title"></div>
+                        <div class="sk sk-line"></div>
+                        <div class="sk sk-line short"></div>
+                        <div class="sk sk-badges"></div>
+                    </div>
+                }
+            </div>
+        }
+        else if (!Filtered.Any())
+        {
+            <div class="empty">
+                <div class="empty-emoji">🧭</div>
+                <div class="empty-title">Ничего не найдено</div>
+                <div class="empty-text">Сбрось фильтры или создай новую миссию.</div>
+                <div class="empty-actions">
+                    <button class="btn btn-ghost" @onclick="ResetFilters">Reset</button>
+                    <button class="btn btn-primary" @onclick="Create">New mission</button>
+                </div>
+            </div>
+        }
+        else
+        {
+            @if (View == ViewMode.Cards)
+            {
+                <div class="grid">
+                    @foreach (var m in Paged)
+                    {
+                        <article class="card" @onclick="() => Open(m.Id)" title="Открыть миссию">
+                            <div class="card-top">
+                                <div class="card-title">
+                                    <div class="name">@m.Title</div>
+                                    <div class="meta">
+                                        <span class="dot">•</span>
+                                        <span>@SupervisorLabel(m)</span>
+                                        <span class="dot">•</span>
+                                        <span>@DateRangeLabel(m)</span>
+                                    </div>
+                                </div>
+
+                                <div class="kebab" @onclick:stopPropagation="true">
+                                    <button class="icon-btn" title="Действия" @onclick="() => ToggleMenu(m.Id)">⋯</button>
+                                    @if (OpenMenuId == m.Id)
+                                    {
+                                        <div class="menu">
+                                            <button class="menu-item" @onclick="() => Open(m.Id)">Open</button>
+                                            <button class="menu-item" @onclick="() => Edit(m.Id)">Edit</button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(m.Description))
+                            {
+                                <div class="desc">@m.Description</div>
+                            }
+
+                            <div class="card-bottom">
+                                <span class="badge @StatusClass(m.Status)">@m.Status</span>
+
+                                <span class="pill">👷 @Count(m.Workers)</span>
+                                <span class="pill">✅ @Count(m.Tasks)</span>
+                                <span class="pill">📄 @Count(m.Reports)</span>
+                                <span class="pill">🧰 @Count(m.Equipments)</span>
+                                <span class="pill">🚙 @Count(m.Cars)</span>
+
+                                <span class="muted-right">
+                                    Updated: @m.UpdatedTime.ToString("dd MMM HH:mm")
+                                </span>
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="table-wrap">
+                    <table class="tbl">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Status</th>
+                                <th>Supervisor</th>
+                                <th>Dates</th>
+                                <th>Workers</th>
+                                <th>Tasks</th>
+                                <th>Reports</th>
+                                <th>Equip</th>
+                                <th>Cars</th>
+                                <th class="actions-col"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var m in Paged)
+                            {
+                                <tr @onclick="() => Open(m.Id)" title="Открыть">
+                                    <td>
+                                        <div class="cell-title">@m.Title</div>
+                                        <div class="cell-sub">
+                                            Created: @m.CreatedTime.ToString("dd MMM yyyy") • Updated: @m.UpdatedTime.ToString("dd MMM HH:mm")
+                                        </div>
+                                    </td>
+                                    <td><span class="badge @StatusClass(m.Status)">@m.Status</span></td>
+                                    <td>@SupervisorLabel(m)</td>
+                                    <td>@DateRangeLabel(m)</td>
+                                    <td>@Count(m.Workers)</td>
+                                    <td>@Count(m.Tasks)</td>
+                                    <td>@Count(m.Reports)</td>
+                                    <td>@Count(m.Equipments)</td>
+                                    <td>@Count(m.Cars)</td>
+                                    <td class="actions-col" @onclick:stopPropagation="true">
+                                        <button class="icon-btn" title="Edit" @onclick="() => Edit(m.Id)">✎</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+            <footer class="pager">
+                <div class="pager-left">
+                    Showing <b>@Paged.Count</b> of <b>@Filtered.Count()</b>
+                </div>
+                <div class="pager-right">
+                    <button class="btn btn-ghost" @onclick="Prev" disabled="@(Page == 1)">Prev</button>
+                    <div class="page-pill">Page @Page / @TotalPages</div>
+                    <button class="btn btn-ghost" @onclick="Next" disabled="@(Page == TotalPages)">Next</button>
+                </div>
+            </footer>
+        }
+    </section>
+</div>
+
+@code
+{
+    private bool IsBusy { get; set; } = true;
+
+    private string Query { get; set; } = "";
+    private string StatusFilter { get; set; } = "";
+    private SortMode Sort { get; set; } = SortMode.UpdatedDesc;
+
+    private ViewMode View { get; set; } = ViewMode.Cards;
+    private MissionTab Tab { get; set; } = MissionTab.All;
+
+    private int Page { get; set; } = 1;
+    private int PageSize { get; set; } = 8;
+
+    private int? OpenMenuId { get; set; }
+
+    private List<BaseMissionDto> Items { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Reload();
+    }
+
+    private async Task Reload()
+    {
+        IsBusy = true;
+        OpenMenuId = null;
+        StateHasChanged();
+
+        // TODO: замени на свой реальный вызов
+        Items = (await MissionService.GetAllAsync()).ToList();
+
+        IsBusy = false;
+        ClampPage();
+    }
+
+    private void Create()
+    {
+        Nav.NavigateTo("/missions/create");
+    }
+
+    private void Open(int id)
+    {
+        Nav.NavigateTo($"/missions/{id}");
+    }
+
+    private void Edit(int id)
+    {
+        OpenMenuId = null;
+        Nav.NavigateTo($"/missions/edit/{id}");
+    }
+
+    private void ToggleMenu(int id) => OpenMenuId = OpenMenuId == id ? null : id;
+
+    private void ClearSearch() { Query = ""; Page = 1; }
+    private void ResetFilters()
+    {
+        Query = "";
+        StatusFilter = "";
+        Sort = SortMode.UpdatedDesc;
+        Tab = MissionTab.All;
+        Page = 1;
+    }
+
+    private void SetView(ViewMode mode) { View = mode; OpenMenuId = null; }
+    private void SetTab(MissionTab tab) { Tab = tab; Page = 1; OpenMenuId = null; }
+
+    private void Prev() { if (Page > 1) Page--; OpenMenuId = null; }
+    private void Next() { if (Page < TotalPages) Page++; OpenMenuId = null; }
+
+    private IEnumerable<BaseMissionDto> Filtered
+    {
+        get
+        {
+            IEnumerable<BaseMissionDto> q = Items;
+
+            // Tabs
+            q = Tab switch
+            {
+                MissionTab.Planned => q.Where(x => x.Status == MissionStatus.Planned),
+                MissionTab.Active => q.Where(x => x.Status == MissionStatus.Active),
+                MissionTab.Paused => q.Where(x => x.Status == MissionStatus.Paused),
+                MissionTab.Completed => q.Where(x => x.Status == MissionStatus.Completed),
+                _ => q
+            };
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(Query))
+            {
+                var s = Query.Trim().ToLowerInvariant();
+                q = q.Where(x =>
+                    (x.Title?.ToLowerInvariant().Contains(s) ?? false) ||
+                    (x.Description?.ToLowerInvariant().Contains(s) ?? false) ||
+                    (x.Supervisor?.ToString()?.ToLowerInvariant().Contains(s) ?? false) ||
+                    (x.SupervisorId?.ToLowerInvariant().Contains(s) ?? false));
+            }
+
+            // Status filter dropdown
+            if (!string.IsNullOrWhiteSpace(StatusFilter) && Enum.TryParse<MissionStatus>(StatusFilter, out var st))
+                q = q.Where(x => x.Status == st);
+
+            // Sorting
+            q = Sort switch
+            {
+                SortMode.UpdatedAsc => q.OrderBy(x => x.UpdatedTime),
+                SortMode.CreatedDesc => q.OrderByDescending(x => x.CreatedTime),
+                SortMode.CreatedAsc => q.OrderBy(x => x.CreatedTime),
+                SortMode.EndDateAsc => q.OrderBy(x => x.EndDate ?? DateTime.MaxValue),
+                SortMode.EndDateDesc => q.OrderByDescending(x => x.EndDate ?? DateTime.MinValue),
+                _ => q.OrderByDescending(x => x.UpdatedTime)
+            };
+
+            return q.ToList();
+        }
+    }
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(Filtered.Count() / (double)PageSize));
+    private List<BaseMissionDto> Paged => Filtered.Skip((Page - 1) * PageSize).Take(PageSize).ToList();
+
+    private void ClampPage()
+    {
+        if (Page > TotalPages) Page = TotalPages;
+        if (Page < 1) Page = 1;
+    }
+
+    // Counters
+    private int AllCount => Items.Count;
+    private int PlannedCount => Items.Count(x => x.Status == MissionStatus.Planned);
+    private int ActiveCount => Items.Count(x => x.Status == MissionStatus.Active);
+    private int PausedCount => Items.Count(x => x.Status == MissionStatus.Paused);
+    private int CompletedCount => Items.Count(x => x.Status == MissionStatus.Completed);
+
+    private static int Count<T>(List<T>? list) => list?.Count ?? 0;
+
+    private static string SupervisorLabel(BaseMissionDto m)
+        => m.SupervisorId is null ? "—" : (m.Supervisor?.ToString() ?? $"ID: {m.SupervisorId}");
+
+    private static string DateRangeLabel(BaseMissionDto m)
+    {
+        var s = m.StartDate?.ToString("dd MMM yyyy") ?? "—";
+        var e = m.EndDate?.ToString("dd MMM yyyy") ?? "—";
+        return $"{s} → {e}";
+    }
+
+    private static string StatusClass(MissionStatus s) => s switch
+    {
+        MissionStatus.Planned => "info",
+        MissionStatus.Active => "success",
+        MissionStatus.Paused => "warn",
+        MissionStatus.Completed => "neutral",
+        _ => "neutral"
+    };
+
+    private enum ViewMode { Cards, Table }
+    private enum MissionTab { All, Planned, Active, Paused, Completed }
+    private enum SortMode { UpdatedDesc, UpdatedAsc, CreatedDesc, CreatedAsc, EndDateAsc, EndDateDesc }
 }
