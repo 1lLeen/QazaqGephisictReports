@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using QazaqGeoReports.Application.DTOs.UserDtos;
 using QazaqGeoReports.Application.Interfaces.Repositories;
 using QazaqGeoReports.Application.Interfaces.Services;
+using QazaqGeoReports.Domain.Common;
 using QazaqGeoReports.Domain.Entities; 
 using System.Linq.Expressions;
 
@@ -20,6 +21,27 @@ public class UserService : IUserService
         _reportService = reportService;
         _userManager = manager;
         this.mapper = mapper;
+    }
+    public virtual async Task<List<UserViewModel>> GetUsersByRoleAsync(Roles role)
+    {
+        var users = await _repository.GetUsersByRoleAsync(role);
+
+        List<UserViewModel> userViews = new List<UserViewModel>();
+        foreach (var item in users)
+        {
+            var reports = await _reportService.GetReportsByUserAsync(item.Id);
+            var roles = await _userManager.GetRolesAsync(item);
+            var mapped = mapper.Map<BaseUserDto>(item);
+            userViews.Add(new UserViewModel
+            {
+                User = mapped,
+                FullName = mapped.ViewFullName,
+                UserName = item.UserName,
+                Role = roles.FirstOrDefault(),
+                Reports = reports,
+            });
+        }
+        return mapper.Map<List<UserViewModel>>(userViews);
     }
     public virtual async Task<List<BaseUserDto>> GetAllAsync() 
     {

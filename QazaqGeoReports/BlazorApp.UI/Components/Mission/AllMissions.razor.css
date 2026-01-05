@@ -1,13 +1,11 @@
-﻿
-/* ---------- Root wrapper ---------- */
-.missions-page {
-    /* colors */
+﻿/* ---------- Root wrapper ---------- */
+
+.missions-page { /* colors */
     --bg: #0b1220;
     --text: rgba(255, 255, 255, .92);
     --muted: rgba(255, 255, 255, .65);
     --muted2: rgba(255, 255, 255, .48);
-    --stroke: rgba(255, 255, 255, .12);
-    /* effects */
+    --stroke: rgba(255, 255, 255, .12); /* effects */
     --shadow: 0 12px 40px rgba(0, 0, 0, .35);
     --radius: 18px;
     padding: 18px;
@@ -16,8 +14,8 @@
     border-radius: 24px;
     border: 1px solid rgba(255,255,255,.06);
 }
-
 /* ---------- Header ---------- */
+
 .page-header {
     display: flex;
     gap: 14px;
@@ -51,8 +49,8 @@
     flex-wrap: wrap;
     padding-top: 6px;
 }
-
 /* ---------- Buttons ---------- */
+
 .btn {
     display: inline-flex;
     align-items: center;
@@ -88,8 +86,8 @@
 .btn-ghost {
     background: rgba(255,255,255,.04);
 }
-
 /* ---------- Toolbar ---------- */
+
 .toolbar {
     margin-top: 14px;
     display: flex;
@@ -158,8 +156,8 @@
     color: var(--text);
     outline: none;
 }
-
 /* ---------- Segmented toggle ---------- */
+
 .toggle {
     display: flex;
     gap: 4px;
@@ -183,8 +181,8 @@
         background: rgba(255,255,255,.10);
         color: var(--text);
     }
-
 /* ---------- Tabs ---------- */
+
 .tabs {
     display: flex;
     gap: 8px;
@@ -225,13 +223,13 @@
     border: 1px solid rgba(255,255,255,.12);
     color: var(--text);
 }
-
 /* ---------- Content ---------- */
+
 .content {
     padding: 8px 6px 16px;
 }
-
 /* ---------- Cards grid ---------- */
+
 .grid {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
@@ -336,8 +334,8 @@
     border: 1px dashed rgba(255,255,255,.14);
     color: var(--muted);
 }
-
 /* ---------- Skeleton ---------- */
+
 .skeleton-grid {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
@@ -393,8 +391,8 @@
         background-position: 200% 0;
     }
 }
-
 /* ---------- Empty state ---------- */
+
 .empty {
     margin-top: 18px;
     padding: 28px;
@@ -419,8 +417,8 @@
     font-size: 13px;
     color: var(--muted);
 }
-
 /* ---------- Pager ---------- */
+
 .pager {
     margin-top: 14px;
     display: flex;
@@ -440,8 +438,8 @@
     background: rgba(255,255,255,.04);
     color: var(--text);
 }
-
 /* ---------- Media queries ---------- */
+
 @media (max-width: 1100px) {
     .card, .skeleton-card {
         grid-column: span 6;

@@ -1,5 +1,425 @@
-﻿<h3>EditMission_</h3>
+﻿@page "/Missions/Edit/{MissionId:int}"
+
+@using System.ComponentModel.DataAnnotations
+@using QazaqGeoReports.Domain.Common
+@using QazaqGeoReports.Domain.Entities  
+
+@inject NavigationManager Nav
+ 
+@inject IMissionService MissionService
+@inject IUserService UserService
+
+<PageTitle>Редактирование миссии</PageTitle>
+
+<div class="container py-4 edit-mission">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <a class="btn btn-outline-secondary btn-sm rounded-pill" href="/Missions">
+                    <i class="bi bi-arrow-left me-1"></i> Назад
+                </a>
+                <span class="badge text-bg-light border">Mission #@MissionId</span>
+            </div>
+            <h3 class="mt-2 mb-0">Редактировать миссию</h3>
+            <div class="text-muted small">Обнови данные и нажми “Сохранить”.</div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary rounded-pill" type="button" @onclick="Cancel" disabled="@(_isSaving || _isLoading)">
+                Отмена
+            </button>
+            <button class="btn btn-primary rounded-pill" type="button" @onclick="SubmitFromButton" disabled="@(_isSaving || _isLoading || !_isReady)">
+                @if (_isSaving)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true">Сохранение...</span>
+                    
+                                }
+                else
+                {
+                    <i class="bi bi-check2-circle me-2">Сохранить</i>
+                    
+                                }
+            </button>
+        </div>
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body py-5 text-center">
+                <div class="spinner-border" role="status"></div>
+                <div class="text-muted mt-2">Загружаю миссию...</div>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_loadError))
+    {
+        <div class="alert alert-danger border-0 shadow-sm">
+            <div class="fw-semibold mb-1"><i class="bi bi-exclamation-triangle me-2"></i>Не удалось загрузить миссию</div>
+            <div class="small">@_loadError</div>
+        </div>
+    }
+    else
+    {
+        <EditForm EditContext="@_editContext" OnValidSubmit="SaveAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger small mb-3" />
+
+            @if (!string.IsNullOrWhiteSpace(_saveError))
+            {
+                <div class="alert alert-warning border-0 shadow-sm">
+                    <div class="fw-semibold mb-1"><i class="bi bi-info-circle me-2"></i>Не получилось сохранить</div>
+                    <div class="small">@_saveError</div>
+                </div>
+            }
+
+            <div class="row g-3">
+                <div class="col-12 col-lg-8">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="icon-bubble">
+                                        <i class="bi bi-flag"></i>
+                                    </span>
+                                    <div>
+                                        <div class="fw-semibold">Основное</div>
+                                        <div class="text-muted small">Название, описание и статус</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Название <span class="text-danger">*</span></label>
+                                <InputText class="form-control form-control-lg" @bind-Value="_model.Title" placeholder="Напр.: Полевые работы — Жезказган" />
+                                <ValidationMessage For="@(() => _model.Title)" class="text-danger small" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Описание</label>
+                                <InputTextArea class="form-control" @bind-Value="_model.Description" rows="4" placeholder="Коротко: что делаем, где, для кого…" />
+                                <div class="form-hint">Не обязательно. Но супервайзер будет счастлив 😄</div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Статус</label>
+                                    <InputSelect class="form-select" @bind-Value="_model.Status">
+                                        @foreach (var s in _statuses)
+                                        {
+                                            <option value="@s">@s</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Супервайзер</label>
+                                    <InputSelect class="form-select" @bind-Value="_model.SupervisorId">
+                                        <option value="">— Не выбран —</option>
+                                        @foreach (var u in _supervisors)
+                                        {
+                                            <option value="@u.Id">@u.DisplayName</option>
+                                        }
+                                    </InputSelect>
+                                    <div class="form-hint">Список — из пользователей роли Supervisor (или как ты фильтруешь).</div>
+                                </div>
+                            </div>
+
+                            <hr class="my-4" />
+
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Дата начала</label>
+                                    <InputDate class="form-control" @bind-Value="_model.StartDate" />
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Дата окончания</label>
+                                    <InputDate class="form-control" @bind-Value="_model.EndDate" />
+                                    <ValidationMessage For="@(() => _model.EndDate)" class="text-danger small" />
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-between mt-4">
+                                <div class="text-muted small">
+                                    <i class="bi bi-shield-check me-1"></i>
+                                    Данные сохраняются без “магии”: только то, что ты изменил.
+                                </div>
+
+                                <button type="submit" class="btn btn-primary rounded-pill" disabled="@(_isSaving || !_isReady)">
+                                    @if (_isSaving)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true">Сохранение...</span>
+                                        
+                                                                }
+                                    else
+                                    {
+                                        <i class="bi bi-save2 me-2">Сохранить</i>
+                                        
+                                                                }
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="icon-bubble subtle">
+                                    <i class="bi bi-info-circle"></i>
+                                </span>
+                                <div class="fw-semibold">Подсказки</div>
+                            </div>
+
+                            <ul class="small text-muted mb-0 ps-3">
+                                <li>Название — обязательное.</li>
+                                <li>Если дата окончания раньше даты начала — форма ругнётся.</li>
+                                <li>Супервайзер можно не ставить, если у тебя это допускается.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mt-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="icon-bubble subtle">
+                                    <i class="bi bi-lightning-charge"></i>
+                                </span>
+                                <div class="fw-semibold">Быстрые действия</div>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-outline-secondary rounded-pill" @onclick="ResetToLoaded" disabled="@(_isSaving || _isLoading)">
+                                    <i class="bi bi-arrow-counterclockwise me-2"></i> Откатить изменения
+                                </button>
+
+                                <button type="button" class="btn btn-outline-danger rounded-pill" @onclick="Cancel" disabled="@(_isSaving || _isLoading)">
+                                    <i class="bi bi-x-circle me-2"></i> Выйти без сохранения
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </EditForm>
+    }
+</div>
 
 @code {
+    [Parameter] public int MissionId { get; set; }
 
+    private MissionFormModel _model = new();
+    private MissionFormModel _loadedSnapshot = new();
+
+    private EditContext? _editContext;
+
+    private bool _isLoading = true;
+    private bool _isSaving = false;
+    private string? _loadError;
+    private string? _saveError;
+
+    private List<MissionStatus> _statuses = new();
+    private List<UserOption> _supervisors = new();
+
+    private bool _isReady => _editContext is not null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _statuses = Enum.GetValues(typeof(MissionStatus)).Cast<MissionStatus>().ToList();
+
+        try
+        {
+            _isLoading = true;
+            _loadError = null;
+
+            // 1) Грузим миссию
+            // Подстрой под свой контракт: GetByIdAsync / GetById / DetailsAsync и т.д.
+            var mission = await MissionService.GetByIdAsync(MissionId);
+
+            // 2) Грузим супервайзеров (фильтр по роли — внутри сервиса)
+            _supervisors = (await UserService.GetSupervisorsAsync())
+                .Select(x => new UserOption(x.Id, $"{x.FullName ?? x.UserName ?? x.Email}".Trim()))
+                .ToList();
+
+            // 3) Заполняем модель формы
+            _model = new MissionFormModel
+            {
+                Id = mission.Id,
+                Title = mission.Title,
+                Description = mission.Description,
+                Status = mission.Status,
+                StartDate = mission.StartDate,
+                EndDate = mission.EndDate,
+                SupervisorId = mission.SupervisorId
+            };
+
+            _loadedSnapshot = _model.Clone();
+
+            _editContext = new EditContext(_model);
+            _editContext.OnFieldChanged += (_, __) => _saveError = null; // чуть-чуть “психотерапии” для UI
+        }
+        catch (Exception ex)
+        {
+            _loadError = ex.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_editContext is null) return;
+
+        _saveError = null;
+        _isSaving = true;
+
+        try
+        {
+            // Подстрой под свой Update DTO/метод
+            var dto = new UpdateMissionDto
+            {
+                Id = MissionId,
+                Title = _model.Title,
+                Description = _model.Description,
+                Status = _model.Status,
+                StartDate = _model.StartDate,
+                EndDate = _model.EndDate,
+                SupervisorId = _model.SupervisorId
+            };
+
+            await MissionService.UpdateAsync(dto);
+
+            _loadedSnapshot = _model.Clone();
+
+            // Вернуться на детали миссии или список — как хочешь
+            Nav.NavigateTo($"/Missions/Details/{MissionId}");
+        }
+        catch (Exception ex)
+        {
+            _saveError = ex.Message;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task SubmitFromButton()
+    {
+        // чтобы работала верхняя кнопка "Сохранить" (не submit внутри формы)
+        if (_editContext is null) return;
+
+        // Прогоняем валидацию и вызываем SaveAsync вручную
+        var valid = _editContext.Validate();
+        if (valid)
+            await SaveAsync();
+    }
+
+    private void ResetToLoaded()
+    {
+        // Откатить все поля к загруженному состоянию
+        _model.Title = _loadedSnapshot.Title;
+        _model.Description = _loadedSnapshot.Description;
+        _model.Status = _loadedSnapshot.Status;
+        _model.StartDate = _loadedSnapshot.StartDate;
+        _model.EndDate = _loadedSnapshot.EndDate;
+        _model.SupervisorId = _loadedSnapshot.SupervisorId;
+
+        _editContext?.Validate();
+    }
+
+    private void Cancel() => Nav.NavigateTo("/Missions");
+
+    // ====== Form model ======
+    public class MissionFormModel
+    {
+        public int Id { get; set; }
+
+        [Required(ErrorMessage = "Название обязательно.")]
+        [StringLength(120, ErrorMessage = "Слишком длинно (макс. 120 символов).")]
+        public string Title { get; set; } = string.Empty;
+
+        [StringLength(2000, ErrorMessage = "Описание слишком длинное (макс. 2000 символов).")]
+        public string? Description { get; set; }
+
+        public MissionStatus Status { get; set; } = MissionStatus.Planned;
+
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+
+        public string? SupervisorId { get; set; }
+
+        [CustomValidation(typeof(MissionFormModel), nameof(ValidateDates))]
+        public DateTime? EndDateForValidation => EndDate;
+
+        public static ValidationResult? ValidateDates(DateTime? _, ValidationContext ctx)
+        {
+            var m = (MissionFormModel)ctx.ObjectInstance;
+
+            if (m.StartDate.HasValue && m.EndDate.HasValue && m.EndDate.Value.Date < m.StartDate.Value.Date)
+                return new ValidationResult("Дата окончания не может быть раньше даты начала.");
+
+            return ValidationResult.Success;
+        }
+
+        public MissionFormModel Clone() => new()
+        {
+            Id = Id,
+            Title = Title,
+            Description = Description,
+            Status = Status,
+            StartDate = StartDate,
+            EndDate = EndDate,
+            SupervisorId = SupervisorId
+        };
+    }
+
+    public record UserOption(string Id, string DisplayName);
+
+    // ====== DTO/Services (заглушки под твою структуру) ======
+    // Удали/замени на реальные интерфейсы и DTO из Application слоя.
+    public interface IMissionService
+    {
+        Task<MissionDto> GetByIdAsync(int id);
+        Task UpdateAsync(UpdateMissionDto dto);
+    }
+
+    public interface IUserService
+    {
+        Task<List<UserDto>> GetSupervisorsAsync();
+    }
+
+    public class MissionDto
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = "";
+        public string? Description { get; set; }
+        public MissionStatus Status { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public string? SupervisorId { get; set; }
+    }
+
+    public class UpdateMissionDto
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = "";
+        public string? Description { get; set; }
+        public MissionStatus Status { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public string? SupervisorId { get; set; }
+    }
+
+    public class UserDto
+    {
+        public string Id { get; set; } = "";
+        public string? FullName { get; set; }
+        public string? UserName { get; set; }
+        public string? Email { get; set; }
+    }
 }

@@ -15,6 +15,17 @@ public class UserRepository : IUserRepository
         _context = context;
         _dbSet = _context.Set<User>();
     }
+    public async Task<List<User>> GetUsersByRoleAsync(Domain.Common.Roles role)
+    {
+        var res = await (from user in _context.Users
+                         join userRole in _context.UserRoles on user.Id equals userRole.UserId
+                         join roleEntity in _context.Roles on userRole.RoleId equals roleEntity.Id
+                         where roleEntity.Name == role.ToString()
+                         select user)
+                         .AsNoTracking()
+                         .ToListAsync();
+        return res;
+    }
     public async Task<List<User>> GetAllAsync()
     {
         var res = await _dbSet

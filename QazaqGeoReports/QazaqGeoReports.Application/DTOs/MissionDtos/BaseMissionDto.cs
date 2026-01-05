@@ -1,4 +1,9 @@
-﻿using QazaqGeoReports.Application.Interfaces.Dtos;
+﻿using QazaqGeoReports.Application.DTOs.CarDtos;
+using QazaqGeoReports.Application.DTOs.EquipmentDtos;
+using QazaqGeoReports.Application.DTOs.ReportDtos;
+using QazaqGeoReports.Application.DTOs.TaskItemDtos;
+using QazaqGeoReports.Application.DTOs.UserDtos;
+using QazaqGeoReports.Application.Interfaces.Dtos;
 using QazaqGeoReports.Domain.Common;
 using QazaqGeoReports.Domain.Entities;
 
@@ -15,11 +20,11 @@ public class BaseMissionDto : IBase
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public string? SupervisorId { get; set; }
-    public User? Supervisor { get; set; }
+    public BaseUserDto? Supervisor { get; set; }
 
-    public List<User>? Workers { get; set; }
-    public List<TaskItem>? Tasks { get; set; } = new();
-    public List<Report>? Reports { get; set; } = new();
-    public List<Equipment>? Equipments { get; set; } = new();
-    public List<Car>? Cars { get; set; } = new();
+    public List<BaseUserDto>? Workers { get; set; }
+    public List<BaseTaskItemDto>? Tasks { get; set; } = new();
+    public List<BaseReportDto>? Reports { get; set; } = new();
+    public List<BaseEquipmentDto>? Equipments { get; set; } = new();
+    public List<BaseCarDto>? Cars { get; set; } = new();
 }

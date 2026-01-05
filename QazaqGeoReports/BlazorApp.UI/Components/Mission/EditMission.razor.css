@@ -1,0 +1,36 @@
+﻿.edit-mission .card {
+    border-radius: 18px;
+}
+
+.edit-mission .form-control,
+.edit-mission .form-select {
+    border-radius: 14px;
+}
+
+    .edit-mission .form-control:focus,
+    .edit-mission .form-select:focus {
+        box-shadow: 0 0 0 .2rem rgba(13,110,253,.15);
+    }
+
+.edit-mission .icon-bubble {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(13,110,253,.10);
+    color: #0d6efd;
+    flex: 0 0 auto;
+}
+
+    .edit-mission .icon-bubble.subtle {
+        background: rgba(108,117,125,.12);
+        color: #6c757d;
+    }
+
+.edit-mission .form-hint {
+    font-size: .85rem;
+    color: rgba(33,37,41,.65);
+    margin-top: .35rem;
+}

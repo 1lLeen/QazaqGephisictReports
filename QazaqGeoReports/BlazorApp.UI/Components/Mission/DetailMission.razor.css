@@ -1,0 +1,143 @@
+﻿.dm-page {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.dm-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.dm-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.dm-card, .dm-header, .dm-tabs {
+    border-radius: 18px;
+}
+
+.dm-kicker {
+    letter-spacing: .2px;
+}
+
+.dm-title {
+    line-height: 1.1;
+}
+
+.dm-desc {
+    max-width: 900px;
+}
+
+.dm-status {
+    font-weight: 600;
+    padding: .55rem .85rem;
+}
+
+.dm-badge-default {
+    background: #eef2ff;
+    color: #1e3a8a;
+}
+
+.dm-badge-planned {
+    background: #eef2ff;
+    color: #1e3a8a;
+}
+
+.dm-badge-progress {
+    background: #ecfeff;
+    color: #155e75;
+}
+
+.dm-badge-done {
+    background: #ecfdf5;
+    color: #065f46;
+}
+
+.dm-badge-canceled {
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+.dm-meta {
+    background: rgba(0,0,0,.02);
+    border: 1px solid rgba(0,0,0,.06);
+    border-radius: 16px;
+    padding: 14px 16px;
+    height: 100%;
+}
+
+.dm-meta-label {
+    font-size: .8rem;
+    color: rgba(0,0,0,.55);
+    margin-bottom: 6px;
+}
+
+.dm-meta-value {
+    font-weight: 600;
+}
+
+.dm-stats {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    color: rgba(0,0,0,.75);
+}
+
+.dm-nav .nav-link {
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    font-weight: 600;
+    color: rgba(0,0,0,.7);
+}
+
+    .dm-nav .nav-link.active {
+        color: rgba(0,0,0,.9);
+    }
+
+.dm-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 99px;
+    background: rgba(0,0,0,.35);
+}
+
+.dm-icon-badge, .dm-danger-badge {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-size: 1.2rem;
+    flex: 0 0 auto;
+}
+
+.dm-icon-badge {
+    background: rgba(13,110,253,.12);
+    color: rgba(13,110,253,1);
+}
+
+.dm-danger-badge {
+    background: rgba(220,53,69,.12);
+    color: rgba(220,53,69,1);
+}
+
+/* Simple modal */
+.dm-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    z-index: 1050;
+}
+
+.dm-modal {
+    width: min(560px, 100%);
+    border-radius: 18px;
+}

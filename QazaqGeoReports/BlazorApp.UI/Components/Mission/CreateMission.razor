@@ -1,5 +1,246 @@
-﻿<h3>CreateMission</h3>
+﻿@page "/Missions/Create"
+@using System.ComponentModel.DataAnnotations
+@using QazaqGeoReports.Application.DTOs.MissionDtos
+@using QazaqGeoReports.Application.Interfaces.Services
+@using QazaqGeoReports.Application.Services
+@using QazaqGeoReports.Domain.Common
+@using QazaqGeoReports.Domain.Entities
 
-@code {
+@inject NavigationManager Nav
+ 
+@inject IMissionService MissionService 
+@inject IUserService UserService
 
+<PageTitle>Создать миссию</PageTitle>
+
+<div class="cm-wrap">
+    <div class="container py-4">
+        <div class="d-flex align-items-center justify-content-between gap-3 mb-3 flex-wrap">
+            <div>
+                <h3 class="mb-1">Создать миссию</h3>
+                <div class="text-muted small">Заполни базовые поля — остальное добавишь по ходу (миссии любят эволюционировать).</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-secondary rounded-pill" @onclick="GoBack">
+                    <i class="bi bi-arrow-left me-2"></i>Назад
+                </button>
+            </div>
+        </div>
+
+        <div class="card cm-card shadow-sm border-0">
+            <div class="card-body p-4 p-lg-5">
+                @if (!string.IsNullOrWhiteSpace(_alertText))
+                {
+                    <div class="alert @(_alertOk ? "alert-success" : "alert-danger") d-flex align-items-start gap-2" role="alert">
+                        <i class="bi @(_alertOk ? "bi-check-circle" : "bi-exclamation-triangle") fs-5"></i>
+                        <div class="small">@_alertText</div>
+                    </div>
+                }
+
+                <EditForm Model="Input" OnValidSubmit="CreateAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="text-danger small mb-3" />
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Название <span class="text-danger">*</span></label>
+                            <InputText class="form-control form-control-lg" @bind-Value="Input.Title" placeholder="Напр. «Полевые работы Жезказган, декабрь»" />
+                            <ValidationMessage For="() => Input.Title" class="text-danger small" />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Описание</label>
+                            <InputTextArea class="form-control" @bind-Value="Input.Description" rows="4"
+                                           placeholder="Коротко: цель, место, ключевые задачи." />
+                            <div class="form-text">Можно оставить пустым — но миссии любят ясность 😄</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Статус</label>
+                            <InputSelect class="form-select" @bind-Value="Input.Status">
+                                @foreach (var s in _statuses)
+                                {
+                                    <option value="@s">@s</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Дата начала</label>
+                            <InputDate class="form-control" @bind-Value="Input.StartDate" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Дата окончания</label>
+                            <InputDate class="form-control" @bind-Value="Input.EndDate" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Супервайзер</label>
+                            <select class="form-select" @bind="Input.SupervisorId">
+                                <option value="">— не выбран —</option>
+                                @foreach (var u in _supervisors)
+                                {
+                                    <option value="@u.Id">@u.Display</option>
+                                }
+                            </select>
+                            <div class="form-text">Выбери ответственного (можно позже).</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Работники</label>
+                            <select class="form-select" multiple size="6" @onchange="OnWorkersChanged">
+                                @foreach (var u in _workers)
+                                {
+                                    <option value="@u.Id" selected="@Input.WorkerIds.Contains(u.Id)">@u.Display</option>
+                                }
+                            </select>
+                            <div class="form-text">Зажми <kbd>Ctrl</kbd> (или <kbd>Cmd</kbd>) для множественного выбора.</div>
+                        </div>
+
+                        <div class="col-12 pt-2">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="submit" class="btn btn-primary rounded-pill px-4" disabled="@_saving">
+                                    @if (_saving)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"> Сохранение...</span>
+                                       
+                                                                        }
+                                    else
+                                    {
+                                        <i class="bi bi-check2 me-2">Создать</i>
+                                        
+                                                                        }
+                                </button>
+
+                                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" @onclick="Reset" disabled="@_saving">
+                                    <i class="bi bi-arrow-counterclockwise me-2"></i>Сбросить
+                                </button>
+                            </div>
+
+                            <div class="cm-hint small text-muted mt-3">
+                                Подсказка: миссию можно создать “скелетом”, а уже потом добавить задачи, отчёты, машины и оборудование.
+                            </div>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    private bool _saving;
+    private bool _alertOk;
+    private string? _alertText;
+
+    private readonly List<MissionStatus> _statuses = Enum.GetValues<MissionStatus>().ToList();
+     
+    private readonly List<UserPick> _supervisors = new();
+    private readonly List<UserPick> _workers = new();
+
+    public InputModel Input { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    { 
+        var supervisors = await UserService.GetUsersByRoleAsync(Roles.Supervisor);
+        _supervisors.AddRange(supervisors.Select(x => new UserPick(x.User.Id, x.User.FullName ?? x.User.FullName ?? x.User.Id)));
+
+        var workers = await UserService.GetUsersByRoleAsync(Roles.Worker);
+        _workers.AddRange(workers.Select(x => new UserPick(x.User.Id, x.User.FullName ?? x.User.FullName ?? x.User.Id)));
+
+        await Task.CompletedTask;
+    }
+
+    private async Task CreateAsync()
+    {
+        _alertText = null;
+         
+        if (Input.StartDate.HasValue && Input.EndDate.HasValue && Input.EndDate.Value.Date < Input.StartDate.Value.Date)
+        {
+            _alertOk = false;
+            _alertText = "Дата окончания не может быть раньше даты начала.";
+            return;
+        }
+
+        _saving = true;
+        try
+        { 
+            var dto = new CreateMissionDto
+            {
+                Title = Input.Title,
+                Description = Input.Description,
+                Status = Input.Status,
+                StartDate = Input.StartDate,
+                EndDate = Input.EndDate,
+                SupervisorId = Input.SupervisorId,
+            };
+            foreach(var item in Input.WorkerIds)
+            {
+                dto.Workers.Add(await UserService.GetUserByIdAsync((string)item));
+            }
+            await MissionService.CreateAsync(dto);
+
+            await Task.Delay(150);  
+            _alertOk = true;
+            _alertText = "Миссия создана.";
+             
+            Nav.NavigateTo("/Missions");
+        }
+        catch (Exception ex)
+        {
+            _alertOk = false;
+            _alertText = $"Ошибка при создании миссии: {ex.Message}";
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void OnWorkersChanged(ChangeEventArgs e)
+    { 
+        if (e.Value is string single)
+        {
+            Input.WorkerIds = single.Split(',', StringSplitOptions.RemoveEmptyEntries).Distinct().ToList();
+            return;
+        }
+
+        if (e.Value is IEnumerable<string> many)
+        {
+            Input.WorkerIds = many.Distinct().ToList();
+            return;
+        }
+    }
+
+    private void Reset()
+    {
+        Input = new InputModel();
+        _alertText = null;
+    }
+
+    private void GoBack() => Nav.NavigateTo("/Missions");
+
+    public sealed class InputModel
+    {
+        [Required(ErrorMessage = "Название обязательно.")]
+        [StringLength(200, MinimumLength = 2, ErrorMessage = "Название: от 2 до 200 символов.")]
+        public string Title { get; set; } = string.Empty;
+
+        [StringLength(2000, ErrorMessage = "Описание слишком длинное (до 2000 символов).")]
+        public string? Description { get; set; }
+
+        public MissionStatus Status { get; set; } = MissionStatus.Planned;
+
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+
+        public string? SupervisorId { get; set; }
+
+        public List<string> WorkerIds { get; set; } = new();
+    }
+
+    public sealed record UserPick(string Id, string Display);
 }

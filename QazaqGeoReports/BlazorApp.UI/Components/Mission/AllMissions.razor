@@ -266,18 +266,18 @@
 
     private void Create()
     {
-        Nav.NavigateTo("/missions/create");
+        Nav.NavigateTo("/Missions/Create");
     }
 
     private void Open(int id)
     {
-        Nav.NavigateTo($"/missions/{id}");
+        Nav.NavigateTo($"/Missions/Details/{id}");
     }
 
     private void Edit(int id)
     {
         OpenMenuId = null;
-        Nav.NavigateTo($"/missions/edit/{id}");
+        Nav.NavigateTo($"/Missions/Edit/{id}");
     }
 
     private void ToggleMenu(int id) => OpenMenuId = OpenMenuId == id ? null : id;
