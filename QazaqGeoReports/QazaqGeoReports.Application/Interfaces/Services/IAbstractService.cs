@@ -1,5 +1,4 @@
-﻿using QazaqGeoReports.Application.DTOs.Common;
-using QazaqGeoReports.Application.Interfaces.Dtos;
+﻿using QazaqGeoReports.Application.Interfaces.Dtos;
 
 namespace QazaqGeoReports.Application.Interfaces.Services;
 public interface IAbstractService<TDtoBase, TCreateDto, TUpdateDto>

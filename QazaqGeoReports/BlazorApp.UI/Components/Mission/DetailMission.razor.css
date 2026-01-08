@@ -17,7 +17,7 @@
     flex-wrap: wrap;
 }
 
-.dm-card, .dm-header, .dm-tabs {
+.dm-card, .dm-header {
     border-radius: 18px;
 }
 
@@ -81,63 +81,39 @@
     font-weight: 600;
 }
 
-.dm-stats {
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
-    color: rgba(0,0,0,.75);
-}
-
-.dm-nav .nav-link {
-    border-top-left-radius: 14px;
-    border-top-right-radius: 14px;
-    font-weight: 600;
-    color: rgba(0,0,0,.7);
-}
-
-    .dm-nav .nav-link.active {
-        color: rgba(0,0,0,.9);
-    }
-
-.dm-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 99px;
-    background: rgba(0,0,0,.35);
-}
-
-.dm-icon-badge, .dm-danger-badge {
+.dm-icon-badge {
     width: 42px;
     height: 42px;
     border-radius: 14px;
     display: grid;
     place-items: center;
     font-size: 1.2rem;
-    flex: 0 0 auto;
-}
-
-.dm-icon-badge {
     background: rgba(13,110,253,.12);
     color: rgba(13,110,253,1);
 }
 
-.dm-danger-badge {
-    background: rgba(220,53,69,.12);
-    color: rgba(220,53,69,1);
+.dm-workers-raw {
+    border: 1px dashed rgba(0,0,0,.12);
+    background: rgba(255,255,255,.7);
+    border-radius: 14px;
+    padding: 10px 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
-/* Simple modal */
-.dm-modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.45);
-    display: grid;
-    place-items: center;
-    padding: 16px;
-    z-index: 1050;
+.dm-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
-.dm-modal {
-    width: min(560px, 100%);
-    border-radius: 18px;
+.dm-chip {
+    padding: .5rem .7rem;
+    border: 1px solid rgba(0,0,0,.08);
+}
+
+.dm-hint code {
+    padding: 0 .25rem;
+    border-radius: 6px;
+    background: rgba(0,0,0,.04);
 }

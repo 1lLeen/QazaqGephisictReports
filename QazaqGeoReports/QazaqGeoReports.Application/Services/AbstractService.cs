@@ -41,7 +41,8 @@ public class AbstractService<TRepository, TEntity, DtoCreate, DtoUpdate, DtoBase
     }
     public virtual async Task<DtoBase> CreateAsync(DtoCreate entity)
     {
-        var created = await _repository.CreateAsync(mapper.Map<TEntity>(entity));
+        var mapped = mapper.Map<TEntity>(entity);
+        var created = await _repository.CreateAsync(mapped);
         return mapper.Map<DtoBase>(created);
     }
     public virtual async Task<DtoBase> UpdateAsync(DtoUpdate entity, int id) 

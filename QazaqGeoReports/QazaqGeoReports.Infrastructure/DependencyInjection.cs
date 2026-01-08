@@ -23,6 +23,7 @@ public static class DependencyInjection
         services.AddTransient<ICarRepository, CarRepository>();
         services.AddTransient<ITaskItemRepository, TaskItemRepository>();
         services.AddTransient<IImageRepository, ImageRepository>(); 
-        services.AddTransient<IMissionRepository, MissionRepository>();  
+        services.AddTransient<IMissionRepository, MissionRepository>();
+        services.AddTransient<ITaskItemRepository, TaskItemRepository>();
     }
 }

@@ -1,11 +1,11 @@
-﻿@page "/Missions/{MissionId:int}"
-@using System.Globalization
- 
-@using QazaqGeoReports.Application.DTOs.MissionDtos 
+﻿@page "/Missions/Details/{MissionId:int}"
+@using QazaqGeoReports.Application.DTOs.MissionDtos
+@using QazaqGeoReports.Application.DTOs.UserDtos
 @using QazaqGeoReports.Application.Interfaces.Services
 
 @inject NavigationManager Nav
 @inject IMissionService MissionService 
+@inject IUserService UserService
 
 <PageTitle>Mission details</PageTitle>
 
@@ -17,12 +17,10 @@
         </button>
 
         <div class="dm-actions">
-            <button class="btn btn-sm btn-outline-primary rounded-pill" @onclick="GoEdit" disabled="@(!_loaded || _mission is null)">
+            <button class="btn btn-sm btn-outline-primary rounded-pill"
+                    @onclick="GoEdit"
+                    disabled="@(!_loaded || _mission is null)">
                 <i class="bi bi-pencil-square me-2"></i>Редактировать
-            </button>
-
-            <button class="btn btn-sm btn-outline-danger rounded-pill" @onclick="AskDelete" disabled="@(!_loaded || _mission is null)">
-                <i class="bi bi-trash me-2"></i>Удалить
             </button>
         </div>
     </div>
@@ -35,7 +33,7 @@
                     <div class="spinner-border" role="status" aria-label="Loading"></div>
                     <div>
                         <div class="fw-semibold">Загружаю миссию…</div>
-                        <div class="text-muted small">Если это долго — значит база решила подумать о смысле жизни.</div>
+                        <div class="text-muted small">База данных медитирует. Мы не мешаем.</div>
                     </div>
                 </div>
             </div>
@@ -76,9 +74,7 @@
 
                         @if (!string.IsNullOrWhiteSpace(_mission.Description))
                         {
-                            <div class="text-muted dm-desc">
-                                @_mission.Description
-                            </div>
+                            <div class="text-muted dm-desc">@_mission.Description</div>
                         }
                         else
                         {
@@ -91,7 +87,7 @@
                             <i class="bi bi-activity me-1"></i>@_mission.Status
                         </span>
                         <div class="text-muted small mt-2">
-                            Обновлено: @FormatDateTime(_mission.UpdatedTime)
+                            Период: @FormatRange(_mission.StartDate, _mission.EndDate)
                         </div>
                     </div>
                 </div>
@@ -103,92 +99,43 @@
                         <div class="dm-meta">
                             <div class="dm-meta-label">Супервайзер</div>
                             <div class="dm-meta-value">
-                                @(!string.IsNullOrWhiteSpace(_mission.Supervisor.FullName) ? _mission.Supervisor.FullName: "—")
-                            </div>
+                                    @(_supervisor?.FullName ?? "—")
+                            </div> 
                         </div>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-8">
                         <div class="dm-meta">
-                            <div class="dm-meta-label">Период</div>
-                            <div class="dm-meta-value">
-                                @FormatRange(_mission.StartDate, _mission.EndDate)
+                            <div class="dm-meta-label d-flex align-items-center justify-content-between">
+                                @* <span>Workers (string)</span>
+                                <span class="badge text-bg-light">@_workersTokens.Count</span> *@
                             </div>
+
+                            @if (string.IsNullOrWhiteSpace(_mission.Workers))
+                            {
+                                <div class="text-muted fst-italic">Пусто.</div>
+                            }
+                            else
+                            {
+                                @* <div class="dm-workers-raw text-muted small mb-2">
+                                    @_mission.Workers
+                                </div> *@
+
+                                <div class="dm-chips">
+                                    @foreach (var w in _workers)
+                                    {
+                                        <span class="badge rounded-pill text-bg-light dm-chip">
+                                            <i class="bi bi-person me-1"></i>@w.FullName
+                                        </span>
+                                    }
+                                </div>
+@* 
+                                <div class="dm-hint text-muted small mt-2">
+                                    Поддерживаем разделители: <code>,</code> <code>;</code> <code>|</code> и перенос строки.
+                                </div> *@
+                            }
                         </div>
                     </div>
-
-                    <div class="col-md-4">
-                        <div class="dm-meta">
-                            <div class="dm-meta-label">Статистика</div>
-                            <div class="dm-meta-value dm-stats">
-                                <span title="Workers"><i class="bi bi-people me-1"></i>@_mission.Workers.Count</span>
-                                <span title="Tasks"><i class="bi bi-check2-square me-1"></i>@_mission.Tasks.Count</span>
-                                <span title="Reports"><i class="bi bi-file-earmark-text me-1"></i>@_mission.Reports.Count</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="dm-tabs card border-0 shadow-sm mt-3">
-            <div class="card-body p-0">
-                <ul class="nav nav-tabs dm-nav px-3 pt-3" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link @( _tab == 0 ? "active" : "" )" type="button" @onclick="() => _tab = 0">
-                            <i class="bi bi-people me-2"></i>Workers
-                            <span class="badge text-bg-light ms-2">@_mission.Workers.Count</span>
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link @( _tab == 1 ? "active" : "" )" type="button" @onclick="() => _tab = 1">
-                            <i class="bi bi-check2-square me-2"></i>Tasks
-                            <span class="badge text-bg-light ms-2">@_mission.Tasks.Count</span>
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link @( _tab == 2 ? "active" : "" )" type="button" @onclick="() => _tab = 2">
-                            <i class="bi bi-hdd-stack me-2"></i>Equipment
-                            <span class="badge text-bg-light ms-2">@_mission.Equipments.Count</span>
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link @( _tab == 3 ? "active" : "" )" type="button" @onclick="() => _tab = 3">
-                            <i class="bi bi-truck me-2"></i>Cars
-                            <span class="badge text-bg-light ms-2">@_mission.Cars.Count</span>
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link @( _tab == 4 ? "active" : "" )" type="button" @onclick="() => _tab = 4">
-                            <i class="bi bi-file-earmark-text me-2"></i>Reports
-                            <span class="badge text-bg-light ms-2">@_mission.Reports.Count</span>
-                        </button>
-                    </li>
-                </ul>
-
-                <div class="p-4">
-                    @switch (_tab)
-                    {
-                        case 0:
-                            <SimpleList title="Workers" icon="bi-people" items="@_mission.Workers" emptyText="Пока никто не назначен." />
-                            break;
-
-                        case 1:
-                            <SimpleList title="Tasks" icon="bi-check2-square" items="@_mission.Tasks" emptyText="Пока нет задач." />
-                            break;
-
-                        case 2:
-                            <SimpleList title="Equipment" icon="bi-hdd-stack" items="@_mission.Equipments" emptyText="Оборудование не назначено." />
-                            break;
-
-                        case 3:
-                            <SimpleList title="Cars" icon="bi-truck" items="@_mission.Cars" emptyText="Машины не назначены." />
-                            break;
-
-                        case 4:
-                            <SimpleList title="Reports" icon="bi-file-earmark-text" items="@_mission.Reports" emptyText="Отчётов пока нет." />
-                            break;
-                    }
                 </div>
             </div>
         </div>
@@ -200,48 +147,20 @@
             </div>
         }
     }
-
-    @if (_showDeleteModal)
-    {
-        <div class="dm-modal-backdrop">
-            <div class="dm-modal card border-0 shadow-lg">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-start gap-3">
-                        <div class="dm-danger-badge">
-                            <i class="bi bi-trash"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="h5 mb-1">Удалить миссию?</div>
-                            <div class="text-muted mb-3">
-                                Это действие нельзя отменить. (Как некоторые решения в проде.)
-                            </div>
-
-                            <div class="d-flex gap-2 justify-content-end">
-                                <button class="btn btn-outline-secondary rounded-pill" @onclick="() => _showDeleteModal = false">
-                                    Отмена
-                                </button>
-                                <button class="btn btn-danger rounded-pill" @onclick="DeleteMission">
-                                    Удалить
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
 </div>
 
 @code {
     [Parameter] public int MissionId { get; set; }
 
     private bool _loaded;
-    private int _tab;
     private string? _error;
 
-    private bool _showDeleteModal;
+    private BaseMissionDto _mission; 
 
-    private BaseMissionDto? _mission; 
+    private List<string> _workersTokens = new();
+    private List<BaseUserDto> _workers = new();
+    private BaseUserDto _supervisor = new();
+
     protected override async Task OnInitializedAsync()
     {
         await Load();
@@ -253,13 +172,23 @@
         _error = null;
 
         try
-        {
-             _mission = await MissionService.GetByIdAsync(MissionId);
+        { 
+            var m = await MissionService.GetByIdAsync(MissionId);
+            _mission = m;
+
+            _workersTokens = ParseWorkers(_mission?.Workers);
+            foreach(var item in _workersTokens)
+            {
+                _workers.Add(await UserService.GetUserByIdAsync(item));
+            }
+            _supervisor = await UserService.GetUserByIdAsync(_mission?.SupervisorId);
         }
         catch (Exception ex)
         {
-            _error = $"Ошибка загрузки миссии: {ex.Message}";
+            _error = $"Ошибка загрузки: {ex.Message}";
             _mission = null;
+            _workersTokens = new(); 
+            _supervisor = new();
         }
         finally
         {
@@ -268,33 +197,11 @@
     }
 
     private void GoBack() => Nav.NavigateTo("/Missions");
+
     private void GoEdit()
     {
         if (_mission is null) return;
         Nav.NavigateTo($"/Missions/Edit/{_mission.Id}");
-    }
-
-    private void AskDelete() => _showDeleteModal = true;
-
-    private async Task DeleteMission()
-    {
-        if (_mission is null) return;
-
-        try
-        { 
-            await MissionService.DeleteAsync(_mission.Id);
-
-            await Task.Delay(150);
-            Nav.NavigateTo("/Missions");
-        }
-        catch (Exception ex)
-        {
-            _error = $"Не удалось удалить: {ex.Message}";
-        }
-        finally
-        {
-            _showDeleteModal = false;
-        }
     }
 
     private static string FormatRange(DateTime? start, DateTime? end)
@@ -304,12 +211,8 @@
         return $"{s} → {e}";
     }
 
-    private static string FormatDateTime(DateTime? dt)
-        => dt.HasValue ? dt.Value.ToString("dd.MM.yyyy HH:mm") : "—";
-
     private static string StatusClass(string? status)
     {
-        // Подстрой под свои статусы (MissionStatus)
         return status?.ToLowerInvariant() switch
         {
             "planned" => "dm-badge-planned",
@@ -319,120 +222,20 @@
             _ => "dm-badge-default"
         };
     }
-
-    // ---- Небольшой встроенный "компонент списка" ----
-    // Чтобы было чисто и без лишних файлов.
-    private RenderFragment SimpleList(string title, string icon, List<string>? items, string emptyText) => builder =>
+     
+    private static List<string> ParseWorkers(string? workers)
     {
-        var seq = 0;
+        if (string.IsNullOrWhiteSpace(workers))
+            return new();
 
-        builder.OpenElement(seq++, "div");
-        builder.AddAttribute(seq++, "class", "dm-list-head d-flex align-items-center justify-content-between mb-3");
+        var split = workers
+        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+        .Select(x => x.Trim())
+        .Where(x => !string.IsNullOrWhiteSpace(x))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToList();
 
-        builder.OpenElement(seq++, "div");
-        builder.AddAttribute(seq++, "class", "h6 mb-0");
-
-        builder.OpenElement(seq++, "i");
-        builder.AddAttribute(seq++, "class", $"bi {icon} me-2");
-        builder.CloseElement();
-
-        builder.AddContent(seq++, title);
-        builder.CloseElement(); // h6
-
-        builder.CloseElement(); // head
-
-        if (items is null || items.Count == 0)
-        {
-            builder.OpenElement(seq++, "div");
-            builder.AddAttribute(seq++, "class", "text-muted fst-italic");
-            builder.AddContent(seq++, emptyText);
-            builder.CloseElement();
-            return;
-        }
-
-        builder.OpenElement(seq++, "div");
-        builder.AddAttribute(seq++, "class", "list-group list-group-flush");
-
-        foreach (var it in items)
-        {
-            builder.OpenElement(seq++, "div");
-            builder.AddAttribute(seq++, "class", "list-group-item d-flex align-items-center justify-content-between py-3");
-
-            builder.OpenElement(seq++, "div");
-            builder.AddAttribute(seq++, "class", "d-flex align-items-center gap-3 min-w-0");
-
-            builder.OpenElement(seq++, "div");
-            builder.AddAttribute(seq++, "class", "dm-dot");
-            builder.CloseElement();
-
-            builder.OpenElement(seq++, "div");
-            builder.AddAttribute(seq++, "class", "min-w-0");
-            builder.OpenElement(seq++, "div");
-            builder.AddAttribute(seq++, "class", "fw-semibold text-truncate");
-            builder.AddContent(seq++, it);
-            builder.CloseElement();
-            builder.CloseElement();
-
-            builder.CloseElement(); // left
-
-            builder.OpenElement(seq++, "button");
-            builder.AddAttribute(seq++, "class", "btn btn-sm btn-outline-secondary rounded-pill");
-            builder.AddAttribute(seq++, "type", "button");
-            builder.AddContent(seq++, "Открыть");
-            builder.CloseElement();
-
-            builder.CloseElement(); // item
-        }
-
-        builder.CloseElement(); // list
-        builder.CloseElement(); // container
-    };
-
-    // ---- ViewModel (замени на свой MissionDto) ----
-    private sealed class MissionDetailVm
-    {
-        public int Id { get; set; }
-        public string Title { get; set; } = "";
-        public string? Description { get; set; }
-        public string Status { get; set; } = "Planned";
-        public DateTime? StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
-        public string? SupervisorName { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-
-        public int WorkersCount => Workers?.Count ?? 0;
-        public int TasksCount => Tasks?.Count ?? 0;
-        public int ReportsCount => Reports?.Count ?? 0;
-        public int EquipmentsCount => Equipments?.Count ?? 0;
-        public int CarsCount => Cars?.Count ?? 0;
-
-        public List<string>? Workers { get; set; }
-        public List<string>? Tasks { get; set; }
-        public List<string>? Reports { get; set; }
-        public List<string>? Equipments { get; set; }
-        public List<string>? Cars { get; set; }
+        return split;
     }
 
-    private static MissionDetailVm? DemoData(int id)
-    {
-        if (id <= 0) return null;
-
-        return new MissionDetailVm
-        {
-            Id = id,
-            Title = "Жезказган — дневные работы",
-            Description = "Контроль выезда, оборудование, отчёты по участкам. Без паники, просто поле.",
-            Status = "InProgress",
-            StartDate = DateTime.Today.AddDays(-3),
-            EndDate = DateTime.Today.AddDays(7),
-            SupervisorName = "Supervisor A",
-            UpdatedAt = DateTime.Now.AddMinutes(-12),
-
-            Workers = new() { "Worker 1", "Worker 2", "Driver 1" },
-            Tasks = new() { "Проверить GPS", "Сверить оборудование", "Сдать отчёт за смену" },
-            Reports = new() { "Report 12/30", "Report 12/31" },
-            Equipments = new() { "Magnetometer #14", "Battery pack #3" },
-            Cars = new() { "Toyota Hilux (KZ 123 ABC)" }
-        };
-    }
 }

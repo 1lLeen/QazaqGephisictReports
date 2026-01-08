@@ -12,10 +12,5 @@ public class Mission : BaseEntity
     public string? SupervisorId { get; set; }
     public User? Supervisor { get; set; }
 
-    public List<User>? Workers { get; set; }
-    public List<TaskItem>? Tasks { get; set; } = new();
-    public List<Report>? Reports { get; set; } = new();
-    public List<Equipment>? Equipments { get; set; } = new();
-    public List<Car>? Cars { get; set; } = new();
-
-}
+    public string? Workers { get; set; }
+} 

@@ -21,3 +21,12 @@
     border-left: 3px solid rgba(13,110,253,.35);
     padding-left: 12px;
 }
+.cm-pick-list {
+    max-height: 240px;
+    overflow: auto;
+    border-radius: 14px;
+}
+
+    .cm-pick-list .list-group-item {
+        cursor: pointer;
+    }

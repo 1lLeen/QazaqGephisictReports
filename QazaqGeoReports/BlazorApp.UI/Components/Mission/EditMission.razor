@@ -1,8 +1,10 @@
 ﻿@page "/Missions/Edit/{MissionId:int}"
-
-@using System.ComponentModel.DataAnnotations
+@using QazaqGeoReports.Application.DTOs.MissionDtos
+@using QazaqGeoReports.Application.DTOs.UserDtos
+@using QazaqGeoReports.Application.Interfaces.Services
 @using QazaqGeoReports.Domain.Common
-@using QazaqGeoReports.Domain.Entities  
+@using System.ComponentModel.DataAnnotations
+ 
 
 @inject NavigationManager Nav
  
@@ -124,6 +126,101 @@
                                     <div class="form-hint">Список — из пользователей роли Supervisor (или как ты фильтруешь).</div>
                                 </div>
                             </div>
+                            <div class="dm-meta worker-picker">
+                                <div class="dm-meta-label d-flex align-items-center justify-content-between">
+                                    <span>Workers</span>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge text-bg-light border">@_selectedWorkers.Count</span>
+
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-secondary rounded-pill"
+                                                disabled="@(_selectedWorkers.Count == 0)"
+                                                @onclick="ClearWorkers">
+                                            <i class="bi bi-trash3 me-1"></i> Очистить
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="row g-2 mt-1">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Добавить работника</label>
+
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+
+                                            <InputText class="form-control"
+                                                       @bind-Value="_workerSearch"
+                                                       @bind-Value:event="oninput"
+                                                       placeholder="Начни вводить имя..."
+                                                       @onkeydown="OnWorkerSearchKeyDown" />
+
+                                            <button class="btn btn-outline-secondary"
+                                                    type="button"
+                                                    title="Очистить поиск"
+                                                    disabled="@string.IsNullOrWhiteSpace(_workerSearch)"
+                                                    @onclick="() => _workerSearch = string.Empty">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </div>
+
+                                        <div class="list-group mt-2 worker-list">
+                                            @if (FilteredAvailableWorkers.Count == 0)
+                                            {
+                                                <div class="p-2 text-muted small">
+                                                    Ничего не найдено.
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                @foreach (var u in FilteredAvailableWorkers)
+                                                {
+                                                    <button type="button"
+                                                            class="list-group-item list-group-item-action d-flex align-items-center justify-content-between"
+                                                            @onclick="() => AddWorker(u.User.Id)">
+                                                        <span class="text-truncate">
+                                                            <i class="bi bi-person me-2"></i>@u.FullName
+                                                        </span>
+                                                        <span class="badge text-bg-secondary">+</span>
+                                                    </button>
+                                                }
+                                            }
+                                        </div>
+
+                                        <div class="form-text">
+                                            Клик — добавил. Enter — добавит первый результат.
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Выбрано</label>
+
+                                        @if (_selectedWorkers.Count == 0)
+                                        {
+                                            <div class="text-muted fst-italic">Пусто.</div>
+                                        }
+                                        else
+                                        {
+                                            <div class="d-flex flex-wrap gap-2 worker-chips">
+                                                @foreach (var w in _selectedWorkers.OrderBy(x => x.FullName))
+                                                {
+                                                    <span class="badge rounded-pill text-bg-light border d-inline-flex align-items-center gap-2">
+                                                        <i class="bi bi-person"></i>
+                                                        <span class="text-truncate">@w.FullName</span>
+
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-link text-danger p-0"
+                                                                title="Убрать"
+                                                                @onclick="() => RemoveWorker(w.User.Id)">
+                                                            <i class="bi bi-x-circle"></i>
+                                                        </button>
+                                                    </span>
+                                                }
+                                            </div>
+                                        }
+
+                                    </div>
+                                </div>
+                            </div>
 
                             <hr class="my-4" />
 
@@ -225,6 +322,76 @@
 
     private bool _isReady => _editContext is not null;
 
+    private List<UserViewModel> _allWorkers = new(); 
+
+    private List<UserViewModel> _selectedWorkers = new();
+
+    private List<UserViewModel> _availableWorkers = new();
+    private string _workerSearch = string.Empty;
+     
+    private List<UserViewModel> FilteredAvailableWorkers =>
+        string.IsNullOrWhiteSpace(_workerSearch)
+            ? _availableWorkers.Take(50).ToList()
+            : _availableWorkers
+                .Where(u =>
+                    (u.FullName?.Contains(_workerSearch, StringComparison.OrdinalIgnoreCase) ?? false) || 
+                    (u.User?.Email?.Contains(_workerSearch, StringComparison.OrdinalIgnoreCase) ?? false))
+                .Take(50)
+                .ToList();
+
+    private void AddWorker(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return;
+
+        if (_selectedWorkers.Any(x => x.User.Id.Equals(id, StringComparison.OrdinalIgnoreCase)))
+            return;
+
+        var user = _allWorkers.FirstOrDefault(x => x.User.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+        if (user is null) return;
+
+        _selectedWorkers.Add(user);
+        _workerSearch = string.Empty;      
+        RebuildAvailable();
+    }
+
+    private void ClearWorkers()
+    {
+        _selectedWorkers.Clear();
+        _workerSearch = string.Empty;
+        RebuildAvailable();
+    }
+
+    private void OnWorkerSearchKeyDown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            var first = FilteredAvailableWorkers.FirstOrDefault();
+            if (first is not null)
+                AddWorker(first.User.Id);
+        }
+    }
+    private HashSet<string> ParseWorkers(string? csv)
+    {
+        var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(csv))
+            return set;
+        var parts = csv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        foreach (var p in parts)
+        {
+            set.Add(p);
+        }
+        return set;
+    }
+    private void RebuildAvailable()
+    {
+        var selectedIds = _selectedWorkers.Select(x => x.User.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        _availableWorkers = _allWorkers
+            .Where(u => !selectedIds.Contains(u.User.Id))
+            .OrderBy(u => u.FullName)
+            .ToList();
+    }
+    private string WorkersCsv => string.Join(",", _selectedWorkers.Select(x => x.User.Id));
+
     protected override async Task OnInitializedAsync()
     {
         _statuses = Enum.GetValues(typeof(MissionStatus)).Cast<MissionStatus>().ToList();
@@ -234,16 +401,12 @@
             _isLoading = true;
             _loadError = null;
 
-            // 1) Грузим миссию
-            // Подстрой под свой контракт: GetByIdAsync / GetById / DetailsAsync и т.д.
             var mission = await MissionService.GetByIdAsync(MissionId);
 
-            // 2) Грузим супервайзеров (фильтр по роли — внутри сервиса)
-            _supervisors = (await UserService.GetSupervisorsAsync())
-                .Select(x => new UserOption(x.Id, $"{x.FullName ?? x.UserName ?? x.Email}".Trim()))
+            _supervisors = (await UserService.GetUsersByRoleAsync(Roles.Supervisor))
+                .Select(x => new UserOption(x.User.Id, $"{x.FullName ?? x.UserName ?? x.User.Email}".Trim()))
                 .ToList();
 
-            // 3) Заполняем модель формы
             _model = new MissionFormModel
             {
                 Id = mission.Id,
@@ -258,7 +421,18 @@
             _loadedSnapshot = _model.Clone();
 
             _editContext = new EditContext(_model);
-            _editContext.OnFieldChanged += (_, __) => _saveError = null; // чуть-чуть “психотерапии” для UI
+            _editContext.OnFieldChanged += (_, __) => _saveError = null;
+
+            _allWorkers = (await UserService.GetUsersByRoleAsync(Roles.Worker)); 
+             
+            var selectedIds = ParseWorkers(mission.Workers);
+             
+            _selectedWorkers = _allWorkers
+
+                .Where(u => selectedIds.Contains(u.User.Id, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+
+            RebuildAvailable();
         }
         catch (Exception ex)
         {
@@ -269,6 +443,28 @@
             _isLoading = false;
         }
     }
+    private void OnPickWorker(ChangeEventArgs e)
+    {
+        var pickedId = e?.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(pickedId))
+            return;
+             
+        if (_selectedWorkers.Any(x => x.User.Id.Equals(pickedId, StringComparison.OrdinalIgnoreCase)))
+            return;
+
+        var user = _allWorkers.FirstOrDefault(x => x.User.Id.Equals(pickedId, StringComparison.OrdinalIgnoreCase));
+        if (user is null)
+            return;
+
+        _selectedWorkers.Add(user);
+        RebuildAvailable();
+    }
+
+    private void RemoveWorker(string id)
+    {
+        _selectedWorkers.RemoveAll(x => x.User.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+        RebuildAvailable();
+    }
 
     private async Task SaveAsync()
     {
@@ -278,24 +474,24 @@
         _isSaving = true;
 
         try
-        {
-            // Подстрой под свой Update DTO/метод
+        { 
+
             var dto = new UpdateMissionDto
             {
                 Id = MissionId,
                 Title = _model.Title,
                 Description = _model.Description,
                 Status = _model.Status,
-                StartDate = _model.StartDate,
-                EndDate = _model.EndDate,
-                SupervisorId = _model.SupervisorId
+                StartDate = ToUtcFromInput(_model.StartDate),
+                EndDate = ToUtcFromInput(_model.EndDate),
+                SupervisorId = _model.SupervisorId,
+                Workers = WorkersCsv
             };
 
-            await MissionService.UpdateAsync(dto);
+            await MissionService.UpdateAsync(dto, MissionId);
 
             _loadedSnapshot = _model.Clone();
-
-            // Вернуться на детали миссии или список — как хочешь
+             
             Nav.NavigateTo($"/Missions/Details/{MissionId}");
         }
         catch (Exception ex)
@@ -309,19 +505,16 @@
     }
 
     private async Task SubmitFromButton()
-    {
-        // чтобы работала верхняя кнопка "Сохранить" (не submit внутри формы)
+    { 
         if (_editContext is null) return;
-
-        // Прогоняем валидацию и вызываем SaveAsync вручную
+         
         var valid = _editContext.Validate();
         if (valid)
             await SaveAsync();
     }
 
     private void ResetToLoaded()
-    {
-        // Откатить все поля к загруженному состоянию
+    { 
         _model.Title = _loadedSnapshot.Title;
         _model.Description = _loadedSnapshot.Description;
         _model.Status = _loadedSnapshot.Status;
@@ -331,7 +524,13 @@
 
         _editContext?.Validate();
     }
+    private static DateTime? ToUtcFromInput(DateTime? dt)
+    {
+        if (dt is null) return null;
 
+        var local = DateTime.SpecifyKind(dt.Value, DateTimeKind.Local);
+        return local.ToUniversalTime();
+    }
     private void Cancel() => Nav.NavigateTo("/Missions");
 
     // ====== Form model ======
@@ -379,47 +578,4 @@
     }
 
     public record UserOption(string Id, string DisplayName);
-
-    // ====== DTO/Services (заглушки под твою структуру) ======
-    // Удали/замени на реальные интерфейсы и DTO из Application слоя.
-    public interface IMissionService
-    {
-        Task<MissionDto> GetByIdAsync(int id);
-        Task UpdateAsync(UpdateMissionDto dto);
-    }
-
-    public interface IUserService
-    {
-        Task<List<UserDto>> GetSupervisorsAsync();
-    }
-
-    public class MissionDto
-    {
-        public int Id { get; set; }
-        public string Title { get; set; } = "";
-        public string? Description { get; set; }
-        public MissionStatus Status { get; set; }
-        public DateTime? StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
-        public string? SupervisorId { get; set; }
-    }
-
-    public class UpdateMissionDto
-    {
-        public int Id { get; set; }
-        public string Title { get; set; } = "";
-        public string? Description { get; set; }
-        public MissionStatus Status { get; set; }
-        public DateTime? StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
-        public string? SupervisorId { get; set; }
-    }
-
-    public class UserDto
-    {
-        public string Id { get; set; } = "";
-        public string? FullName { get; set; }
-        public string? UserName { get; set; }
-        public string? Email { get; set; }
-    }
 }

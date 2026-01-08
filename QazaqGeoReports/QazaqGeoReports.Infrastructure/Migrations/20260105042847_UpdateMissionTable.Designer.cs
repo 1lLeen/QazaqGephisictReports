@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using QazaqGeoReports.Infrastructure;
@@ -11,9 +12,11 @@ using QazaqGeoReports.Infrastructure;
 namespace QazaqGeoReports.Infrastructure.Migrations
 {
     [DbContext(typeof(QazaqGeoReportContext))]
-    partial class QazaqGeoReportContextModelSnapshot : ModelSnapshot
+    [Migration("20260105042847_UpdateMissionTable")]
+    partial class UpdateMissionTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -307,9 +310,6 @@ namespace QazaqGeoReports.Infrastructure.Migrations
                     b.Property<DateTime>("UpdatedTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Workers")
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
                     b.HasIndex("SupervisorId");
@@ -462,6 +462,9 @@ namespace QazaqGeoReports.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("MissionId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
@@ -498,6 +501,8 @@ namespace QazaqGeoReports.Infrastructure.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
+
+                    b.HasIndex("MissionId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -629,6 +634,13 @@ namespace QazaqGeoReports.Infrastructure.Migrations
                     b.Navigation("Mission");
                 });
 
+            modelBuilder.Entity("QazaqGeoReports.Domain.Entities.User", b =>
+                {
+                    b.HasOne("QazaqGeoReports.Domain.Entities.Mission", null)
+                        .WithMany("Workers")
+                        .HasForeignKey("MissionId");
+                });
+
             modelBuilder.Entity("QazaqGeoReports.Domain.Entities.Car", b =>
                 {
                     b.Navigation("Images");
@@ -637,6 +649,11 @@ namespace QazaqGeoReports.Infrastructure.Migrations
             modelBuilder.Entity("QazaqGeoReports.Domain.Entities.Equipment", b =>
                 {
                     b.Navigation("Images");
+                });
+
+            modelBuilder.Entity("QazaqGeoReports.Domain.Entities.Mission", b =>
+                {
+                    b.Navigation("Workers");
                 });
 
             modelBuilder.Entity("QazaqGeoReports.Domain.Entities.Report", b =>

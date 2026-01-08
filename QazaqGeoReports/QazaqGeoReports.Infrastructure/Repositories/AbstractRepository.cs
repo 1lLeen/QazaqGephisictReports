@@ -19,8 +19,16 @@ public class AbstractRepository<TModel> : IAbstractRepository<TModel> where TMod
         model.CreatedTime = DateTime.UtcNow;
         model.UpdatedTime = DateTime.UtcNow;
 
-        await _dbSet.AddAsync(model);    
-        await _context.SaveChangesAsync();
+        await _dbSet.AddAsync(model); 
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            var root = ex.GetBaseException(); 
+            throw new Exception($"DB error: {root.Message}", ex);
+        }
         return model;
     }
     public async Task<TModel> DeleteAsync(int id)

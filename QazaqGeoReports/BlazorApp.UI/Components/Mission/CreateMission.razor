@@ -90,14 +90,60 @@
 
                         <div class="col-md-6">
                             <label class="form-label">Работники</label>
-                            <select class="form-select" multiple size="6" @onchange="OnWorkersChanged">
-                                @foreach (var u in _workers)
-                                {
-                                    <option value="@u.Id" selected="@Input.WorkerIds.Contains(u.Id)">@u.Display</option>
-                                }
-                            </select>
-                            <div class="form-text">Зажми <kbd>Ctrl</kbd> (или <kbd>Cmd</kbd>) для множественного выбора.</div>
+
+                            <div class="row g-2">
+                                <div class="col-12 col-lg-6">
+                                    <div class="small text-muted mb-1">Доступные</div>
+                                    <div class="list-group cm-pick-list">
+                                        @foreach (var u in AvailableWorkers)
+                                        {
+                                            <button type="button"
+                                                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                                                    @onclick="() => AddWorker(u.Id)">
+                                                <span>@u.Display</span>
+                                                <span class="badge text-bg-light">@ShortId(u.Id)</span>
+                                            </button>
+                                        }
+
+                                        @if (!AvailableWorkers.Any())
+                                        {
+                                            <div class="list-group-item text-muted small">Все уже выбраны.</div>
+                                        }
+                                    </div>
+                                    <div class="form-text">Клик — добавит в выбранные.</div>
+                                </div>
+
+                                <div class="col-12 col-lg-6">
+                                    <div class="small text-muted mb-1">Выбраны</div>
+                                    <div class="list-group cm-pick-list">
+                                        @if (!SelectedWorkers.Any())
+                                        {
+                                            <div class="list-group-item text-muted small">Пока никого не выбрал.</div>
+                                        }
+                                        else
+                                        {
+                                            @foreach (var u in SelectedWorkers)
+                                            {
+                                                <button type="button"
+                                                        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                                                        @onclick="() => RemoveWorker(u.Id)">
+                                                    <span>@u.Display</span>
+                                                    <span class="badge text-bg-primary">@ShortId(u.Id)</span>
+                                                </button>
+                                            }
+                                        }
+                                    </div>
+                                    <div class="form-text">Клик — уберёт из выбранных.</div>
+                                </div>
+                            </div>
+
+                            <div class="mt-3">
+                                <div class="small fw-semibold mb-1">Итоговая строка Id (уйдёт в DTO)</div>
+                                <input class="form-control" value="@WorkersCsv" readonly />
+                                <div class="form-text">Формат: <code>id1,id2,id3</code></div>
+                            </div>
                         </div>
+
 
                         <div class="col-12 pt-2">
                             <div class="d-flex gap-2 flex-wrap">
@@ -142,7 +188,30 @@
     private readonly List<UserPick> _workers = new();
 
     public InputModel Input { get; set; } = new();
+    private IEnumerable<UserPick> AvailableWorkers =>
+    _workers.Where(w => !Input.WorkerIds.Contains(w.Id));
 
+    private IEnumerable<UserPick> SelectedWorkers =>
+        _workers.Where(w => Input.WorkerIds.Contains(w.Id));
+
+    private void AddWorker(string id)
+    {
+        if (!Input.WorkerIds.Contains(id))
+            Input.WorkerIds.Add(id);
+    }
+
+    private void RemoveWorker(string id)
+    {
+        Input.WorkerIds.Remove(id);
+    }
+
+    private string WorkersCsv => string.Join(",", Input.WorkerIds);
+
+    private static string ShortId(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return "";
+        return id.Length <= 6 ? id : id[^6..]; // последние 6 символов, чтобы не засорять UI
+    }
     protected override async Task OnInitializedAsync()
     { 
         var supervisors = await UserService.GetUsersByRoleAsync(Roles.Supervisor);
@@ -168,19 +237,23 @@
         _saving = true;
         try
         { 
+            var workerIds = (Input.WorkerIds ?? new List<string>())
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Select(id => id.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
             var dto = new CreateMissionDto
             {
                 Title = Input.Title,
                 Description = Input.Description,
                 Status = Input.Status,
-                StartDate = Input.StartDate,
-                EndDate = Input.EndDate,
+                StartDate = ToUtcFromInput(Input.StartDate),
+                EndDate = ToUtcFromInput(Input.EndDate),
                 SupervisorId = Input.SupervisorId,
+                Workers = string.Join(",", workerIds)
             };
-            foreach(var item in Input.WorkerIds)
-            {
-                dto.Workers.Add(await UserService.GetUserByIdAsync((string)item));
-            }
+
             await MissionService.CreateAsync(dto);
 
             await Task.Delay(150);  
@@ -199,21 +272,7 @@
             _saving = false;
         }
     }
-
-    private void OnWorkersChanged(ChangeEventArgs e)
-    { 
-        if (e.Value is string single)
-        {
-            Input.WorkerIds = single.Split(',', StringSplitOptions.RemoveEmptyEntries).Distinct().ToList();
-            return;
-        }
-
-        if (e.Value is IEnumerable<string> many)
-        {
-            Input.WorkerIds = many.Distinct().ToList();
-            return;
-        }
-    }
+     
 
     private void Reset()
     {
@@ -223,6 +282,13 @@
 
     private void GoBack() => Nav.NavigateTo("/Missions");
 
+    private static DateTime? ToUtcFromInput(DateTime? dt)
+    {
+        if (dt is null) return null;
+
+        var local = DateTime.SpecifyKind(dt.Value, DateTimeKind.Local);
+        return local.ToUniversalTime();
+    }
     public sealed class InputModel
     {
         [Required(ErrorMessage = "Название обязательно.")]

@@ -19,17 +19,25 @@
 
 <div class="container py-3">
 
-    <div class="d-flex align-items-center gap-3 mb-3">
-        <h3 class="mb-0">Все отчёты</h3>
-        @if (isLoading)
-        {
-            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-        }
-        else
-        {
-            <span class="badge bg-secondary">Всего: @filtered.Count()</span>
-        }
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="d-flex align-items-center gap-3">
+            <h3 class="mb-0">Все отчёты</h3>
+
+            @if (isLoading)
+            {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">Всего: @filtered.Count()</span>
+            }
+        </div>
+
+        <a class="btn btn-success rounded-pill" href="/Report/Create">
+            <i class="bi bi-plus-circle me-2"></i> Создать отчёт
+        </a>
     </div>
+
 
     <!-- Панель фильтров -->
     <div class="card shadow-sm mb-3">

@@ -459,3 +459,10 @@
         font-size: 24px;
     }
 }
+.hover-card {
+    transition: transform .12s ease, box-shadow .12s ease;
+}
+
+    .hover-card:hover {
+        transform: translateY(-2px);
+    }
