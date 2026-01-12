@@ -1,0 +1,297 @@
+﻿@page "/Cars/Create"
+@attribute [Authorize(Roles = "Admin,General,Supervisor,Driver")]
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Authorization
+@using QazaqGeoReports.Domain.Entities
+@using QazaqGeoReports.Domain.Common
+@using QazaqGeoReports.Application.Interfaces.Services
+@using QazaqGeoReports.Application.DTOs.UserDtos
+@using QazaqGeoReports.Application.DTOs.CarDtos
+
+@inject NavigationManager Nav
+@inject ICarService CarService
+@inject IUserService UserService
+
+<PageTitle>Создать машину</PageTitle>
+
+<div class="cc-page">
+    <div class="cc-topbar">
+        <button class="btn btn-sm btn-outline-secondary rounded-pill" @onclick="GoBack" disabled="@_saving">
+            <i class="bi bi-arrow-left me-2"></i>Назад
+        </button>
+
+        <div class="cc-actions">
+            <button class="btn btn-sm btn-primary rounded-pill" @onclick="SubmitFromButton" disabled="@(_saving || !_loaded)">
+                <span class="me-2">@(_saving ? "Сохранение..." : "Создать")</span>
+                @if (_saving)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                }
+            </button>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm cc-card">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                <div>
+                    <h3 class="mb-1">Новая машина</h3>
+                    <div class="text-muted small">Заполни базовые данные и назначь водителя (по желанию).</div>
+                </div>
+                <span class="badge text-bg-light border rounded-pill cc-badge">
+                    <i class="bi bi-car-front me-1"></i> Cars
+                </span>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(_error))
+            {
+                <div class="alert alert-danger mb-3">
+                    <i class="bi bi-exclamation-triangle me-2"></i>@_error
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(_ok))
+            {
+                <div class="alert alert-success mb-3">
+                    <i class="bi bi-check-circle me-2"></i>@_ok
+                </div>
+            }
+
+            @if (!_loaded)
+            {
+                <div class="d-flex align-items-center gap-2 text-muted">
+                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                    <span>Загрузка...</span>
+                </div>
+            }
+            else
+            {
+                <EditForm EditContext="@_editContext" OnValidSubmit="Create">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="text-danger small mb-3" />
+
+                    <div class="row g-3">
+                        <div class="col-lg-6">
+                            <label class="form-label">Марка</label>
+                            <InputText class="form-control" @bind-Value="Input.Brand" placeholder="Toyota, Hyundai, ..." />
+                            <div class="form-text">Можно оставить пустым.</div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <label class="form-label">Модель</label>
+                            <InputText class="form-control" @bind-Value="Input.Model" placeholder="Camry, Tucson, ..." />
+                            <div class="form-text">Можно оставить пустым.</div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <label class="form-label">Гос. номер <span class="text-danger">*</span></label>
+                            <InputText class="form-control" @bind-Value="Input.LicensePlate" placeholder="777ABC01" />
+                            <ValidationMessage For="() => Input.LicensePlate" class="text-danger small" />
+                        </div>
+
+                        <div class="col-lg-4">
+                            <label class="form-label">Год <span class="text-danger">*</span></label>
+                            <InputNumber class="form-control" @bind-Value="Input.Year" />
+                            <ValidationMessage For="() => Input.Year" class="text-danger small" />
+                        </div>
+
+                        <div class="col-lg-4">
+                            <label class="form-label">Пробег (км)</label>
+                            <InputNumber class="form-control" @bind-Value="Input.Mileage" />
+                            <ValidationMessage For="() => Input.Mileage" class="text-danger small" />
+                        </div>
+
+                        <div class="col-lg-6">
+                            <label class="form-label">Статус <span class="text-danger">*</span></label>
+                            <InputSelect class="form-select" @bind-Value="Input.Status">
+                                @foreach (var s in _statuses)
+                                {
+                                    <option value="@s">@s</option>
+                                }
+                            </InputSelect>
+                            <div class="form-text">Например: Active / Repair / Broken / Reserved.</div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <label class="form-label">Водитель</label>
+
+                            <div class="cc-driver">
+                                <select class="form-select" @onchange="OnDriverChanged" disabled="@_saving">
+                                    <option value="">— Не назначать —</option>
+                                    @foreach (var u in _drivers)
+                                    {
+                                        <option value="@u.User.Id" selected="@(u.User.Id == Input.DriverId)">
+                                            @u.FullName
+                                        </option>
+                                    }
+                                </select>
+
+                                @if (!string.IsNullOrWhiteSpace(Input.DriverId))
+                                {
+                                    <div class="cc-chips mt-2">
+                                        <span class="badge rounded-pill text-bg-primary cc-chip">
+                                            <i class="bi bi-person-check me-1"></i>
+                                            @_drivers.FirstOrDefault(x => x.User.Id == Input.DriverId)?.FullName
+                                            <button type="button" class="btn btn-sm btn-link cc-chip-x"
+                                                    title="Убрать" @onclick="ClearDriver" disabled="@_saving">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                }
+
+                                <div class="form-text">
+                                    Логика простая: выбрал водителя — в форме закрепился “чип”, можно одним кликом убрать.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-2">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary rounded-pill" disabled="@_saving">
+                                    <i class="bi bi-plus-circle me-2"></i>Создать
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary rounded-pill" @onclick="GoBack" disabled="@_saving">
+                                    Отмена
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool _loaded;
+    private bool _saving;
+    private string? _error;
+    private string? _ok;
+
+    private EditContext? _editContext;
+
+    private readonly string[] _statuses = Enum.GetNames(typeof(CarStatus));
+
+    private List<UserViewModel> _drivers = new();
+
+    private CreateCarInput Input { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _loaded = false;
+
+            // Подстрой под твой проект:
+            // Тут мы просто берём всех пользователей и показываем как потенциальных водителей.
+            // Если у тебя есть Role=Driver — отфильтруй на уровне сервиса/запроса.
+            _drivers = await UserService.GetUsersByRoleAsync(Roles.Driver);  
+
+            _editContext = new EditContext(Input);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Не удалось загрузить справочники: {ex.Message}";
+        }
+        finally
+        {
+            _loaded = true;
+        }
+    }
+
+    private void OnDriverChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            Input.DriverId = null;
+        }
+        else
+        {
+            Input.DriverId = value;
+        }
+    }
+
+    private void ClearDriver()
+    {
+        Input.DriverId = null;
+    }
+
+    private async Task SubmitFromButton()
+    {
+        if (_editContext is null) return;
+
+        _error = null;
+        _ok = null;
+         
+        if (_editContext.Validate())
+        {
+            await Create();
+        }
+    }
+
+    private async Task Create()
+    {
+        if (_saving) return;
+
+        _error = null;
+        _ok = null;
+
+        try
+        {
+            _saving = true;
+             
+            var dto = new CreateCarDto
+            {
+                Brand = string.IsNullOrWhiteSpace(Input.Brand) ? null : Input.Brand.Trim(),
+                Model = string.IsNullOrWhiteSpace(Input.Model) ? null : Input.Model.Trim(),
+                LicensePlate = Input.LicensePlate.Trim(),
+                Year = Input.Year,
+                Status = Input.Status,
+                Mileage = Input.Mileage,
+                DriverId = string.IsNullOrWhiteSpace(Input.DriverId) ? null : Input.DriverId
+            };
+
+            await CarService.CreateAsync(dto);
+
+            _ok = "Машина создана.";
+            await Task.Delay(150);
+
+            Nav.NavigateTo("/Cars");
+        }
+        catch (Exception ex)
+        {
+            _error = $"Ошибка при создании машины: {ex.Message}";
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void GoBack() => Nav.NavigateTo("/Cars");
+     
+    public sealed class CreateCarInput
+    {
+        public string? Brand { get; set; }
+        public string? Model { get; set; }
+
+        [Required(ErrorMessage = "Гос. номер обязателен.")]
+        [StringLength(32, ErrorMessage = "Слишком длинно.")]
+        public string LicensePlate { get; set; } = "";
+
+        [Range(1950, 2100, ErrorMessage = "Год выглядит подозрительно.")]
+        public int Year { get; set; } = DateTime.Now.Year;
+
+        public CarStatus Status { get; set; } = CarStatus.Active;
+
+        [Range(0, int.MaxValue, ErrorMessage = "Пробег не может быть отрицательным.")]
+        public int Mileage { get; set; } = 0;
+
+        public string? DriverId { get; set; }
+    }
+}

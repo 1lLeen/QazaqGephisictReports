@@ -1,0 +1,7 @@
+﻿.table > :not(caption) > * > * {
+    padding: .85rem .75rem;
+}
+
+.card.rounded-4 {
+    border-radius: 1rem !important;
+}

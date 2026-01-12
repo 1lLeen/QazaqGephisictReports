@@ -1,0 +1,328 @@
+﻿@page "/Cars"
+@attribute [Authorize(Roles = "Admin,General,Supervisor,Driver")]
+
+@using Microsoft.AspNetCore.Authorization
+@using QazaqGeoReports.Application.DTOs.CarDtos
+@using QazaqGeoReports.Domain.Common
+@using QazaqGeoReports.Application.Interfaces.Services
+
+@inject ICarService CarService
+@inject NavigationManager Nav
+
+<PageTitle>Машины</PageTitle>
+
+<div class="container py-4">
+
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <h3 class="mb-1">Машины</h3>
+            <div class="text-muted small">Список автопарка: поиск, фильтры, сортировка</div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary rounded-pill" @onclick="Reload" disabled="@_loading">
+                <i class="bi bi-arrow-clockwise me-2"></i>Обновить
+            </button>
+            <button class="btn btn-primary rounded-pill" @onclick="GoCreate">
+                <i class="bi bi-plus-lg me-2"></i>Добавить
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-danger border-0">
+            <i class="bi bi-exclamation-triangle me-2"></i>@_error
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm rounded-4 mb-3">
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-12 col-lg-5">
+                    <label class="form-label small text-muted">Поиск</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input class="form-control"
+                               placeholder="Марка, модель, гос.номер, водитель…"
+                               @bind="_query"
+                               @bind:event="oninput" />
+                        <button class="btn btn-outline-secondary" @onclick="ClearSearch" disabled="@string.IsNullOrWhiteSpace(_query)">
+                            Очистить
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6 col-lg-3">
+                    <label class="form-label small text-muted">Статус</label>
+                    <select class="form-select" @bind="_statusFilter">
+                        <option value="">Все</option>
+                        @foreach (var s in Enum.GetValues<CarStatus>())
+                        {
+                            <option value="@s">@s</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-lg-2">
+                    <label class="form-label small text-muted">Сортировка</label>
+                    <select class="form-select" @bind="_sort">
+                        <option value="@SortKey.UpdatedDesc">Сначала новые</option>
+                        <option value="@SortKey.BrandAsc">Марка A→Z</option>
+                        <option value="@SortKey.YearDesc">Год ↓</option>
+                        <option value="@SortKey.MileageDesc">Пробег ↓</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-lg-2 d-grid">
+                    <button class="btn btn-dark rounded-pill" @onclick="ApplyFilters" disabled="@_loading">
+                        <i class="bi bi-funnel me-2"></i>Применить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            @if (_loading)
+            {
+                <div class="p-4">
+                    <div class="placeholder-glow">
+                        <div class="placeholder col-10 mb-2"></div>
+                        <div class="placeholder col-8 mb-2"></div>
+                        <div class="placeholder col-12 mb-2"></div>
+                        <div class="placeholder col-9"></div>
+                    </div>
+                </div>
+            }
+            else if (_items.Count == 0)
+            {
+                <div class="p-4 text-center">
+                    <div class="display-6">🚗</div>
+                    <div class="fw-semibold mt-2">Ничего не найдено</div>
+                    <div class="text-muted">Попробуй изменить фильтры или добавить машину.</div>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Машина</th>
+                                <th>Номер</th>
+                                <th>Год</th>
+                                <th>Пробег</th>
+                                <th>Статус</th>
+                                <th>Водитель</th>
+                                <th class="text-end pe-3">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in PagedItems)
+                            {
+                                <tr>
+                                    <td class="ps-3">
+                                        <div class="d-flex gap-3 align-items-center">
+                                            <div class="d-flex gap-1"> 
+                                                @foreach (var img in c.Images.Take(2))
+                                                {
+                                                    <img src="@img"
+                                                         style="width:42px;height:42px;object-fit:cover"
+                                                         class="rounded-3 border"
+                                                         alt="car" />
+                                                }
+                                                @if (c.Images.Count == 0)
+                                                {
+                                                    <div class="rounded-3 border d-flex align-items-center justify-content-center"
+                                                         style="width:42px;height:42px;">
+                                                        <i class="bi bi-image text-muted"></i>
+                                                    </div>
+                                                }
+                                            </div>
+
+                                            <div>
+                                                <div class="fw-semibold">
+                                                    @($"{c.Brand ?? "—"} {c.Model ?? ""}".Trim())
+                                                </div>
+                                                <div class="text-muted small">ID: @c.Id</div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge text-bg-light border">@c.LicensePlate</span>
+                                    </td>
+
+                                    <td>@c.Year</td>
+
+                                    <td>
+                                        <span class="text-muted">@c.Mileage</span>
+                                        <span class="text-muted small">км</span>
+                                    </td>
+
+                                    <td>@CarStatusBadge(c.Status)</td>
+
+                                    <td>
+                                        @if(c.Driver is not null)
+                                        {
+                                            @if (!string.IsNullOrWhiteSpace(c.Driver.FullName))
+                                            {
+                                                <span class="fw-semibold">@c.Driver.FullName</span>
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+
+                                    <td class="text-end pe-3">
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-outline-primary" @onclick="() => GoDetails(c.Id)">
+                                                <i class="bi bi-eye me-1"></i>Детали
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => GoEdit(c.Id)">
+                                                <i class="bi bi-pencil-square me-1"></i>Редакт.
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between px-3 py-3 border-top flex-wrap gap-2">
+                    <div class="text-muted small">
+                        Показано: <span class="fw-semibold">@PagedItems.Count</span> из <span class="fw-semibold">@_items.Count</span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill"
+                                @onclick="PrevPage"
+                                disabled="@(_page == 1)">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+
+                        <span class="small text-muted">
+                            Стр. <span class="fw-semibold">@_page</span> / <span class="fw-semibold">@TotalPages</span>
+                        </span>
+
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill"
+                                @onclick="NextPage"
+                                disabled="@(_page >= TotalPages)">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+
+                        <select class="form-select form-select-sm" style="width:110px" @bind="_pageSize">
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool _loading;
+    private string? _error;
+
+    private List<BaseCarDto> _items = new();
+
+    private string _query = "";
+    private string _statusFilter = "";
+    private QazaqGeoReports.Application.DTOs.CarDtos.SortKey _sort = QazaqGeoReports.Application.DTOs.CarDtos.SortKey.UpdatedDesc;
+
+    private int _page = 1;
+    private int _pageSize = 10;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        try
+        {
+            _loading = true;
+            _error = null;
+
+            var filter = new CarQueryDto
+            {
+                Query = _query?.Trim(),
+                Status = ParseStatus(_statusFilter),
+                Sort = _sort
+            };
+
+            _items = (await CarService.GetAllByFilterAsync(filter)).ToList();
+            _page = 1;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task Reload() => await Load();
+
+    private async Task ApplyFilters() => await Load();
+
+    private async Task ClearSearch()
+    {
+        _query = "";
+        _page = 1;
+        await Load();
+    }
+
+    private void PrevPage() => _page = Math.Max(1, _page - 1);
+    private void NextPage() => _page = Math.Min(TotalPages, _page + 1);
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(_items.Count / (double)_pageSize));
+
+    private List<BaseCarDto> PagedItems =>
+        _items.Skip((_page - 1) * _pageSize).Take(_pageSize).ToList();
+
+    private void GoCreate() => Nav.NavigateTo("/Cars/Create");
+    private void GoDetails(int id) => Nav.NavigateTo($"/Cars/Details/{id}");
+    private void GoEdit(int id) => Nav.NavigateTo($"/Cars/Edit/{id}");
+
+    private static CarStatus? ParseStatus(string raw)
+        => Enum.TryParse<CarStatus>(raw, out var s) ? s : null;
+
+    private RenderFragment CarStatusBadge(CarStatus status) => builder =>
+    {
+        var cls = status switch
+        {
+            CarStatus.Active => "badge text-bg-success",
+            CarStatus.Reserved => "badge text-bg-primary",
+            CarStatus.Repair => "badge text-bg-warning",
+            CarStatus.Broken => "badge text-bg-danger",
+            _ => "badge text-bg-secondary"
+        };
+
+        builder.OpenElement(0, "span");
+        builder.AddAttribute(1, "class", cls);
+        builder.AddContent(2, status.ToString());
+        builder.CloseElement();
+    };
+
+    public enum SortKey
+    {
+        UpdatedDesc,
+        BrandAsc,
+        YearDesc,
+        MileageDesc
+    }
+}

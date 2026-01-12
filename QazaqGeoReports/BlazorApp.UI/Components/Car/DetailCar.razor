@@ -1,0 +1,322 @@
+﻿@page "/Cars/Details/{CarId:int}"
+@attribute [Authorize(Roles = "Admin,General,Supervisor,Driver")]
+
+@using Microsoft.AspNetCore.Authorization
+@using QazaqGeoReports.Application.DTOs.CarDtos
+@using QazaqGeoReports.Application.Interfaces.Services
+@using QazaqGeoReports.Domain.Common
+@using QazaqGeoReports.Domain.Entities 
+
+@inject NavigationManager Nav
+
+@inject ICarService CarService
+@inject IUserService UserService
+
+<PageTitle>Машина</PageTitle>
+
+<div class="dc-page">
+
+    <div class="dc-topbar">
+        <button class="btn btn-sm btn-outline-secondary rounded-pill" @onclick="GoBack">
+            <i class="bi bi-arrow-left me-2"></i>Назад
+        </button>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-primary rounded-pill"
+                    @onclick="GoEdit"
+                    disabled="@(!_loaded || _car is null)">
+                <i class="bi bi-pencil-square me-2"></i>Редактировать
+            </button>
+        </div>
+    </div>
+
+    @if (!_loaded)
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="placeholder-glow w-100">
+                        <div class="placeholder col-5"></div>
+                        <div class="placeholder col-8 mt-2"></div>
+                        <div class="placeholder col-6 mt-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-danger border-0 shadow-sm">
+            <div class="d-flex align-items-start gap-2">
+                <i class="bi bi-exclamation-triangle"></i>
+                <div>
+                    <div class="fw-semibold">Ошибка</div>
+                    <div class="small opacity-75">@_error</div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (_car is null)
+    {
+        <div class="alert alert-warning border-0 shadow-sm">
+            Машина не найдена.
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+
+                        <div class="d-flex align-items-start justify-content-between gap-2">
+                            <div>
+                                <div class="dc-title">
+                                    @CarTitle(_car)
+                                </div>
+                                <div class="text-muted small">
+                                    <i class="bi bi-upc-scan me-1"></i>@_car.LicensePlate
+                                    <span class="mx-2">•</span>
+                                    <i class="bi bi-calendar3 me-1"></i>@_car.Year
+                                </div>
+                            </div>
+
+                            <span class="badge rounded-pill @StatusBadgeClass(_car.Status)">
+                                @StatusText(_car.Status)
+                            </span>
+                        </div>
+
+                        <hr class="my-3" />
+
+                        @if (_car.Images is null || _car.Images.Count == 0)
+                        {
+                            <div class="dc-empty-media">
+                                <i class="bi bi-image"></i>
+                                <div class="mt-2 fw-semibold">Нет фото</div>
+                                <div class="small text-muted">Добавь изображения — будет проще сверять машину в поле.</div>
+                            </div>
+                        }
+                        else if (_car.Images.Count == 1)
+                        {
+                            <img class="img-fluid rounded-4 dc-photo"
+                                 src="@ToDataUrl(_car.Images[0].Data, "image/jpeg")"
+                                 alt="Car photo" />
+                        }
+                        else
+                        {
+                            <div id="carCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner rounded-4 overflow-hidden">
+                                    @for (int i = 0; i < _car.Images.Count; i++)
+                                    {
+                                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                                            <img class="d-block w-100 dc-photo"
+                                                 src="@ToDataUrl(_car.Images[i].Data,"image/jpeg")"
+                                                 alt="Car photo @(i + 1)" />
+                                        </div>
+                                    }
+                                </div>
+
+                                <button class="carousel-control-prev" type="button" data-bs-target="#carCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Назад</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#carCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Вперёд</span>
+                                </button>
+                            </div>
+
+                            <div class="small text-muted mt-2">
+                                <i class="bi bi-images me-1"></i>@_car.Images.Count фото
+                            </div>
+                        }
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+
+                        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-start">
+                            <div>
+                                <div class="fw-semibold">Детали</div>
+                                <div class="text-muted small">Поля без “наворачивания”, но с человеческим видом 🙂</div>
+                            </div>
+
+                            <div class="dc-stat">
+                                <div class="dc-stat-label">Пробег</div>
+                                <div class="dc-stat-value">
+                                    <i class="bi bi-speedometer2 me-1"></i>@FormatMileage(_car.Mileage)
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-3" />
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="dc-kv">
+                                    <div class="dc-k">Марка</div>
+                                    <div class="dc-v">@(_car.Brand ?? "—")</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="dc-kv">
+                                    <div class="dc-k">Модель</div>
+                                    <div class="dc-v">@(_car.Model ?? "—")</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="dc-kv">
+                                    <div class="dc-k">Гос.номер</div>
+                                    <div class="dc-v">@_car.LicensePlate</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="dc-kv">
+                                    <div class="dc-k">Год</div>
+                                    <div class="dc-v">@_car.Year</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="dc-kv">
+                                    <div class="dc-k">Статус</div>
+                                    <div class="dc-v">
+                                        <span class="badge rounded-pill @StatusBadgeClass(_car.Status)">
+                                            @StatusText(_car.Status)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="dc-kv">
+                                    <div class="dc-k">Водитель</div>
+                                    <div class="dc-v">
+                                        @if (_car.Driver is not null)
+                                        {
+                                            @if (string.IsNullOrWhiteSpace(_car.Driver.FullName))
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                            else
+                                            {
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="dc-avatar">@AvatarLetter(_car.Driver.FirstName)</span>
+                                                    <span>@_car.Driver.FullName</span>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-3" />
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <button class="btn btn-outline-secondary rounded-pill btn-sm" @onclick="Reload">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Обновить
+                            </button>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int CarId { get; set; }
+
+    private bool _loaded;
+    private string? _error;
+     
+    private BaseCarDto? _car;
+
+    protected override async Task OnInitializedAsync()
+        => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loaded = false;
+        _error = null;
+
+        try
+        {  
+            _car = await CarService.GetByIdAsync(CarId);  
+            _car.Driver = _car.DriverId is not null
+                ? await UserService.GetUserByIdAsync(_car.DriverId)
+                : null;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loaded = true;
+        }
+    }
+
+    private async Task Reload() => await LoadAsync();
+
+    private void GoBack() => Nav.NavigateTo("/Cars");
+    private void GoEdit() => Nav.NavigateTo($"/Cars/Edit/{CarId}");
+
+    private static string CarTitle(BaseCarDto c)
+    {
+        var left = $"{(c.Brand ?? "Машина")} {(c.Model ?? "")}".Trim();
+        return string.IsNullOrWhiteSpace(left) ? "Машина" : left;
+    }
+
+    private static string FormatMileage(int mileage)
+    {
+        // 123456 -> 123 456 км
+        var s = mileage.ToString("N0").Replace(",", " ").Replace(".", " ");
+        return $"{s} км";
+    }
+
+    private static string StatusText(CarStatus status) => status switch
+    {
+        CarStatus.Active => "Активна",
+        CarStatus.Repair => "Ремонт",
+        CarStatus.Broken => "Сломана",
+        CarStatus.Reserved => "Забронирована",
+        _ => status.ToString()
+    };
+
+    private static string StatusBadgeClass(CarStatus status) => status switch
+    {
+        CarStatus.Active => "text-bg-success",
+        CarStatus.Reserved => "text-bg-warning",
+        CarStatus.Repair => "text-bg-info",
+        CarStatus.Broken => "text-bg-danger",
+        _ => "text-bg-secondary"
+    };
+
+    private static string AvatarLetter(string? s)
+    {
+        if (string.IsNullOrWhiteSpace(s)) return "•";
+        return char.ToUpperInvariant(s.Trim()[0]).ToString();
+    }
+
+    private static string ToDataUrl(byte[] data, string? contentType)
+    {
+        var ct = string.IsNullOrWhiteSpace(contentType) ? "image/jpeg" : contentType;
+        return $"data:{ct};base64,{Convert.ToBase64String(data)}";
+    }
+
+ 
+    public class CarImageVm
+    {
+        public string? Url { get; set; }
+    }
+}

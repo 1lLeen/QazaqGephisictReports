@@ -1,0 +1,58 @@
+﻿.cc-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 14px 8px 24px;
+}
+
+.cc-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.cc-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cc-card {
+    border-radius: 18px;
+}
+
+.cc-badge {
+    font-weight: 600;
+}
+
+.cc-driver .form-select {
+    border-radius: 14px;
+}
+
+.cc-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.cc-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    font-weight: 600;
+}
+
+.cc-chip-x {
+    padding: 0;
+    margin-left: 2px;
+    color: rgba(255,255,255,.9);
+    text-decoration: none;
+    line-height: 1;
+}
+
+    .cc-chip-x:hover {
+        color: #fff;
+        transform: scale(1.05);
+    }

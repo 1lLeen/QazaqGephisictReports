@@ -1,0 +1,399 @@
+﻿@page "/Cars/Edit/{CarId:int}"
+@attribute [Authorize]
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using QazaqGeoReports.Domain.Common
+@using QazaqGeoReports.Application.Interfaces.Services
+@using QazaqGeoReports.Application.DTOs.CarDtos
+@using QazaqGeoReports.Application.DTOs.UserDtos
+
+@inject NavigationManager Nav
+@inject ICarService CarService
+@inject IUserService UserService
+
+<PageTitle>Редактирование машины</PageTitle>
+
+<div class="car-edit-page">
+
+    <div class="topbar">
+        <button class="btn btn-sm btn-outline-secondary rounded-pill" @onclick="GoBack">
+            <i class="bi bi-arrow-left me-2"></i>Назад
+        </button>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-danger rounded-pill"
+                    @onclick="ResetToLoaded"
+                    disabled="@(!_loaded || _saving)">
+                <i class="bi bi-arrow-counterclockwise me-2"></i>Сбросить
+            </button>
+
+            <button class="btn btn-sm btn-primary rounded-pill"
+                    @onclick="Save"
+                    disabled="@(!_loaded || _saving)">
+                @if (_saving)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    <span>Сохранение…</span>
+                }
+                else
+                {
+                    <i class="bi bi-check2-circle me-2"></i>
+                
+                    <span>Сохранить</span>
+                }
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-danger d-flex align-items-start gap-2 mt-3" role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            <div>@_error</div>
+        </div>
+    }
+
+    @if (_loaded && !string.IsNullOrWhiteSpace(_ok))
+    {
+        <div class="alert alert-success d-flex align-items-start gap-2 mt-3" role="alert">
+            <i class="bi bi-check-circle"></i>
+            <div>@_ok</div>
+        </div>
+    }
+
+    @if (!_loaded)
+    {
+        <div class="card border-0 shadow-sm mt-3">
+            <div class="card-body py-4 d-flex align-items-center gap-3">
+                <span class="spinner-border" role="status"></span>
+                <div>
+                    <div class="fw-semibold">Загружаю данные машины…</div>
+                    <div class="text-muted small">Проверяю id и подтягиваю водителя.</div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <EditForm EditContext="_editContext">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+
+            <div class="row g-3 mt-3">
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white border-0 pt-4 px-4">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <div class="h5 mb-1">Данные машины</div>
+                                    <div class="text-muted small">Отредактируй поля и нажми “Сохранить”.</div>
+                                </div>
+                                <span class="badge text-bg-light border">
+                                    ID: @_carId
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Марка</label>
+                                    <InputText class="form-control" @bind-Value="Input.Brand" placeholder="Toyota" />
+                                    <ValidationMessage For="@(() => Input.Brand)" />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Модель</label>
+                                    <InputText class="form-control" @bind-Value="Input.Model" placeholder="Camry" />
+                                    <ValidationMessage For="@(() => Input.Model)" />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Госномер <span class="text-danger">*</span></label>
+                                    <InputText class="form-control" @bind-Value="Input.LicensePlate" placeholder="123 ABC 02" />
+                                    <ValidationMessage For="@(() => Input.LicensePlate)" />
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label">Год</label>
+                                    <InputNumber class="form-control" @bind-Value="Input.Year" />
+                                    <ValidationMessage For="@(() => Input.Year)" />
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label">Пробег (км)</label>
+                                    <InputNumber class="form-control" @bind-Value="Input.Mileage" />
+                                    <ValidationMessage For="@(() => Input.Mileage)" />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Статус</label>
+                                    <InputSelect class="form-select" @bind-Value="Input.Status">
+                                        @foreach (var s in _statuses)
+                                        {
+                                            <option value="@s">@s</option>
+                                        }
+                                    </InputSelect>
+                                    <div class="form-text">Например: Active — на ходу, Repair — на ремонте.</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Водитель</label>
+
+                                    <div class="input-group">
+                                        <select class="form-select" @onchange="OnDriverChanged">
+                                            <option value="">— Без водителя —</option>
+                                            @foreach (var u in _drivers)
+                                            {
+                                                <option value="@u.User.Id" selected="@(u.User.Id == Input.DriverId)">
+                                                    @u.User.ViewFullName
+                                                </option>
+                                            }
+                                        </select>
+
+                                        <button class="btn btn-outline-secondary"
+                                                type="button"
+                                                title="Убрать водителя"
+                                                @onclick="ClearDriver"
+                                                disabled="@string.IsNullOrWhiteSpace(Input.DriverId)">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="form-text">
+                                        Можно выбрать водителя или убрать кнопкой справа.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-white border-0 px-4 pb-4">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="text-muted small">
+                                    Последнее действие: @(_lastAction ?? "—")
+                                </div>
+                                <button class="btn btn-outline-secondary rounded-pill" type="button" @onclick="GoBack">
+                                    Отмена
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="h6 mb-3">Подсказки</div>
+
+                            <ul class="small text-muted mb-0">
+                                <li>Госномер — обязательный.</li>
+                                <li>Год/пробег — только неотрицательные.</li>
+                                <li>Водителя можно “очистить”.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mt-3">
+                        <div class="card-body p-4">
+                            <div class="h6 mb-2">Быстрый просмотр</div>
+                            <div class="small text-muted">
+                                <div><span class="fw-semibold text-dark">Машина:</span> @($"{Input.Brand} {Input.Model}".Trim())</div>
+                                <div><span class="fw-semibold text-dark">Номер:</span> @Input.LicensePlate</div>
+                                <div><span class="fw-semibold text-dark">Статус:</span> @Input.Status</div>
+                                <div><span class="fw-semibold text-dark">Водитель:</span> @GetDriverLabel()</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </EditForm>
+    }
+
+</div>
+
+@code {
+    [Parameter] public int CarId { get; set; }
+
+    private int _carId;
+    private bool _loaded;
+    private bool _saving;
+    private string? _error;
+    private string? _ok;
+    private string? _lastAction;
+
+    private EditContext? _editContext;
+
+    private CarEditModel Input { get; set; } = new();
+
+    private CarEditModel _loadedSnapshot = new();
+
+    private readonly List<CarStatus> _statuses = Enum.GetValues<CarStatus>().ToList();
+
+    private List<UserViewModel> _drivers = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _carId = CarId;
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        _loaded = false;
+        _error = null;
+        _ok = null;
+
+        try
+        {
+            var car = await CarService.GetByIdAsync(_carId);
+
+            if (car is null)
+            {
+                _error = "Машина не найдена.";
+                return;
+            }
+
+            _drivers = (await UserService.GetUsersByRoleAsync(Roles.Driver))
+                .OrderBy(x => x.FullName)
+                .ToList();
+
+          
+            Input = new CarEditModel
+            {
+                Brand = car.Brand,
+                Model = car.Model,
+                LicensePlate = car.LicensePlate,
+                Year = car.Year,
+                Mileage = car.Mileage,
+                Status = car.Status,
+                DriverId = car.DriverId
+            };
+            _loadedSnapshot = Clone(Input);
+
+            _editContext = new EditContext(Input);
+            _loaded = true;
+            _lastAction = "Загружено";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Ошибка загрузки: {ex.Message}";
+        }
+    }
+
+    private async Task Save()
+    {
+        if (_editContext is null)
+            return;
+
+        _ok = null;
+        _error = null;
+         
+        if (!_editContext.Validate())
+        {
+            _error = "Исправь ошибки в форме и попробуй снова.";
+            return;
+        }
+
+        _saving = true;
+
+        try
+        { 
+            var dto = new UpdateCarDto
+            {
+                Brand = Input.Brand,
+                Model = Input.Model,
+                LicensePlate = Input.LicensePlate!,
+                Year = Input.Year,
+                Mileage = Input.Mileage,
+                Status = Input.Status,
+                DriverId = string.IsNullOrWhiteSpace(Input.DriverId) ? null : Input.DriverId
+            };
+
+            await CarService.UpdateAsync(dto, _carId);
+
+            _loadedSnapshot = Clone(Input);
+            _ok = "Сохранено ✅";
+            _lastAction = $"Сохранено: {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Ошибка сохранения: {ex.Message}";
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void ResetToLoaded()
+    {
+        _ok = null;
+        _error = null;
+
+        Input = Clone(_loadedSnapshot);
+        _editContext = new EditContext(Input);
+
+        _lastAction = "Сброшено к последней загрузке";
+        StateHasChanged();
+    }
+
+    private void GoBack() => Nav.NavigateTo("/Cars");
+
+    private void ClearDriver()
+    {
+        Input.DriverId = null;
+        _lastAction = "Водитель убран";
+    }
+
+    private void OnDriverChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+        Input.DriverId = string.IsNullOrWhiteSpace(value) ? null : value;
+        _lastAction = string.IsNullOrWhiteSpace(Input.DriverId) ? "Водитель снят" : "Водитель выбран";
+    }
+
+    private string GetDriverLabel()
+    {
+        if (string.IsNullOrWhiteSpace(Input.DriverId))
+            return "—";
+
+        var found = _drivers.FirstOrDefault(d => d.User.Id == Input.DriverId);
+        return found?.User.ViewFullName ?? Input.DriverId!;
+    }
+
+    private static CarEditModel Clone(CarEditModel m) => new()
+    {
+        Brand = m.Brand,
+        Model = m.Model,
+        LicensePlate = m.LicensePlate,
+        Year = m.Year,
+        Mileage = m.Mileage,
+        Status = m.Status,
+        DriverId = m.DriverId
+    };
+
+    public class CarEditModel
+    {
+        [StringLength(60)]
+        public string? Brand { get; set; }
+
+        [StringLength(60)]
+        public string? Model { get; set; }
+
+        [Required(ErrorMessage = "Госномер обязателен")]
+        [StringLength(30)]
+        public string? LicensePlate { get; set; }
+
+        [Range(1900, 2100, ErrorMessage = "Некорректный год")]
+        public int Year { get; set; }
+
+        [Range(0, int.MaxValue, ErrorMessage = "Пробег не может быть отрицательным")]
+        public int Mileage { get; set; }
+
+        public CarStatus Status { get; set; } = CarStatus.Active;
+
+        public string? DriverId { get; set; }
+    }
+}

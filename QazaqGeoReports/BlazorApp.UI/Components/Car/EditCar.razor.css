@@ -1,0 +1,40 @@
+﻿.car-edit-page {
+    padding-bottom: 24px;
+}
+
+    .car-edit-page .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: rgba(248, 249, 250, .92);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(0,0,0,.05);
+        padding: 12px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+        .car-edit-page .topbar .btn {
+            box-shadow: none !important;
+        }
+
+    .car-edit-page .card {
+        border-radius: 16px;
+    }
+
+    .car-edit-page .card-header,
+    .car-edit-page .card-footer {
+        border-radius: 16px;
+    }
+
+    .car-edit-page .form-control,
+    .car-edit-page .form-select {
+        border-radius: 12px;
+    }
+
+    .car-edit-page .input-group .btn {
+        border-top-right-radius: 12px;
+        border-bottom-right-radius: 12px;
+    }
