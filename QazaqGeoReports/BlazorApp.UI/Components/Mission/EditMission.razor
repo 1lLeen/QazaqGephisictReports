@@ -1,4 +1,6 @@
 ﻿@page "/Missions/Edit/{MissionId:int}"
+@attribute [Authorize(Roles = "Admin,General,Supervisor")]
+
 @using QazaqGeoReports.Application.DTOs.MissionDtos
 @using QazaqGeoReports.Application.DTOs.UserDtos
 @using QazaqGeoReports.Application.Interfaces.Services

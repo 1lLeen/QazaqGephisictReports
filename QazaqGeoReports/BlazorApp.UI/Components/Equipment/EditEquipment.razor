@@ -1,4 +1,7 @@
 ﻿@page "/Equipment/Edit/{Id:int}"
+@attribute [Authorize]
+
+@using Microsoft.AspNetCore.Authorization
 @using QazaqGeoReports.Application.DTOs.EquipmentDtos
 @using QazaqGeoReports.Application.Interfaces.Services
 @using QazaqGeoReports.Domain.Common

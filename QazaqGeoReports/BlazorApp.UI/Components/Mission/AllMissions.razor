@@ -1,4 +1,7 @@
 ﻿@page "/Missions"
+@attribute [Authorize(Roles = "Admin,General,Supervisor")]
+
+@using Microsoft.AspNetCore.Authorization
 @using QazaqGeoReports.Application.DTOs.MissionDtos
 @using QazaqGeoReports.Application.Interfaces.Services
 @using QazaqGeoReports.Domain.Common

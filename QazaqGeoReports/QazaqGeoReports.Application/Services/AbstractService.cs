@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using QazaqGeoReports.Application.DTOs.Common; 
+﻿using AutoMapper; 
 using QazaqGeoReports.Application.Interfaces.Dtos;
 using QazaqGeoReports.Application.Interfaces.Repositories;
 using QazaqGeoReports.Domain.Entities; 
@@ -26,7 +25,7 @@ public class AbstractService<TRepository, TEntity, DtoCreate, DtoUpdate, DtoBase
     public virtual async Task<DtoBase>? GetAsync(Expression<Func<TEntity, bool>> predicate)
     { 
         var res = mapper.Map<DtoBase>(await _repository.GetAsync(predicate));
-        return mapper.Map<DtoBase>(res);
+        return res;
 
     }
     public virtual async Task<List<DtoBase>> GetAllAsync() 
