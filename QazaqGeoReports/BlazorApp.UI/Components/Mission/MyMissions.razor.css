@@ -1,0 +1,37 @@
+﻿.mym-page .mym-filters .input-group-text {
+    border-radius: 999px 0 0 999px;
+}
+
+.mym-page .mym-filters .form-control {
+    border-radius: 0;
+}
+
+.mym-page .mym-filters .btn {
+    border-radius: 0 999px 999px 0;
+}
+
+.mym-card {
+    border-radius: 18px;
+    transition: transform .12s ease, box-shadow .12s ease;
+}
+
+    .mym-card:hover {
+        transform: translateY(-2px);
+    }
+
+.mym-title {
+    font-size: 1.05rem;
+    max-width: 70%;
+}
+
+.mym-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 3.3em;
+}
+
+.mym-empty {
+    border-radius: 18px;
+}

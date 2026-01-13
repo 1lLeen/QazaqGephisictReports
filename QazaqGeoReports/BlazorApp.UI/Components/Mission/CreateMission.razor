@@ -8,9 +8,11 @@
 @using QazaqGeoReports.Application.Services
 @using QazaqGeoReports.Domain.Common
 @using QazaqGeoReports.Domain.Entities
+@using System.Security.Claims
 
 @inject NavigationManager Nav
- 
+
+@inject AuthenticationStateProvider AuthStateProvider
 @inject IMissionService MissionService 
 @inject IUserService UserService
 
@@ -184,7 +186,8 @@
     private bool _saving;
     private bool _alertOk;
     private string? _alertText;
-
+    private string? _currentUserId;
+    
     private readonly List<MissionStatus> _statuses = Enum.GetValues<MissionStatus>().ToList();
      
     private readonly List<UserPick> _supervisors = new();
@@ -213,7 +216,7 @@
     private static string ShortId(string id)
     {
         if (string.IsNullOrWhiteSpace(id)) return "";
-        return id.Length <= 6 ? id : id[^6..]; // последние 6 символов, чтобы не засорять UI
+        return id.Length <= 6 ? id : id[^6..]; 
     }
     protected override async Task OnInitializedAsync()
     { 
@@ -246,6 +249,11 @@
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = auth.User;
+
+            _currentUserId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
             var dto = new CreateMissionDto
             {
                 Title = Input.Title,
@@ -254,7 +262,8 @@
                 StartDate = ToUtcFromInput(Input.StartDate),
                 EndDate = ToUtcFromInput(Input.EndDate),
                 SupervisorId = Input.SupervisorId,
-                Workers = string.Join(",", workerIds)
+                Workers = string.Join(",", workerIds),
+                CreatedByUser = _currentUserId
             };
 
             await MissionService.CreateAsync(dto);

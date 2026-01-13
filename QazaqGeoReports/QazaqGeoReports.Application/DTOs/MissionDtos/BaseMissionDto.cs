@@ -16,6 +16,6 @@ public class BaseMissionDto : IBase
     public DateTime? EndDate { get; set; }
     public string? SupervisorId { get; set; }
     public BaseUserDto? Supervisor { get; set; }
-
     public string? Workers { get; set; }
+    public string? CreatedByUser { get; set; }
 }

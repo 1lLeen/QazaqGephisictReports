@@ -2,8 +2,8 @@
 @attribute [Authorize(Roles = "Admin,General,Supervisor,Driver,Worker")]
 
 @using Microsoft.AspNetCore.Authorization
-@using QazaqGeoReports.Application.Interfaces.Services
 @using System.Security.Claims
+@using QazaqGeoReports.Application.Interfaces.Services
 
 @inject IDashboardService DashboardService
 @inject AuthenticationStateProvider AuthStateProvider
@@ -18,14 +18,14 @@
             <div class="text-muted small">Всё управление проектом — здесь.</div>
         </div>
 
-        <div class="d-flex gap-2"> 
+        <div class="d-flex gap-2">
             @if (CanCreateReport)
             {
                 <a class="btn btn-primary rounded-pill px-3" href="/reports/create">
                     <i class="bi bi-plus-circle me-2"></i> Новый отчёт
                 </a>
             }
-             
+
             @if (CanManageAll)
             {
                 <a class="btn btn-outline-secondary rounded-pill px-3" href="/missions/create">
@@ -44,52 +44,64 @@
                     <div class="text-muted small">Нажал — и ты там.</div>
 
                     <div class="row g-3 mt-1">
-                         
+
                         @if (CanSeeReports)
                         {
                             <div class="col-12 col-md-6 col-xl-4">
-                                <NavTile Title="Отчёты" Subtitle="Список, фильтры, проблемные"
-                                         Icon="bi-file-earmark-text" Href="/Report/AllReports" ImgHref="/imgs/report.png" />
+                                <NavTile Title="Отчёты"
+                                         Subtitle="Список, фильтры, проблемные"
+                                         Icon="bi-file-earmark-text"
+                                         Href="@ReportsHref"
+                                         ImgHref="/imgs/report.png" />
                             </div>
                         }
-                         
-                        @if (CanManageAll)
-                        {
-                            <div class="col-12 col-md-6 col-xl-4">
-                                <NavTile Title="Оборудование" Subtitle="Снаряга, статусы, ремонт"
-                                         Icon="bi-box-seam" Href="/Equipment/AllEquipments" ImgHref="/imgs/equipment.png" />
-                            </div>
-                        }
-                         
-                        @if (CanManageAll)
-                        {
-                            <div class="col-12 col-md-6 col-xl-4">
-                                <NavTile Title="Фото" Subtitle="Галерея: отчёты/машины/оборудование"
-                                         Icon="bi-images" Href="/Images" ImgHref="/imgs/photo.png" />
-                            </div>
-                        }
-                         
+
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <NavTile Title="Оборудование"
+                                     Subtitle="Снаряга, статусы, ремонт"
+                                     Icon="bi-box-seam"
+                                     Href="/Equipment/AllEquipments"
+                                     ImgHref="/imgs/equipment.png" />
+                        </div>
+
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <NavTile Title="Фото"
+                                     Subtitle="Галерея: отчёты/машины/оборудование"
+                                     Icon="bi-images"
+                                     Href="/Images"
+                                     ImgHref="/imgs/photo.png" />
+                        </div>
+
                         @if (CanSeeMissions)
                         {
                             <div class="col-12 col-md-6 col-xl-4">
-                                <NavTile Title="Миссии" Subtitle="Активные, завершённые, сроки"
-                                         Icon="bi-compass" Href="/Missions" ImgHref="/imgs/mission.png" />
+                                <NavTile Title="Миссии"
+                                         Subtitle="Активные, завершённые, сроки"
+                                         Icon="bi-compass"
+                                         Href="@MissionsHref"
+                                         ImgHref="/imgs/mission.png" />
                             </div>
-                        } 
+                        }
 
                         @if (CanSeeCars)
                         {
                             <div class="col-12 col-md-6 col-xl-4">
-                                <NavTile Title="Машины" Subtitle="Транспорт, состояния, привязки"
-                                         Icon="bi-truck" Href="/cars" ImgHref="/imgs/cars.png" />
+                                <NavTile Title="Машины"
+                                         Subtitle="Транспорт, состояния, привязки"
+                                         Icon="bi-truck"
+                                         Href="@CarsHref"
+                                         ImgHref="/imgs/cars.png" />
                             </div>
                         }
-                         
+
                         @if (CanManageAll)
                         {
                             <div class="col-12 col-md-6 col-xl-4">
-                                <NavTile Title="Пользователи" Subtitle="Роли, доступ, активность"
-                                         Icon="bi-people" Href="/users" ImgHref="/imgs/users.png" />
+                                <NavTile Title="Пользователи"
+                                         Subtitle="Роли, доступ, активность"
+                                         Icon="bi-people"
+                                         Href="/"
+                                         ImgHref="/imgs/users.png" />
                             </div>
                         }
 
@@ -109,17 +121,30 @@
         var state = await AuthStateProvider.GetAuthenticationStateAsync();
         _user = state.User;
     }
-     
+
     private bool IsAdmin => _user?.IsInRole("Admin") == true;
-    private bool IsGeneral => _user?.IsInRole("General") == true || _user?.IsInRole("Genaral") == true; 
+    private bool IsGeneral => _user?.IsInRole("General") == true || _user?.IsInRole("Genaral") == true;
     private bool IsSupervisor => _user?.IsInRole("Supervisor") == true;
     private bool IsDriver => _user?.IsInRole("Driver") == true;
     private bool IsWorker => _user?.IsInRole("Worker") == true;
-     
+
     private bool CanManageAll => IsAdmin || IsGeneral || IsSupervisor;
 
-    private bool CanSeeReports => CanManageAll || IsDriver || IsWorker;
-    private bool CanSeeMissions => CanManageAll || IsDriver || IsWorker;
-    private bool CanCreateReport => CanManageAll || IsDriver;  
-    private bool CanSeeCars => CanManageAll || IsDriver;      
+    private bool CanSeeReports => true;   
+    private bool CanSeeMissions => true;  
+    private bool CanSeeCars => CanManageAll || IsDriver; 
+
+    private bool CanCreateReport => CanManageAll || IsDriver;
+
+    private string ReportsHref => (IsDriver || IsWorker)
+        ? "/Report/MyReports"
+        : "/Report/AllReports";
+
+    private string MissionsHref => (IsDriver || IsWorker)
+        ? "/Missions/MyMissions"
+        : "/Missions";
+
+    private string CarsHref => IsDriver
+        ? "/Cars/MyCars"
+        : "/Cars";
 }

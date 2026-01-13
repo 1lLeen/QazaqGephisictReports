@@ -20,6 +20,6 @@ public class BaseCarDto : IBase
 
     public string? DriverId { get; set; }
     public BaseUserDto? Driver { get; set; }
-
+    public string? CreatedByUser { get; set; }
     public List<Image> Images { get; set; } = new();
 }

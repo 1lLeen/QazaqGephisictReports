@@ -1,0 +1,486 @@
+﻿@page "/Cars/MyCars"
+@attribute [Authorize]
+
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using QazaqGeoReports.Domain.Common
+@using QazaqGeoReports.Application.DTOs.CarDtos
+@using QazaqGeoReports.Application.Interfaces.Services
+
+@inject ICarService CarService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
+
+<PageTitle>Мои машины</PageTitle>
+
+<div class="container py-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h2 class="mb-1 fw-bold">🚗 Мои машины</h2>
+            <div class="text-muted small">
+                @if (_loaded)
+                {
+                    <span>Найдено: <b>@_filteredCount</b></span>
+                }
+                else
+                {
+                    <span>Загрузка…</span>
+                }
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary rounded-pill px-3" @onclick="Reload" disabled="@(!_loaded)">
+                <i class="bi bi-arrow-clockwise me-2"></i>Обновить
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-danger">@_error</div>
+    }
+
+    <!-- Filters -->
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-12 col-lg-5">
+                    <label class="form-label mb-1">Поиск</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input class="form-control"
+                               placeholder="Номер, бренд, модель, год…"
+                               @bind="_search"
+                               @bind:event="oninput" />
+                        @if (!string.IsNullOrWhiteSpace(_search))
+                        {
+                            <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6 col-lg-3">
+                    <label class="form-label mb-1">Статус</label>
+                    <select class="form-select" @bind="_statusFilter">
+                        <option value="-1">Все</option>
+                        @foreach (var s in Enum.GetValues<CarStatus>())
+                        {
+                            <option value="@((int)s)">@s</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-lg-2">
+                    <label class="form-label mb-1">Сортировка</label>
+                    <select class="form-select" @bind="_sortField">
+                        <option value="plate">Номер</option>
+                        <option value="brand">Бренд</option>
+                        <option value="year">Год</option>
+                        <option value="mileage">Пробег</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-lg-2 d-flex gap-2">
+                    <button class="btn btn-outline-primary w-100" @onclick="ToggleSortDir" title="Поменять направление">
+                        <i class="bi @( _sortDesc ? "bi-sort-down" : "bi-sort-up") me-2"></i>
+                        @(_sortDesc ? "Убыв." : "Возр.")
+                    </button>
+                </div>
+
+                <div class="col-12 pt-2">
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <span class="badge text-bg-light border">
+                            Страница: <b>@_page</b>/<b>@_totalPages</b>
+                        </span>
+
+                        <div class="ms-auto d-flex gap-2 align-items-center">
+                            <span class="text-muted small">На странице</span>
+                            <select class="form-select form-select-sm" style="width: 90px" @bind="_pageSize">
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- LIST -->
+    @if (!_loaded)
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body py-5 text-center text-muted">
+                <div class="spinner-border" role="status"></div>
+                <div class="mt-3">Подтягиваю твой автопарк…</div>
+            </div>
+        </div>
+    }
+    else if (_pageItems.Count == 0)
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body py-5 text-center">
+                <div class="display-6">🫥</div>
+                <div class="mt-2 fw-semibold">Ничего не найдено</div>
+                <div class="text-muted small">Проверь фильтры или попробуй другой поиск.</div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var car in _pageItems)
+            {
+                <div class="col-12 col-md-6 col-xl-4">
+                    <div class="card border-0 shadow-sm h-100 mycar-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                <div class="me-2">
+                                    <div class="fw-bold fs-5">@car.LicensePlate</div>
+                                    <div class="text-muted small">
+                                        @($"{car.Brand} {car.Model}".Trim())
+                                        @if (car.Year > 0)
+                                        {
+                                            <span>• @car.Year</span>
+                                        }
+                                    </div>
+                                </div>
+                                <span class="badge @StatusBadge(car.Status)">@car.Status</span>
+                            </div>
+
+                            <hr class="my-3" />
+
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="badge text-bg-light border">
+                                    <i class="bi bi-speedometer2 me-1"></i> @car.Mileage км
+                                </span>
+
+                                @if (!string.IsNullOrWhiteSpace(car.DriverId))
+                                {
+                                    <span class="badge text-bg-light border">
+                                        <i class="bi bi-person-badge me-1"></i> Назначена тебе
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                         
+                        <div class="card-footer bg-white border-0 pt-0 pb-3 px-3">
+                            <div class="d-flex flex-wrap gap-2">
+                                <a class="btn btn-outline-primary flex-grow-1"
+                                   href="@($"/Cars/Details/{car.Id}")">
+                                    <i class="bi bi-eye me-2"></i>Подробнее
+                                </a>
+
+                                <a class="btn btn-outline-secondary flex-grow-1"
+                                   href="@($"/Cars/Edit/{car.Id}")">
+                                    <i class="bi bi-pencil me-2"></i>Редактировать
+                                </a>
+
+                                <button class="btn btn-outline-danger flex-grow-1"
+                                        type="button"
+                                        @onclick="() => AskDelete(car)">
+                                    <i class="bi bi-trash me-2"></i>Удалить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            }
+        </div>
+
+        <!-- Pagination -->
+        <div class="d-flex justify-content-center align-items-center gap-2 mt-4">
+            <button class="btn btn-outline-secondary"
+                    @onclick="PrevPage"
+                    disabled="@(_page <= 1)">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+
+            <span class="text-muted small">
+                Страница <b>@_page</b> из <b>@_totalPages</b>
+            </span>
+
+            <button class="btn btn-outline-secondary"
+                    @onclick="NextPage"
+                    disabled="@(_page >= _totalPages)">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+    }
+
+</div>
+ 
+@if (_showDelete && _deleteTarget is not null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title">Удалить машину?</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDelete"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        Ты точно хочешь удалить: <b>@_deleteTarget.LicensePlate</b>?
+                    </div>
+                    <div class="text-muted small">
+                        Операция необратима (как обещания “с понедельника начну бегать” 😄).
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(_deleteError))
+                    {
+                        <div class="alert alert-danger mt-3 mb-0">@_deleteError</div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" @onclick="CloseDelete" disabled="@_deleting">
+                        Отмена
+                    </button>
+                    <button class="btn btn-danger" @onclick="ConfirmDelete" disabled="@_deleting">
+                        @if (_deleting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            <span>Удаляю…</span>
+                        }
+                        else
+                        {
+                            <span>Удалить</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool _loaded;
+    private string? _error;
+
+    private string? _userId;
+
+    private List<BaseCarDto> _all = new();
+    private List<BaseCarDto> _filtered = new();
+    private List<BaseCarDto> _pageItems = new();
+
+    private string _search = "";
+    private int _statusFilter = -1;
+
+    private string _sortField = "plate";
+    private bool _sortDesc;
+
+    private int _page = 1;
+    private int _pageSize = 10;
+    private int _totalPages = 1;
+    private int _filteredCount = 0;
+
+    // delete modal
+    private bool _showDelete;
+    private bool _deleting;
+    private string? _deleteError;
+    private BaseCarDto? _deleteTarget;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await InitUser();
+        await Reload();
+    }
+
+    protected override void OnParametersSet()
+    { 
+        ApplyAll();
+    }
+
+    private async Task InitUser()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        _userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(_userId))
+            _error = "Не удалось определить текущего пользователя (нет NameIdentifier).";
+    }
+
+    private async Task Reload()
+    {
+        _error = null;
+        _loaded = false;
+
+        try
+        {
+            _all = await CarService.GetAllAsync();
+             
+            _all = _all
+                .Where(c => !string.IsNullOrWhiteSpace(_userId) && c.DriverId == _userId)
+                .ToList();
+
+            _page = 1;
+            ApplyAll();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Ошибка при загрузке машин: {ex.Message}";
+        }
+        finally
+        {
+            _loaded = true;
+        }
+    }
+
+    private void ApplyAll()
+    {
+        IEnumerable<BaseCarDto> q = _all;
+
+        // filter: status
+        if (_statusFilter >= 0)
+        {
+            var st = (CarStatus)_statusFilter;
+            q = q.Where(x => x.Status == st);
+        }
+
+        // search
+        if (!string.IsNullOrWhiteSpace(_search))
+        {
+            var s = _search.Trim().ToLowerInvariant();
+            q = q.Where(x =>
+                (x.LicensePlate ?? "").ToLowerInvariant().Contains(s) ||
+                (x.Brand ?? "").ToLowerInvariant().Contains(s) ||
+                (x.Model ?? "").ToLowerInvariant().Contains(s) ||
+                x.Year.ToString().Contains(s) ||
+                x.Mileage.ToString().Contains(s)
+            );
+        }
+
+        // sort
+        q = _sortField switch
+        {
+            "brand" => _sortDesc ? q.OrderByDescending(x => x.Brand).ThenByDescending(x => x.Model) : q.OrderBy(x => x.Brand).ThenBy(x => x.Model),
+            "year" => _sortDesc ? q.OrderByDescending(x => x.Year) : q.OrderBy(x => x.Year),
+            "mileage" => _sortDesc ? q.OrderByDescending(x => x.Mileage) : q.OrderBy(x => x.Mileage),
+            _ => _sortDesc ? q.OrderByDescending(x => x.LicensePlate) : q.OrderBy(x => x.LicensePlate)
+        };
+
+        _filtered = q.ToList();
+        _filteredCount = _filtered.Count;
+
+        // pagination
+        _totalPages = Math.Max(1, (int)Math.Ceiling(_filteredCount / (double)_pageSize));
+        _page = Math.Min(_page, _totalPages);
+        _page = Math.Max(_page, 1);
+
+        _pageItems = _filtered
+            .Skip((_page - 1) * _pageSize)
+            .Take(_pageSize)
+            .ToList();
+    }
+
+    private void ClearSearch()
+    {
+        _search = "";
+        _page = 1;
+        ApplyAll();
+    }
+
+    private void ToggleSortDir()
+    {
+        _sortDesc = !_sortDesc;
+        _page = 1;
+        ApplyAll();
+    }
+
+    private void PrevPage()
+    {
+        if (_page <= 1) return;
+        _page--;
+        ApplyAll();
+    }
+
+    private void NextPage()
+    {
+        if (_page >= _totalPages) return;
+        _page++;
+        ApplyAll();
+    }
+
+    private string StatusBadge(CarStatus status) => status switch
+    {
+        CarStatus.Active => "text-bg-success",
+        CarStatus.Reserved => "text-bg-warning",
+        CarStatus.Repair => "text-bg-info",
+        CarStatus.Broken => "text-bg-danger",
+        _ => "text-bg-secondary"
+    };
+
+    private void AskDelete(BaseCarDto car)
+    {
+        _deleteTarget = car;
+        _deleteError = null;
+        _showDelete = true;
+    }
+
+    private void CloseDelete()
+    {
+        _showDelete = false;
+        _deleteError = null;
+        _deleteTarget = null;
+        _deleting = false;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (_deleteTarget is null) return;
+
+        _deleting = true;
+        _deleteError = null;
+
+        try
+        {
+            await CarService.DeleteAsync(_deleteTarget.Id);
+
+            _all.RemoveAll(x => x.Id == _deleteTarget.Id);
+            CloseDelete();
+             
+            ApplyAll();
+        }
+        catch (Exception ex)
+        {
+            _deleteError = $"Не удалось удалить: {ex.Message}";
+        }
+        finally
+        {
+            _deleting = false;
+        }
+    }
+     
+    private string Search
+    {
+        get => _search;
+        set { _search = value; _page = 1; ApplyAll(); }
+    }
+
+    private int StatusFilter
+    {
+        get => _statusFilter;
+        set { _statusFilter = value; _page = 1; ApplyAll(); }
+    }
+
+    private string SortField
+    {
+        get => _sortField;
+        set { _sortField = value; _page = 1; ApplyAll(); }
+    }
+
+    private int PageSize
+    {
+        get => _pageSize;
+        set { _pageSize = value; _page = 1; ApplyAll(); }
+    }
+}

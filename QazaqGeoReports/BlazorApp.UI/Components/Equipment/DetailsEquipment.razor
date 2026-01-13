@@ -1,5 +1,7 @@
 ﻿@page "/Equipment/Details/{Id:int}"
+@attribute [Authorize]
 
+@using Microsoft.AspNetCore.Authorization
 @using QazaqGeoReports.Application.DTOs.EquipmentDtos
 @using QazaqGeoReports.Application.Interfaces.Services
 

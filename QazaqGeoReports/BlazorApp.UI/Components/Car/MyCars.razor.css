@@ -1,0 +1,11 @@
+﻿.mycar-card {
+    transition: transform .12s ease, box-shadow .12s ease;
+}
+
+    .mycar-card:hover {
+        transform: translateY(-2px);
+    }
+    .mycar-card .card-footer .btn {
+        min-width: 0; 
+        white-space: nowrap;  
+    }

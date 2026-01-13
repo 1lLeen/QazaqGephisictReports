@@ -12,4 +12,11 @@ public class MissionService : AbstractService<IMissionRepository, Mission, Creat
     public MissionService(IMissionRepository repository, IMapper mapper) : base(repository, mapper)
     {
     }
+
+    public async Task<List<BaseMissionDto>> GetMissionsByUserIdAsync(string userId)
+    {
+        var missions = await _repository.GetMissionsByUserIdAsync(userId); 
+        var mapped = mapper.Map<List<BaseMissionDto>>(missions);
+        return mapped;
+    }
 }

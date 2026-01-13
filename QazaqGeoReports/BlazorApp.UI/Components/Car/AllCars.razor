@@ -26,6 +26,9 @@
             <button class="btn btn-primary rounded-pill" @onclick="GoCreate">
                 <i class="bi bi-plus-lg me-2"></i>Добавить
             </button>
+            <button class="btn btn-outline-secondary rounded-pill" @onclick="GoToMyCars"> 
+                <i class="bi bi-person-fill-nav-menu me-2"></i> Мои машины
+            </button>
         </div>
     </div>
 
@@ -294,6 +297,7 @@
     private List<BaseCarDto> PagedItems =>
         _items.Skip((_page - 1) * _pageSize).Take(_pageSize).ToList();
 
+    private void GoToMyCars() => Nav.NavigateTo("/Cars/MyCars");
     private void GoCreate() => Nav.NavigateTo("/Cars/Create");
     private void GoDetails(int id) => Nav.NavigateTo($"/Cars/Details/{id}");
     private void GoEdit(int id) => Nav.NavigateTo($"/Cars/Edit/{id}");

@@ -11,6 +11,6 @@ public class Mission : BaseEntity
     public DateTime? EndDate { get; set; }
     public string? SupervisorId { get; set; }
     public User? Supervisor { get; set; }
-
     public string? Workers { get; set; }
+    public string? CreatedByUser { get; set; }
 } 

@@ -9,7 +9,9 @@
 @using QazaqGeoReports.Application.Interfaces.Services
 @using QazaqGeoReports.Application.DTOs.UserDtos
 @using QazaqGeoReports.Application.DTOs.CarDtos
+@using System.Security.Claims
 
+@inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Nav
 @inject ICarService CarService
 @inject IUserService UserService
@@ -170,6 +172,7 @@
     private bool _saving;
     private string? _error;
     private string? _ok;
+    private string? _currentUserId;
 
     private EditContext? _editContext;
 
@@ -184,10 +187,11 @@
         try
         {
             _loaded = false;
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = auth.User;
 
-            // Подстрой под твой проект:
-            // Тут мы просто берём всех пользователей и показываем как потенциальных водителей.
-            // Если у тебя есть Role=Driver — отфильтруй на уровне сервиса/запроса.
+            _currentUserId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
             _drivers = await UserService.GetUsersByRoleAsync(Roles.Driver);  
 
             _editContext = new EditContext(Input);
@@ -253,7 +257,8 @@
                 Year = Input.Year,
                 Status = Input.Status,
                 Mileage = Input.Mileage,
-                DriverId = string.IsNullOrWhiteSpace(Input.DriverId) ? null : Input.DriverId
+                DriverId = string.IsNullOrWhiteSpace(Input.DriverId) ? null : Input.DriverId,
+                CreatedByUser = _currentUserId
             };
 
             await CarService.CreateAsync(dto);

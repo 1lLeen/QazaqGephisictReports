@@ -25,7 +25,10 @@
                 <i class="bi bi-arrow-clockwise me-1"></i> Обновить
             </button>
             <button class="btn btn-primary" @onclick="Create" title="Создать миссию">
-                <i class="bi bi-plus-lg me-1"></i> New mission
+                <i class="bi bi-plus-lg me-1"></i> Создать миссию
+            </button>
+            <button class="btn btn-primary" @onclick="ToMyMissions" title="Мои миссии">
+                <i class="bi bi-plus-lg me-1"></i> Мои миссии
             </button>
         </div>
     </div>
@@ -307,7 +310,7 @@
         IsBusy = false;
         ClampPage();
     }
-
+    private void ToMyMissions() => Nav.NavigateTo("/Missions/MyMissions");
     private void Create() => Nav.NavigateTo("/Missions/Create");
     private void Open(int id) => Nav.NavigateTo($"/Missions/Details/{id}");
     private void Edit(int id) => Nav.NavigateTo($"/Missions/Edit/{id}");

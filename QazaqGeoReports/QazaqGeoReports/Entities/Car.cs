@@ -14,6 +14,6 @@ public class Car : BaseEntity
 
     public string? DriverId { get; set; }
     public User? Driver { get; set; }
-     
+    public string? CreatedByUser { get; set; }
     public List<Image> Images { get; set; } = new();
 } 

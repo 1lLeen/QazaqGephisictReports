@@ -1,5 +1,5 @@
 ﻿@page "/Report/MyReports"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin,Supervisor,General,Driver,Worker")]
 
 @using Microsoft.AspNetCore.Authorization
 @using QazaqGeoReports.Application.DTOs.ReportDtos
