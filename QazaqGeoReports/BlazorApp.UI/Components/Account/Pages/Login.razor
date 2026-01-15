@@ -59,15 +59,6 @@
             </button>
         </EditForm>
 
-        <div class="text-center mt-3">
-            <span class="text-muted">Нет аккаунта?</span>
-            <a class="fw-semibold ms-1"
-               href="@(NavigationManager.GetUriWithQueryParameters(
-                                       "Account/Register",
-                                       new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">
-                Зарегистрироваться
-            </a>
-        </div>
     </div>
 </div>
 

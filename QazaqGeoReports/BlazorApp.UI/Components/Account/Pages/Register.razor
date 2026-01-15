@@ -1,8 +1,10 @@
 ﻿@page "/Account/Register"
+@attribute [Authorize(Roles = "Admin,General,Supervisor")]
 
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
 @using QazaqGeoReports.Application.DTOs.UserDtos
@@ -121,7 +123,7 @@
             return;
         }
 
-        // await UserManager.AddToRoleAsync(Mapper.Map<User>(user), role.Name);
+         await UserManager.AddToRoleAsync(Mapper.Map<User>(user), role.Name);
         // await SignInManager.SignInAsync(Mapper.Map<User>(user), isPersistent: false);
 
         await SignInManager.UserManager.SetLockoutEnabledAsync(Mapper.Map<User>(user), false);

@@ -36,6 +36,10 @@
                     <Authorized Context="auth">
                         @{
                             var name = auth.User?.Identity?.Name ?? "User";
+                            var isInRole = auth.User?.IsInRole("Admin") == true 
+                            || auth.User?.IsInRole("General") == true 
+                            || auth.User?.IsInRole("Supervisor") == true ? true : false;
+
                             var initials = GetInitials(name);
                         }
 
@@ -65,7 +69,15 @@
                                     <a class="dropdown-item" href="/Account/Manage">
                                         <i class="bi bi-person-gear me-2"></i> Профиль
                                     </a>
-                                </li> 
+                                </li>
+                                @if (isInRole)
+                                {
+                                    <li>
+                                        <a class="dropdown-item" href="/Account/Register">
+                                            <i class="bi bi-person-badge-nav-menu me-2"></i> Cоздать пользователя
+                                        </a>
+                                    </li>
+                                }
                                 <li><hr class="dropdown-divider" /></li>
                                 <li>
                                     <div class="nav-item px-3">
