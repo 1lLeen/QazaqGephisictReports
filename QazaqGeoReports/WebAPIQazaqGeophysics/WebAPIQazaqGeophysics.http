@@ -1,0 +1,6 @@
+@WebAPIQazaqGeophysics_HostAddress = http://localhost:5232
+
+GET {{WebAPIQazaqGeophysics_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
