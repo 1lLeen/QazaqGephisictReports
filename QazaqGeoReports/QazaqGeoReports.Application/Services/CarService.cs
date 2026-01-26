@@ -35,7 +35,6 @@ public class CarService : AbstractService<ICarRepository, Car, CreateCarDto, Upd
         q = filter.Sort switch
         {
             SortKey.BrandAsc => q.OrderBy(x => x.Brand).ThenBy(x => x.Model),
-            SortKey.YearDesc => q.OrderByDescending(x => x.Year),
             SortKey.MileageDesc => q.OrderByDescending(x => x.Mileage),
             _ => q.OrderByDescending(x => x.UpdatedTime)
         };
@@ -47,9 +46,6 @@ public class CarService : AbstractService<ICarRepository, Car, CreateCarDto, Upd
             Brand = x.Brand,
             Model = x.Model,
             LicensePlate = x.LicensePlate,
-            Year = x.Year,
-            Status = x.Status,
-            Mileage = x.Mileage,
             DriverId = x.DriverId,
             Driver = mapper.Map<BaseUserDto?>(x.Driver),
             Images = x.Images

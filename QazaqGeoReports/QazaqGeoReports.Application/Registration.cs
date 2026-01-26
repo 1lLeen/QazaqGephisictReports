@@ -16,6 +16,8 @@ public static class RegistrationApplication
         services.AddAutoMapper(typeof(CarMapperProfile));
         services.AddAutoMapper(typeof(MissionMapperProfile));
         services.AddAutoMapper(typeof(EquipmentMapperProfile));
+        services.AddAutoMapper(typeof(LocationMapperProfile));
+        services.AddAutoMapper(typeof(DepartmentMapperProfile));
     }
     public static void RegistrationServices(this IServiceCollection services)
     {

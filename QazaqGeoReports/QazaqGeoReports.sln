@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QazaqGeoReports.Infrastruct
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorApp.UI", "BlazorApp.UI\BlazorApp.UI.csproj", "{47F936EE-2F7B-4528-A999-9FEDE14F465F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebAPIQazaqGeophysics", "WebAPIQazaqGeophysics\WebAPIQazaqGeophysics.csproj", "{EA605B7E-BD68-4FE2-8C65-C2BBA520D97D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{47F936EE-2F7B-4528-A999-9FEDE14F465F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47F936EE-2F7B-4528-A999-9FEDE14F465F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47F936EE-2F7B-4528-A999-9FEDE14F465F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA605B7E-BD68-4FE2-8C65-C2BBA520D97D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA605B7E-BD68-4FE2-8C65-C2BBA520D97D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA605B7E-BD68-4FE2-8C65-C2BBA520D97D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA605B7E-BD68-4FE2-8C65-C2BBA520D97D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

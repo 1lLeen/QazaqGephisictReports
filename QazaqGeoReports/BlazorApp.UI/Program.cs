@@ -1,6 +1,5 @@
 using BlazorApp.UI.Components;
-using BlazorApp.UI.Components.Account;
-using Microsoft.AspNetCore.Authentication;
+using BlazorApp.UI.Components.Account; 
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
@@ -17,7 +16,7 @@ builder.WebHost.UseStaticWebAssets();
 
 builder.Configuration
 .AddJsonFile($"appsettings.json", optional: false)
-.AddJsonFile($"appsettings.Environment.json", optional: true)
+.AddJsonFile($"appsettings.Development", optional: true)
 .AddJsonFile($"appsettings.Production.json", optional: false)
 .AddEnvironmentVariables();
 //Для загрузки файлов не более 10МБ
