@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using QazaqGeoReports.Application.DTOs.MissionDtos;
-using QazaqGeoReports.Domain.Entities;
+using QazaqGeoReports.Domain.Entities.Missions;
 
 namespace QazaqGeoReports.Application.Mapper;
 

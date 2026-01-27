@@ -305,7 +305,7 @@
     private static CarStatus? ParseStatus(string raw)
         => Enum.TryParse<CarStatus>(raw, out var s) ? s : null;
 
-    private RenderFragment CarStatusBadge(CarStatus status) => builder =>
+    private RenderFragment CarStatusBadge(CarStatus? status) => builder =>
     {
         var cls = status switch
         {

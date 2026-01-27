@@ -1,4 +1,5 @@
 ﻿using QazaqGeoReports.Application.Interfaces.Dtos;
+using QazaqGeoReports.Domain.Entities;
 
 namespace QazaqGeoReports.Application.DTOs.PositionDtos;
 

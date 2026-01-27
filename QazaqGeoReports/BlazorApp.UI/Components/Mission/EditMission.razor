@@ -428,7 +428,7 @@
 
             _allWorkers = (await UserService.GetUsersByRoleAsync(Roles.Worker)); 
              
-            var selectedIds = ParseWorkers(mission.Workers);
+            var selectedIds = ParseWorkers("");
              
             _selectedWorkers = _allWorkers
 
@@ -487,8 +487,7 @@
                 Status = _model.Status,
                 StartDate = ToUtcFromInput(_model.StartDate),
                 EndDate = ToUtcFromInput(_model.EndDate),
-                SupervisorId = _model.SupervisorId,
-                Workers = WorkersCsv
+                SupervisorId = _model.SupervisorId, 
             };
 
             await MissionService.UpdateAsync(dto, MissionId);

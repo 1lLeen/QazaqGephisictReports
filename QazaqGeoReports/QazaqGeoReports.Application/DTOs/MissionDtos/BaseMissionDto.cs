@@ -1,4 +1,8 @@
 ﻿using QazaqGeoReports.Application.DTOs.CarDtos;
+using QazaqGeoReports.Application.DTOs.LocationDtos;
+using QazaqGeoReports.Application.DTOs.MissionDtos.MissionDriverAssignment;
+using QazaqGeoReports.Application.DTOs.MissionDtos.MissionsCarDtos;
+using QazaqGeoReports.Application.DTOs.MissionDtos.MissionsMemberDtos;
 using QazaqGeoReports.Application.DTOs.UserDtos;
 using QazaqGeoReports.Application.Interfaces.Dtos;
 using QazaqGeoReports.Domain.Common; 
@@ -17,7 +21,10 @@ public class BaseMissionDto : IBase
     public string? SupervisorId { get; set; }
     public BaseUserDto? Supervisor { get; set; }
     public int? LocationId { get; set; }
-    public ? Location { get; set; }
-    public List<BaseUserDto?>? Employees { get; set; }
-    public List<BaseCarDto?>? Cars { get; set; }
+    public BaseLocationDto? Location { get; set; }
+    public List<BaseMissionMemberDto> Members { get; set; } = new();
+    public List<BaseMissionCarDto> Cars { get; set; } = new();
+    public List<BaseMissionDriverAssignmentDto> DriverAssignments { get; set; } = new();
+    public DateTime CreatedTime { get; set; }
+    public DateTime UpdatedTime { get; set; }
 }

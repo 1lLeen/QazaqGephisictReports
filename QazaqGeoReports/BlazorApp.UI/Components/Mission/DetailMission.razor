@@ -114,7 +114,7 @@
                                 <span class="badge text-bg-light">@_workersTokens.Count</span> *@
                             </div>
 
-                            @if (string.IsNullOrWhiteSpace(_mission.Workers))
+                            @if (string.IsNullOrWhiteSpace(""))
                             {
                                 <div class="text-muted fst-italic">Пусто.</div>
                             }
@@ -179,7 +179,7 @@
             var m = await MissionService.GetByIdAsync(MissionId);
             _mission = m;
 
-            _workersTokens = ParseWorkers(_mission?.Workers);
+            _workersTokens = ParseWorkers("");
             foreach(var item in _workersTokens)
             {
                 _workers.Add(await UserService.GetUserByIdAsync(item));

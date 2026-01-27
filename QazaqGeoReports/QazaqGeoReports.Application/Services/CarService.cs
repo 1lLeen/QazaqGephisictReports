@@ -47,8 +47,6 @@ public class CarService : AbstractService<ICarRepository, Car, CreateCarDto, Upd
             Model = x.Model,
             LicensePlate = x.LicensePlate,
             DriverId = x.DriverId,
-            Driver = mapper.Map<BaseUserDto?>(x.Driver),
-            Images = x.Images
         });
         return query;
     }

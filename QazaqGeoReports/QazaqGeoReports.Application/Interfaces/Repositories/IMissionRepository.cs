@@ -1,4 +1,4 @@
-﻿using QazaqGeoReports.Domain.Entities;
+﻿using QazaqGeoReports.Domain.Entities.Missions;
 
 namespace QazaqGeoReports.Application.Interfaces.Repositories;
 

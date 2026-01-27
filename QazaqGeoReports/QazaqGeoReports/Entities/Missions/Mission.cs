@@ -1,6 +1,6 @@
-﻿using QazaqGeoReports.Domain.Common; 
+﻿using QazaqGeoReports.Domain.Common;
 
-namespace QazaqGeoReports.Domain.Entities;
+namespace QazaqGeoReports.Domain.Entities.Missions;
 
 public class Mission : BaseEntity
 {
@@ -12,8 +12,9 @@ public class Mission : BaseEntity
     public DateTime? EndDate { get; set; }
     public string? SupervisorId { get; set; }
     public User? Supervisor { get; set; }
-    public int? LocationId { get; set;  }
+    public int? LocationId { get; set; }
     public Location? Location { get; set; }
-    public List<User?>? Employees { get; set; } 
-    public List<Car?>? Cars { get; set; }
-} 
+    public List<MissionMember> Members { get; set; } = new();
+    public List<MissionCar> Cars { get; set; } = new();
+    public List<MissionDriverAssignment> DriverAssignments { get; set; } = new();
+}

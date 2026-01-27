@@ -2,7 +2,7 @@
 using QazaqGeoReports.Application.DTOs.MissionDtos;
 using QazaqGeoReports.Application.Interfaces.Repositories;
 using QazaqGeoReports.Application.Interfaces.Services;
-using QazaqGeoReports.Domain.Entities;
+using QazaqGeoReports.Domain.Entities.Missions;
 
 namespace QazaqGeoReports.Application.Services;
 

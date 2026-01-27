@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using QazaqGeoReports.Application.DTOs.MissionDtos;
 using QazaqGeoReports.Application.Interfaces.Repositories;
-using QazaqGeoReports.Domain.Entities;
+using QazaqGeoReports.Domain.Entities.Missions;
 using System;
 
 namespace QazaqGeoReports.Infrastructure.Repositories;

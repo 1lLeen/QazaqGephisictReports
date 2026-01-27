@@ -1,6 +1,7 @@
 ﻿using QazaqGeoReports.Application.Interfaces.Dtos;
 using QazaqGeoReports.Domain.Common;
 using QazaqGeoReports.Domain.Entities;
+using QazaqGeoReports.Domain.Entities.Missions;
 
 namespace QazaqGeoReports.Application.DTOs.TaskItemDtos;
 

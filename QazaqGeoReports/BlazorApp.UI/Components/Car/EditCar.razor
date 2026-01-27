@@ -387,12 +387,12 @@
         public string? LicensePlate { get; set; }
 
         [Range(1900, 2100, ErrorMessage = "Некорректный год")]
-        public int Year { get; set; }
+        public int? Year { get; set; }
 
         [Range(0, int.MaxValue, ErrorMessage = "Пробег не может быть отрицательным")]
-        public int Mileage { get; set; }
+        public int? Mileage { get; set; }
 
-        public CarStatus Status { get; set; } = CarStatus.Active;
+        public CarStatus? Status { get; set; } = CarStatus.Active;
 
         public string? DriverId { get; set; }
     }

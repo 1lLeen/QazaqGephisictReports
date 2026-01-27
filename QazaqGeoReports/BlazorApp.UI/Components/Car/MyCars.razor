@@ -410,7 +410,7 @@
         ApplyAll();
     }
 
-    private string StatusBadge(CarStatus status) => status switch
+    private string StatusBadge(CarStatus? status) => status switch
     {
         CarStatus.Active => "text-bg-success",
         CarStatus.Reserved => "text-bg-warning",

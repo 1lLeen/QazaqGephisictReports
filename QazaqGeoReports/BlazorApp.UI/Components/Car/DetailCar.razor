@@ -6,6 +6,7 @@
 @using QazaqGeoReports.Application.Interfaces.Services
 @using QazaqGeoReports.Domain.Common
 @using QazaqGeoReports.Domain.Entities 
+@using System.Globalization
 
 @inject NavigationManager Nav
 
@@ -238,7 +239,7 @@
 
     private bool _loaded;
     private string? _error;
-     
+
     private BaseCarDto? _car;
 
     protected override async Task OnInitializedAsync()
@@ -277,14 +278,18 @@
         return string.IsNullOrWhiteSpace(left) ? "Машина" : left;
     }
 
-    private static string FormatMileage(int mileage)
+    private static string FormatMileage(int? mileage)
     {
-        // 123456 -> 123 456 км
-        var s = mileage.ToString("N0").Replace(",", " ").Replace(".", " ");
+        if (mileage is null) return "— км"; 
+
+        // 123456 -> 123 456
+        var s = mileage.Value.ToString("N0", CultureInfo.InvariantCulture)
+                             .Replace(",", " "); 
+
         return $"{s} км";
     }
 
-    private static string StatusText(CarStatus status) => status switch
+    private static string StatusText(CarStatus? status) => status switch
     {
         CarStatus.Active => "Активна",
         CarStatus.Repair => "Ремонт",
@@ -293,7 +298,7 @@
         _ => status.ToString()
     };
 
-    private static string StatusBadgeClass(CarStatus status) => status switch
+    private static string StatusBadgeClass(CarStatus? status) => status switch
     {
         CarStatus.Active => "text-bg-success",
         CarStatus.Reserved => "text-bg-warning",

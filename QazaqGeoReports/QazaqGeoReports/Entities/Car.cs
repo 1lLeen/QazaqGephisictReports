@@ -1,4 +1,5 @@
 ﻿using QazaqGeoReports.Domain.Common;
+using QazaqGeoReports.Domain.Entities.Missions;
 
 namespace QazaqGeoReports.Domain.Entities;
 
