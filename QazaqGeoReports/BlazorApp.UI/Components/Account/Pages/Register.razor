@@ -4,6 +4,7 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
+@using AutoMapper;
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
@@ -11,7 +12,7 @@
 @using QazaqGeoReports.Application.DTOs.UserDtos.AuthDtos
 @using QazaqGeoReports.Application.Interfaces.Services
 @using QazaqGeoReports.Domain.Entities
-@using AutoMapper;
+@using QazaqGeoReports.Domain.Entities.Users
 
 @inject UserManager<User> UserManager
 @inject IUserStore<User> UserStore

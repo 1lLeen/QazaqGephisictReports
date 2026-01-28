@@ -1,5 +1,5 @@
-using QazaqGeoReports.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
+using QazaqGeoReports.Domain.Entities.Users;
 
 namespace BlazorApp.UI.Components.Account
 {

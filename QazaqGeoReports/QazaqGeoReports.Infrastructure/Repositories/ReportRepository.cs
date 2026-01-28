@@ -2,6 +2,7 @@
 using QazaqGeoReports.Domain.Entities;
 using QazaqGeoReports.Application.Interfaces.Repositories;
 using QazaqGeoReports.Domain.Common;
+using QazaqGeoReports.Domain.Entities.Users;
 
 namespace QazaqGeoReports.Infrastructure.Repositories;
 

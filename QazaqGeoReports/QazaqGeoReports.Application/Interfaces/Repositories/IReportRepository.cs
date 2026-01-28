@@ -1,5 +1,6 @@
 ﻿using QazaqGeoReports.Domain.Common;
 using QazaqGeoReports.Domain.Entities;
+using QazaqGeoReports.Domain.Entities.Users;
 
 namespace QazaqGeoReports.Application.Interfaces.Repositories;
 

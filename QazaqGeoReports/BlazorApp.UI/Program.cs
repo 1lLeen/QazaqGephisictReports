@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using QazaqGeoReports.Domain.Common;
-using QazaqGeoReports.Domain.Entities;
+using QazaqGeoReports.Domain.Entities.Users;
 using QazaqGeoReports.Infrastructure;
 using System.Globalization;
 

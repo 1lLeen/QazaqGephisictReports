@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using QazaqGeoReports.Domain.Entities;
 using QazaqGeoReports.Application.Interfaces.Repositories;
 using System.Linq.Expressions;
+using QazaqGeoReports.Domain.Entities.Users;
 
 namespace QazaqGeoReports.Infrastructure.Repositories;
 

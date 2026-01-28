@@ -1,7 +1,7 @@
 ﻿using QazaqGeoReports.Application.DTOs.Common;
 using QazaqGeoReports.Application.DTOs.UserDtos;
 using QazaqGeoReports.Domain.Common;
-using QazaqGeoReports.Domain.Entities;
+using QazaqGeoReports.Domain.Entities.Users;
 using System.Linq.Expressions;
 
 namespace QazaqGeoReports.Application.Interfaces.Services;

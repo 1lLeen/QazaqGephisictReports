@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Identity; 
+using Microsoft.AspNetCore.Identity;
 using QazaqGeoReports.Application.DTOs.UserDtos.AuthDtos;
 using QazaqGeoReports.Application.Interfaces.Services;
-using QazaqGeoReports.Domain.Entities;
+using QazaqGeoReports.Domain.Entities.Users;
 
 public sealed class AuthService : IAuthService
 {

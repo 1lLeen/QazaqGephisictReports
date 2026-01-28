@@ -2,10 +2,11 @@
 @attribute [Authorize]
 
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Http
 @using Microsoft.AspNetCore.Identity
 @using QazaqGeoReports.Domain.Entities
-@using Microsoft.AspNetCore.Http
-@using Microsoft.AspNetCore.Components.Authorization
+@using QazaqGeoReports.Domain.Entities.Users
 
 @inject UserManager<User> UserManager
 @inject IdentityUserAccessor UserAccessor

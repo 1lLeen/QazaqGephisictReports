@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using QazaqGeoReports.Application.Interfaces.Services;
-using QazaqGeoReports.Domain.Entities;
+using QazaqGeoReports.Domain.Entities.Users;
 using System.Security.Claims;
 using System.Text.Json;
 

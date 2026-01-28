@@ -2,9 +2,10 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity
+@using QazaqGeoReports.Domain.Entities.Users
 @attribute [Authorize]
 
-@inject UserManager<QazaqGeoReports.Domain.Entities.User> UserManager
+@inject UserManager<User> UserManager
 @inject AuthenticationStateProvider Auth
 @inject NavigationManager Nav
 
@@ -189,7 +190,7 @@ else
 @code {
     [Parameter] public string Id { get; set; } = default!;
 
-    private QazaqGeoReports.Domain.Entities.User? user;
+    private User? user;
     private bool isLoading = true;
     private string AvatarSrc = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
     private IList<string>? roles;
@@ -219,7 +220,7 @@ else
 
     private void GoBack() => Nav.NavigateTo("/");
 
-    private static string DisplayName(QazaqGeoReports.Domain.Entities.User u)
+    private static string DisplayName(User u)
         => string.IsNullOrWhiteSpace(u.FullName) ? (u.UserName ?? u.Email ?? "Пользователь") : u.FullName;
 
     private static string RoleBadge(string role) => role switch

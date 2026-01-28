@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using QazaqGeoReports.Domain.Entities; 
+using QazaqGeoReports.Domain.Entities;
+using QazaqGeoReports.Domain.Entities.Users;
 using QazaqGeoReports.Infrastructure.Configurations; 
 
 namespace QazaqGeoReports.Infrastructure;
@@ -8,6 +9,7 @@ namespace QazaqGeoReports.Infrastructure;
 public class QazaqGeoReportContext(DbContextOptions<QazaqGeoReportContext> options) : IdentityDbContext<User>(options)
 {
     public DbSet<User> Users { get; set; }
+    public DbSet<UserJob> UserJobs { get; set; }
     public DbSet<Report> Reports { get; set; }
     public DbSet<Equipment> Equipments { get; set; }
     public DbSet<Car> Cars { get; set; }

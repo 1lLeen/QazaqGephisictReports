@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace QazaqGeoReports.Domain.Entities;
+namespace QazaqGeoReports.Domain.Entities.Users;
 public class User : IdentityUser
 {
     public string FirstName { get; set; }
@@ -13,10 +13,10 @@ public class User : IdentityUser
         }
     }
 
-    public string? JobTitle { get; set; }
-    public string? Note { get; set; }
-    public string? PersonnelNumber { get; set; }
+    //public string? JobTitle { get; set; }
+    //public string? Note { get; set; }
+    //public string? PersonnelNumber { get; set; }
     public bool IsActive { get; set; } 
     public DateTime CreatedTime { get; set; }
     public DateTime UpdatedTime { get; set; }
-}
+}  

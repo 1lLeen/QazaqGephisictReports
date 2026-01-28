@@ -1,5 +1,6 @@
 ﻿using QazaqGeoReports.Application.Interfaces.Dtos; 
-using QazaqGeoReports.Domain.Entities; 
+using QazaqGeoReports.Domain.Entities;
+using QazaqGeoReports.Domain.Entities.Users;
 
 namespace QazaqGeoReports.Application.DTOs.ImageDtos;
 

@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting; 
 using QazaqGeoReports.Domain.Common;
 using QazaqGeoReports.Domain.Entities;
+using QazaqGeoReports.Domain.Entities.Users;
 using System.Data;
 
 namespace QazaqGeoReports.Infrastructure;

@@ -1,4 +1,6 @@
 ﻿
+using QazaqGeoReports.Domain.Entities.Users;
+
 namespace QazaqGeoReports.Domain.Entities;
 public class Image : BaseEntity
 {
