@@ -16,9 +16,11 @@ public class QazaqGeoReportContext(DbContextOptions<QazaqGeoReportContext> optio
     public DbSet<TaskItem> TaskItems { get; set; } 
     public DbSet<Image> Images { get; set; }  
     public DbSet<Mission> Missions { get; set; }  
+    public DbSet<Location> Locations { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        builder.ApplyConfiguration(new BaseConfiguration<Location>());
         builder.ApplyConfiguration(new BaseConfiguration<Report>());
         builder.ApplyConfiguration(new BaseConfiguration<Equipment>());
         builder.ApplyConfiguration(new BaseConfiguration<Image>());

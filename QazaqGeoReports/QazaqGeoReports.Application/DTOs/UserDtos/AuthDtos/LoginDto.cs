@@ -5,8 +5,7 @@ namespace QazaqGeoReports.Application.DTOs.UserDtos.AuthDtos;
 public sealed class LoginDto
 {
     [Required]
-    [EmailAddress]
-    public string Email { get; set; } = "";
+    public string UserName { get; set; } = "";
 
     [Required]
     [DataType(DataType.Password)]

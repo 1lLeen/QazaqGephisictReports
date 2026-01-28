@@ -1,4 +1,6 @@
-﻿namespace QazaqGeoReports.Domain.Entities.Users;
+﻿using QazaqGeoReports.Domain.Common;
+
+namespace QazaqGeoReports.Domain.Entities.Users;
 
 public class UserJob : BaseEntity
 {
@@ -8,4 +10,5 @@ public class UserJob : BaseEntity
     public string? JobTitle { get; set; }
     public string? PersonnelNumber { get; set; }
     public string? Note { get; set; }
+    public Roles Role { get; set; }
 }

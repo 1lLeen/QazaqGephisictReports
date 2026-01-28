@@ -35,13 +35,13 @@
             <ValidationSummary class="text-danger mb-3" role="alert" />
 
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email"
+                <InputText @bind-Value="Input.UserName"
                            id="Input.Email"
                            class="form-control"
                            autocomplete="username"
                            placeholder="name@example.com" />
-                <label for="Input.Email">Email</label>
-                <ValidationMessage For="() => Input.Email" class="text-danger" />
+                <label for="Input.UserName">UserName</label>
+                <ValidationMessage For="() => Input.UserName" class="text-danger" />
             </div>
 
             <div class="form-floating mb-3">

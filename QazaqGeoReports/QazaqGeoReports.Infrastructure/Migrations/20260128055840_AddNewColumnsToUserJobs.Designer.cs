@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using QazaqGeoReports.Infrastructure;
@@ -11,9 +12,11 @@ using QazaqGeoReports.Infrastructure;
 namespace QazaqGeoReports.Infrastructure.Migrations
 {
     [DbContext(typeof(QazaqGeoReportContext))]
-    partial class QazaqGeoReportContextModelSnapshot : ModelSnapshot
+    [Migration("20260128055840_AddNewColumnsToUserJobs")]
+    partial class AddNewColumnsToUserJobs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -275,40 +278,6 @@ namespace QazaqGeoReports.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Images");
-                });
-
-            modelBuilder.Entity("QazaqGeoReports.Domain.Entities.Location", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Address")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<double?>("Latitude")
-                        .HasColumnType("double precision");
-
-                    b.Property<double?>("Longitude")
-                        .HasColumnType("double precision");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("Timestamp")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("UpdatedTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Locations");
                 });
 
             modelBuilder.Entity("QazaqGeoReports.Domain.Entities.Mission", b =>

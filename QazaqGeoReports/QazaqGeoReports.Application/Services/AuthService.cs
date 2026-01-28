@@ -53,7 +53,7 @@ public sealed class AuthService : IAuthService
 
     public async Task<SignInResult> LoginAsync(LoginDto dto)
     {
-        var user = _userManager.Users.FirstOrDefault(x => x.Email == dto.Email);
+        var user = _userManager.Users.FirstOrDefault(x => x.UserName == dto.UserName);
         if (user is null)
             return SignInResult.Failed;
 
