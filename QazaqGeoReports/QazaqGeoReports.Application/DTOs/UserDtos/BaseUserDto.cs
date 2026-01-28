@@ -10,6 +10,9 @@ public class BaseUserDto : IBase
     public string MiddleName { get; set; }
     public string Email { get; set; }
     public string PhoneNumber { get; set; }
+    public string? JobTitle { get; set; }
+    public string? Note { get; set; }
+    public string? PersonnelNumber { get; set; }
     public bool IsActive { get; set; }
     public string FullName
     {
