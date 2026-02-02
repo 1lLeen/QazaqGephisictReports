@@ -93,8 +93,8 @@
                                     @GetInitials(u.User.FullName)
                                 </div>
                                 <div class="flex-grow-1">
-                                    <h5 class="card-title mb-0 text-truncate" title="@u.User.FullName">
-                                        @(string.IsNullOrWhiteSpace(u.User.ViewFullName) ? "(Без имени)" : u.User.ViewFullName)
+                                    <h5 class="card-title mb-0 text-truncate" title="@u.ShortName">
+                                        @(string.IsNullOrWhiteSpace(u.ShortName) ? "(Без имени)" : u.ShortName)
                                     </h5>
                                     <span class="user-status @(u.User.IsActive ? "active" : "inactive")"></span>
                                     @if (!string.IsNullOrWhiteSpace(u.Role))
@@ -107,7 +107,7 @@
                             <div class="small text-muted mb-2">
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="bi bi-envelope"></i>
-                                    <a class="link-underline-opacity-0" href="@($"mailto:{u.User.Email}")">@u.User.Email</a>
+                                    @* <a class="link-underline-opacity-0" href="@($"mailto:{u.User.Email}")">@u.User.Email</a> *@
                                 </div>
                                 @if (!string.IsNullOrWhiteSpace(u.User.PhoneNumber))
                                 {

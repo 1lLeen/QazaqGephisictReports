@@ -8,8 +8,15 @@ public class UserViewModel
     public string? Role { get; set; }
     public string? UserName { get; set; }
     public string? FullName { get; set; }
+    public string? ShortName 
+    { 
+        get 
+        {
+            return User.LastName + $" {User.FirstName.FirstOrDefault()}.{User.LastName.FirstOrDefault()}";
+        }
+    }
     public List<BaseReportDto> Reports { get; set; }
-
+    
     public int ReportCount
     {
         get

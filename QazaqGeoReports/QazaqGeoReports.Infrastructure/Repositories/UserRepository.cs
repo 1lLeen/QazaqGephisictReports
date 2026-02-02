@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using QazaqGeoReports.Application.Interfaces.Repositories;
-using System.Linq.Expressions;
 using QazaqGeoReports.Domain.Entities.Users;
+using System.Linq.Expressions;
 
 namespace QazaqGeoReports.Infrastructure.Repositories;
 
@@ -15,16 +16,40 @@ public class UserRepository : IUserRepository
         _context = context;
         _dbSet = _context.Set<User>();
     }
+    public async Task<User?> GetByLastNameAsync(string lastName)
+    {
+        lastName = lastName.Trim();
+
+        return await _context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.LastName == lastName);
+    }
+     
+    public async Task<List<User>> SearchByLastNameAsync(string lastName)
+    {
+        lastName = lastName.Trim();
+
+        return await _context.Users
+            .AsNoTracking()
+            .Where(u => EF.Functions.ILike(u.LastName, $"%{lastName}%")) 
+            .ToListAsync();
+    }
     public async Task<List<User>> GetUsersByRoleAsync(Domain.Common.Roles role)
     {
-        var res = await (from user in _context.Users
-                         join userRole in _context.UserRoles on user.Id equals userRole.UserId
-                         join roleEntity in _context.Roles on userRole.RoleId equals roleEntity.Id
-                         where roleEntity.Name == role.ToString()
-                         select user)
-                         .AsNoTracking()
-                         .ToListAsync();
-        return res;
+        var roleName = role.ToString();
+
+        var users = await (
+            from user in _context.Users
+            join userRole in _context.UserRoles on user.Id equals userRole.UserId
+            join roleEntity in _context.Roles on userRole.RoleId equals roleEntity.Id
+            where roleEntity.Name != null && roleEntity.Name == roleName
+            select user
+        )
+        .AsNoTracking()
+        .Distinct()
+        .ToListAsync();
+
+        return users;
     }
     public async Task<List<User>> GetAllAsync()
     {

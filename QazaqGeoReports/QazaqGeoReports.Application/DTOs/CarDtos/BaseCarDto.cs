@@ -19,7 +19,6 @@ public class BaseCarDto : IBase
     public int Mileage { get; set; }
 
     public string? DriverId { get; set; }
-    public BaseUserDto? Driver { get; set; }
-    public string? CreatedByUser { get; set; }
+    public BaseUserDto? Driver { get; set; } 
     public List<Image> Images { get; set; } = new();
 }

@@ -5,7 +5,10 @@ using System.Linq.Expressions;
 namespace QazaqGeoReports.Application.Interfaces.Repositories;
 public interface IUserRepository
 {
-    Task<List<User>> GetAllAsync();  
+    Task<List<User>> GetAllAsync();
+
+    Task<User> GetByLastNameAsync(string lastName);
+    Task<List<User>> SearchByLastNameAsync(string lastName);
     Task<List<User>> GetUsersByRoleAsync(Roles role);
     Task<User> GetUserByIdAsync(string id);
     Task<User?> GetAsync(Expression<Func<User, bool>> predicate);
