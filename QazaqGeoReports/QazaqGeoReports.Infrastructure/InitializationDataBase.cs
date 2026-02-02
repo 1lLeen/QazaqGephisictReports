@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using QazaqGeoReports.Domain.Common; 
+using QazaqGeoReports.Domain.Common;
+using QazaqGeoReports.Domain.Entities;
 using QazaqGeoReports.Domain.Entities.Users;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace QazaqGeoReports.Infrastructure;
 
@@ -18,9 +20,147 @@ public static class IdentitySeeder
         var db = sp.GetRequiredService<QazaqGeoReportContext>();
 
         await SeedRoles(roleManager);
-        await SeedUsersAndJobs(userManager, db);
+
+        await SeedUsersAsync(userManager, db);
+        await SeedUserJobsAsync(userManager, db);
+
+        await SeedCars(db);
+        await ManualBindDriversToCars(db);
+
     }
 
+    private static async Task SeedCars(QazaqGeoReportContext _context)
+    {
+        var carSpecs = new List<CarSeedSpec>
+        {
+            new("680AB20", "ГАЗ", "C41A23 (Кунг)"),
+            new("688AB20", "УАЗ", "3909 (фермер)"),
+            new("697AB20", "УАЗ", "390945 (фермер)"),
+            new("329AB20", "УАЗ", "390945 (фермер)"),
+            new("694AB20", "ГАЗ", "C41A23 (Кунг)"),
+            new("689AB20", "УАЗ", "390945 (фермер)"),
+            new("679AB20", "УАЗ", "3909 (таблетка)"),
+            new("681AB20", "УАЗ", "390945 (фермер)"),
+            new("327AB20", "УАЗ", "3909 (таблетка)"),
+            new("685AB20", "TOYOTA", "HILUX"),
+            new("328AB20", "Камаз", "бортовой"),
+            new("683AB20", "TOYOTA", "HILUX"),
+            new("684AB20", "TOYOTA", "HILUX"),
+            new("020QG20", "TOYOTA", "HILUX"),
+            new("300QQ20", "TOYOTA", "LC 300"),
+            new("348AG20", "Урал", "каротажная станция"),
+            new("348AG20#2", "Урал", "каротажная станция"),
+            new("355AG20", "ГАЗ", "каротажная станция"),
+            new("355AG20#2", "ГАЗ", "каротажная станция"),
+        };
+
+        var plates = carSpecs.Select(x => NormalizePlate(x.Plate)).ToList();
+         
+        var existingPlates = await _context.Cars
+            .AsNoTracking()
+            .Where(c => c.LicensePlate != null && plates.Contains(c.LicensePlate))
+            .Select(c => c.LicensePlate!)
+            .ToListAsync();
+
+        var existingSet = existingPlates
+            .Select(NormalizePlate)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+         
+        foreach (var spec in carSpecs)
+        {
+            var plate = NormalizePlate(spec.Plate);
+            if (existingSet.Contains(plate))
+                continue;
+
+            _context.Cars.Add(new Car
+            {
+                LicensePlate = plate,
+                Brand = spec.Brand,
+                Model = spec.Model,
+
+                Status = CarStatus.Active,
+                Mileage = 0,
+
+                CreatedTime = DateTime.UtcNow,
+                UpdatedTime = DateTime.UtcNow
+            });
+        }
+
+        await _context.SaveChangesAsync();
+
+        static string NormalizePlate(string s) =>
+            (s ?? "").Trim().Replace(" ", "").ToUpperInvariant();
+    }
+    private sealed record CarSeedSpec(string Plate, string Brand, string Model); 
+    private static async Task ManualBindDriversToCars(QazaqGeoReportContext _context)
+    {
+        var D = new Dictionary<string, string>
+        {
+            ["680AB20"] = "Абдрахманов",
+            ["688AB20"] = "Курманбаев",
+            ["697AB20"] = "Мукушев",
+            ["329AB20"] = "Мукажанов",
+            ["694AB20"] = "Куншеев",
+            ["689AB20"] = "Букеев",
+            ["679AB20"] = "Куанышбаев",
+            ["681AB20"] = "Куншеев",
+            ["327AB20"] = "Рахатов",
+            ["685AB20"] = "Орманбетов",
+            ["328AB20"] = "Орманбетов",
+            ["683AB20"] = "Сулейменов",
+            ["684AB20"] = "Алипов",
+            ["020QG20"] = "Сыздыханов", 
+
+            ["348AG20"] = "Рахатов",
+            ["348AG20#2"] = "Шукманов",
+
+            ["355AG20"] = "Байтемиров",
+            ["355AG20#2"] = "Оспанов",
+        };
+         
+         
+        var map = D.ToDictionary(
+            kv => kv.Key,
+            kv => kv.Value,
+            StringComparer.OrdinalIgnoreCase);
+           
+        var existingDriverLastNames = await _context.Users
+            .AsNoTracking()
+            .Where(u => u.LastName.Contains(u.LastName))
+            .Select(u => u.LastName)
+            .ToListAsync();
+
+        var existingDriverSet = existingDriverLastNames
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+         
+        var plates = map.Keys.ToList();
+
+        var cars = await _context.Cars
+            .Where(c => plates.Contains(c.LicensePlate))
+            .ToListAsync();
+         
+        foreach (var car in cars)
+        {
+            var plate = car.LicensePlate;
+            
+            if (!map.TryGetValue(plate, out var driverLastName))
+                continue;
+
+            var driverId = await _context.Users
+                .AsNoTracking() 
+                .Where(u => u.LastName == driverLastName)
+                .Select(u => u.Id)
+                .FirstOrDefaultAsync();
+             
+
+            if (!string.Equals(car.DriverId, driverId, StringComparison.OrdinalIgnoreCase))
+                car.DriverId = driverId;
+        } 
+
+        await _context.SaveChangesAsync();
+
+
+    }
     private static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
     {
         var roles = Enum.GetNames(typeof(Roles));
@@ -37,99 +177,124 @@ public static class IdentitySeeder
         }
     }
 
-    private static async Task SeedUsersAndJobs(UserManager<User> userMgr, QazaqGeoReportContext db)
+    private static async Task SeedUsersAsync(UserManager<User> userMgr, QazaqGeoReportContext db)
     {
         var now = DateTime.UtcNow;
-
         var seeds = GetSeeds();
 
         foreach (var s in seeds)
         {
-            if (string.IsNullOrWhiteSpace(s.FullName)) continue;
-             
-            User? user = null;
+            if (string.IsNullOrWhiteSpace(s.FullName))
+                continue;
 
-            if (!string.IsNullOrWhiteSpace(s.PersonnelNumber))
+            var (last, first, middle) = SplitFullName(s.FullName);
+             
+            var baseUsername = MakeUsernameSlug($"{last} {first} {middle}".Trim());
+            var username = await EnsureUniqueUserName(userMgr, baseUsername, s.PersonnelNumber);
+            var email = $"{username}@qg.local";
+
+            var normUserName = userMgr.NormalizeName(username);
+            var normEmail = userMgr.NormalizeEmail(email);
+             
+            var exists = await db.Users
+                .AsNoTracking()
+                .AnyAsync(u =>
+                    (u.LastName == last && u.FirstName == first && u.MiddleName == middle)
+                    || (u.NormalizedUserName != null && u.NormalizedUserName == normUserName)
+                    || (u.NormalizedEmail != null && u.NormalizedEmail == normEmail));
+
+            if (exists)
+                continue;
+             
+            var user = new User
             {
-                var jobByTab = await db.UserJobs
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(x => x.PersonnelNumber == s.PersonnelNumber);
+                FirstName = first,
+                LastName = last,
+                MiddleName = middle,
 
-                if (jobByTab != null)
-                    user = await userMgr.FindByIdAsync(jobByTab.UserId);
-            }
+                IsActive = false,
+                CreatedTime = now,
+                UpdatedTime = now,
+
+                UserName = username,
+                Email = email,
+                EmailConfirmed = true,
+                LockoutEnabled = false
+            };
+
+            var res = await userMgr.CreateAsync(user, DefaultPassword);
+            if (!res.Succeeded)
+                throw new Exception($"Не удалось создать {s.FullName}: " +
+                    string.Join("; ", res.Errors.Select(e => e.Description)));
+        }
+    }
+    private static async Task SeedUserJobsAsync(UserManager<User> userMgr, QazaqGeoReportContext db)
+    {
+        var now = DateTime.UtcNow;
+        var seeds = GetSeeds();
+         
+        var existingJobUserIds = await db.UserJobs
+            .AsNoTracking()
+            .Select(j => j.UserId)
+            .ToHashSetAsync(StringComparer.OrdinalIgnoreCase);
+         
+        var processedUserIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var s in seeds)
+        {
+            if (string.IsNullOrWhiteSpace(s.FullName))
+                continue;
+
+            var (last, first, middle) = SplitFullName(s.FullName);
              
+            var user = await db.Users
+                .FirstOrDefaultAsync(u =>
+                    u.LastName == last &&
+                    u.FirstName == first &&
+                    u.MiddleName == middle);
+
             if (user == null)
             {
-                var (last, first, middle) = SplitFullName(s.FullName);
-
-                var baseUsername = MakeUsernameSlug($"{last} {first} {middle}".Trim());
-                var username = await EnsureUniqueUserName(userMgr, baseUsername, s.PersonnelNumber);
-
-                user = await userMgr.FindByNameAsync(username);
-                if (user == null)
-                {
-                    user = new User
-                    {
-                        FirstName = first,
-                        LastName = last,
-                        MiddleName = middle,
-
-                        IsActive = false,
-                        CreatedTime = now,
-                        UpdatedTime = now,
-
-                        UserName = username,
-                        Email = $"{username}@qg.local",
-                        EmailConfirmed = true,
-                        LockoutEnabled = false
-                    };
-
-                    var res = await userMgr.CreateAsync(user, DefaultPassword);
-                    if (!res.Succeeded)
-                        throw new Exception($"Не удалось создать {s.FullName}: " +
-                            string.Join("; ", res.Errors.Select(e => e.Description)));
-                }
+                Console.WriteLine($"[SeedUserJobs] User не найден в AspNetUsers: {s.FullName}");
+                continue;
             }
              
+            if (!processedUserIds.Add(user.Id))
+                continue;
+             
+            if (existingJobUserIds.Contains(user.Id))
+                continue;
+
             var role = GuessRoleFromTitle(s.JobTitle);
+             
             if (string.Equals(user.Email, "mygoldencode@gmail.com", StringComparison.OrdinalIgnoreCase)
-                   || string.Equals(user.UserName, "mygoldencode@gmail.com", StringComparison.OrdinalIgnoreCase)
-                   || (user.FirstName == "Жангир" && user.LastName == "Емишов"))
+                || string.Equals(user.UserName, "mygoldencode@gmail.com", StringComparison.OrdinalIgnoreCase)
+                || (user.FirstName == "Жангир" && user.LastName == "Емишов"))
             {
                 role = Roles.Admin;
             }
-            var existingJob = await db.UserJobs.FirstOrDefaultAsync(x => x.UserId == user.Id);
-            if (existingJob == null)
-            {
-                db.UserJobs.Add(new UserJob
-                {
-                    UserId = user.Id,
-                    JobTitle = s.JobTitle,
-                    PersonnelNumber = s.PersonnelNumber,
-                    Note = s.Note,
-                    Role = role,
-                    CreatedTime = now,
-                    UpdatedTime = now
-                });
 
-                await db.SaveChangesAsync();
-            }
-            else
+            db.UserJobs.Add(new UserJob
             {
-                existingJob.JobTitle = s.JobTitle;
-                existingJob.PersonnelNumber = s.PersonnelNumber;
-                existingJob.Note = s.Note;
-                existingJob.Role = role;  
-                existingJob.UpdatedTime = now;
+                UserId = user.Id,
+                JobTitle = s.JobTitle,
+                PersonnelNumber = s.PersonnelNumber,
+                Note = s.Note,
+                Role = role,
+                CreatedTime = now,
+                UpdatedTime = now
+            });
 
-                await db.SaveChangesAsync();
-            }
+            await db.SaveChangesAsync();
              
-            var roleName = role.ToString();
-            if (!await userMgr.IsInRoleAsync(user, roleName))
+            existingJobUserIds.Add(user.Id);
+             
+            var identityUser = await userMgr.FindByIdAsync(user.Id);
+            if (identityUser != null)
             {
-                await userMgr.AddToRoleAsync(user, roleName);
+                var roleName = role.ToString();
+                if (!await userMgr.IsInRoleAsync(identityUser, roleName))
+                    await userMgr.AddToRoleAsync(identityUser, roleName);
             }
         }
     }
