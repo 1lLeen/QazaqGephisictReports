@@ -6,7 +6,7 @@ using QazaqGeoReports.Domain.Entities;
 namespace QazaqGeoReports.Infrastructure.Configurations;
 public class BaseConfiguration<TModel> : IEntityTypeConfiguration<TModel> where TModel : BaseEntity
 {
-    public void Configure(EntityTypeBuilder<TModel> builder)
+    public virtual void Configure(EntityTypeBuilder<TModel> builder)
     {
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedOnAdd();

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using QazaqGeoReports.Domain.Entities;
+using QazaqGeoReports.Domain.Entities.Missions;
 using QazaqGeoReports.Domain.Entities.Users;
 using QazaqGeoReports.Infrastructure.Configurations; 
 
@@ -20,6 +21,8 @@ public class QazaqGeoReportContext(DbContextOptions<QazaqGeoReportContext> optio
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        builder.ApplyConfiguration(new MissionConfiguration());
+        builder.ApplyConfiguration(new BaseConfiguration<UserJob>());
         builder.ApplyConfiguration(new BaseConfiguration<Location>());
         builder.ApplyConfiguration(new BaseConfiguration<Report>());
         builder.ApplyConfiguration(new BaseConfiguration<Equipment>());

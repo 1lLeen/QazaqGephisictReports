@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using QazaqGeoReports.Domain.Entities.Missions;
 
 namespace QazaqGeoReports.Domain.Entities.Users;
 public class User : IdentityUser
@@ -16,7 +17,9 @@ public class User : IdentityUser
     //public string? JobTitle { get; set; }
     //public string? Note { get; set; }
     //public string? PersonnelNumber { get; set; }
-    public bool IsActive { get; set; } 
+    public bool IsActive { get; set; }
+    public List<Mission> CreatedMissions { get; set; } = new();
+    public List<MissionUser> MissionUsers { get; set; } = new();
     public DateTime CreatedTime { get; set; }
     public DateTime UpdatedTime { get; set; }
 }  

@@ -1,14 +1,16 @@
 ﻿@page "/Missions/Details/{MissionId:int}"
-@attribute [Authorize(Roles = "Admin,General,Supervisor")]
+@attribute [Authorize(Roles = "Admin,General,Supervisor,Driver,Worker")]
 
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using QazaqGeoReports.Application.DTOs.MissionDtos
-@using QazaqGeoReports.Application.DTOs.UserDtos
 @using QazaqGeoReports.Application.Interfaces.Services
+@using System.Security.Claims
+@using QazaqGeoReports.Domain.Common
 
 @inject NavigationManager Nav
-@inject IMissionService MissionService 
-@inject IUserService UserService
+@inject IMissionService MissionService
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Mission details</PageTitle>
 
@@ -20,11 +22,19 @@
         </button>
 
         <div class="dm-actions">
-            <button class="btn btn-sm btn-outline-primary rounded-pill"
-                    @onclick="GoEdit"
-                    disabled="@(!_loaded || _mission is null)">
-                <i class="bi bi-pencil-square me-2"></i>Редактировать
-            </button>
+            <AuthorizeView Roles="Admin,General,Supervisor">
+                <button class="btn btn-sm btn-outline-primary rounded-pill"
+                        @onclick="GoEdit"
+                        disabled="@(!_loaded || _mission is null)">
+                    <i class="bi bi-pencil-square me-2"></i>Редактировать
+                </button>  
+                <button class="btn btn-sm btn-outline-danger rounded-pill ms-2"
+                @onclick="OpenDelete"
+                disabled="@(!_loaded || _mission is null || _deleting)">
+            <i class="bi bi-trash me-2"></i>Удалить
+                        
+                </button>
+            </AuthorizeView>
         </div>
     </div>
 
@@ -52,7 +62,7 @@
                     </div>
                     <div>
                         <div class="h5 mb-1">Миссия не найдена</div>
-                        <div class="text-muted mb-3">Возможно, её удалили или ID неверный.</div>
+                        <div class="text-muted mb-3">@(_error ?? "Возможно, её удалили или у вас нет доступа.")</div>
                         <button class="btn btn-primary rounded-pill" @onclick="GoBack">
                             <i class="bi bi-grid me-2"></i>К списку миссий
                         </button>
@@ -68,6 +78,8 @@
                 <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
                     <div class="min-w-0">
                         <div class="dm-kicker text-muted small mb-1">
+                            @(_mission.CreatedByUser?.FullName ?? _mission.CreatedByUserId)
+                            |
                             Mission #@_mission.Id
                         </div>
 
@@ -86,15 +98,14 @@
                     </div>
 
                     <div class="text-end">
-                        <span class="badge rounded-pill dm-status @StatusClass(_mission.Status.ToString())">
+                        <span class="badge rounded-pill dm-status @StatusClass(_mission.Status)">
                             <i class="bi bi-activity me-1"></i>@_mission.Status
                         </span>
                         <div class="text-muted small mt-2">
                             Период: @FormatRange(_mission.StartDate, _mission.EndDate)
                         </div>
                     </div>
-                </div>
-
+                </div> 
                 <hr class="my-4" />
 
                 <div class="row g-3">
@@ -102,69 +113,115 @@
                         <div class="dm-meta">
                             <div class="dm-meta-label">Супервайзер</div>
                             <div class="dm-meta-value">
-                                    @(_supervisor?.FullName ?? "—")
-                            </div> 
+                                @(_mission.Supervisor?.FullName ?? "—")
+                            </div>
                         </div>
+                         
                     </div>
 
                     <div class="col-md-8">
                         <div class="dm-meta">
                             <div class="dm-meta-label d-flex align-items-center justify-content-between">
-                                @* <span>Workers (string)</span>
-                                <span class="badge text-bg-light">@_workersTokens.Count</span> *@
+                                <span>Участники</span>
+                                <span class="badge text-bg-light">@(_mission.Workers?.Count ?? 0)</span>
                             </div>
 
-                            @if (string.IsNullOrWhiteSpace(_mission.Workers))
+                            @if (_mission.Workers is null || _mission.Workers.Count == 0)
                             {
                                 <div class="text-muted fst-italic">Пусто.</div>
                             }
                             else
                             {
-                                @* <div class="dm-workers-raw text-muted small mb-2">
-                                    @_mission.Workers
-                                </div> *@
-
                                 <div class="dm-chips">
-                                    @foreach (var w in _workers)
+                                    @foreach (var w in _mission.Workers)
                                     {
                                         <span class="badge rounded-pill text-bg-light dm-chip">
                                             <i class="bi bi-person me-1"></i>@w.FullName
                                         </span>
                                     }
                                 </div>
-@* 
-                                <div class="dm-hint text-muted small mt-2">
-                                    Поддерживаем разделители: <code>,</code> <code>;</code> <code>|</code> и перенос строки.
-                                </div> *@
                             }
                         </div>
+
+                        @if (!string.IsNullOrWhiteSpace(_error))
+                        {
+                            <div class="alert alert-danger mt-3 mb-0 rounded-4">
+                                <i class="bi bi-exclamation-triangle me-2"></i>@_error
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
         </div>
-
-        @if (!string.IsNullOrWhiteSpace(_error))
-        {
-            <div class="alert alert-danger mt-3 mb-0 rounded-4">
-                <i class="bi bi-exclamation-triangle me-2"></i>@_error
-            </div>
-        }
     }
 </div>
+@if (_showDeleteModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle me-2 text-danger"></i>Удалить миссию?
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseDelete" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        Ты точно хочешь удалить миссию <b>#@_mission?.Id</b>:
+                    </div>
+                    <div class="text-muted">
+                        “@_mission?.Title”
+                    </div>
 
+                    @if (!string.IsNullOrWhiteSpace(_deleteError))
+                    {
+                        <div class="alert alert-danger mt-3 mb-0 rounded-4">
+                            <i class="bi bi-x-octagon me-2"></i>@_deleteError
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary rounded-pill"
+                            @onclick="CloseDelete"
+                            disabled="@_deleting">
+                        Отмена
+                    </button>
+
+                    <button class="btn btn-danger rounded-pill"
+                            @onclick="Delete"
+                            disabled="@_deleting">
+                        @if (_deleting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status">Удаляю…</span>
+                             
+                        }
+                        else
+                        {
+                            <i class="bi bi-trash me-2">Да, удалить</i>
+                             
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 @code {
     [Parameter] public int MissionId { get; set; }
 
+    private bool _showDeleteModal;
+    private bool _deleting;
+    private string? _deleteError;
+
     private bool _loaded;
     private string? _error;
+    private BaseMissionDto? _mission;
 
-    private BaseMissionDto _mission; 
+    private string? _currentUserId;
+    private bool _isElevated;
 
-    private List<string> _workersTokens = new();
-    private List<BaseUserDto> _workers = new();
-    private BaseUserDto _supervisor = new();
-
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         await Load();
     }
@@ -173,30 +230,91 @@
     {
         _loaded = false;
         _error = null;
+        _mission = null;
 
         try
-        { 
-            var m = await MissionService.GetByIdAsync(MissionId);
-            _mission = m;
+        {
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = auth.User;
 
-            _workersTokens = ParseWorkers(_mission?.Workers);
-            foreach(var item in _workersTokens)
+            _currentUserId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            _isElevated = user.IsInRole("Admin") || user.IsInRole("General") || user.IsInRole("Supervisor");
+             
+            var m = await MissionService.GetByIdAsync(MissionId);
+            if (m is null)
             {
-                _workers.Add(await UserService.GetUserByIdAsync(item));
+                _mission = null;
+                _error = "Миссия не найдена.";
+                return;
             }
-            _supervisor = await UserService.GetUserByIdAsync(_mission?.SupervisorId);
+             
+            if (!_isElevated && !UserHasAccessToMission(m, _currentUserId))
+            {
+                _mission = null;
+                _error = "Нет доступа к этой миссии.";
+                return;
+            }
+
+            _mission = m;
         }
         catch (Exception ex)
         {
             _error = $"Ошибка загрузки: {ex.Message}";
             _mission = null;
-            _workersTokens = new(); 
-            _supervisor = new();
         }
         finally
         {
             _loaded = true;
         }
+    }
+    private void OpenDelete()
+    {
+        _deleteError = null;
+        _showDeleteModal = true;
+    }
+
+    private void CloseDelete()
+    {
+        if (_deleting) return;  
+        _showDeleteModal = false;
+        _deleteError = null;
+    }
+
+    private async Task Delete()
+    {
+        if (_mission is null) return;
+
+        _deleting = true;
+        _deleteError = null;
+
+        try
+        { 
+            await MissionService.DeleteAsync(_mission.Id);
+
+            _showDeleteModal = false;
+            Nav.NavigateTo("/Missions", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            _deleteError = $"Ошибка удаления: {ex.Message}";
+        }
+        finally
+        {
+            _deleting = false;
+        }
+    }
+    private static bool UserHasAccessToMission(BaseMissionDto mission, string? userId)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            return false;
+
+        if (mission.CreatedByUserId == userId)
+            return true;
+
+        if (!string.IsNullOrWhiteSpace(mission.SupervisorId) && mission.SupervisorId == userId)
+            return true;
+
+        return mission.Workers?.Any(w => w.Id.ToString() == userId || w.Id == userId) == true;
     }
 
     private void GoBack() => Nav.NavigateTo("/Missions");
@@ -214,31 +332,21 @@
         return $"{s} → {e}";
     }
 
-    private static string StatusClass(string? status)
+    private static string StatusClass(MissionStatus status) => status switch
     {
-        return status?.ToLowerInvariant() switch
-        {
-            "planned" => "dm-badge-planned",
-            "inprogress" => "dm-badge-progress",
-            "completed" => "dm-badge-done",
-            "canceled" => "dm-badge-canceled",
-            _ => "dm-badge-default"
-        };
-    }
-     
-    private static List<string> ParseWorkers(string? workers)
+        MissionStatus.Planned => "dm-badge-planned",
+        MissionStatus.Active => "dm-badge-active",
+        MissionStatus.Paused => "dm-badge-paused",
+        MissionStatus.Completed => "dm-badge-done",
+        _ => "dm-badge-default"
+    };
+
+    private static string StatusText(MissionStatus status) => status switch
     {
-        if (string.IsNullOrWhiteSpace(workers))
-            return new();
-
-        var split = workers
-        .Split(',', StringSplitOptions.RemoveEmptyEntries)
-        .Select(x => x.Trim())
-        .Where(x => !string.IsNullOrWhiteSpace(x))
-        .Distinct(StringComparer.OrdinalIgnoreCase)
-        .ToList();
-
-        return split;
-    }
-
+        MissionStatus.Planned => "План",
+        MissionStatus.Active => "Активно",
+        MissionStatus.Paused => "Пауза",
+        MissionStatus.Completed => "Завершено",
+        _ => status.ToString()
+    };
 }

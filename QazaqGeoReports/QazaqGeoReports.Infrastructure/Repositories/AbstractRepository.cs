@@ -52,7 +52,7 @@ public class AbstractRepository<TModel> : IAbstractRepository<TModel> where TMod
         .FirstOrDefaultAsync(predicate);
     }
 
-    public async Task<TModel> GetByIdAsync(int id)
+    public virtual async Task<TModel> GetByIdAsync(int id)
     {
         return await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
     }
